@@ -10,7 +10,10 @@
 
 #include "MainWindow.h"
 #include "FrameVisualizer.h"
+
+#if defined(HAS_QT)&&defined(HAS_QGLVIEWER)
 #include "SLAMVisualizer.h"
+#endif
 
 #include "../../core/Svar.h"
 #include "../../core/GSLAM.h"
@@ -302,6 +305,7 @@ bool MainWindow::slotStop()
 {
     if(_d->status==STOP) return false;
     _d->status=STOP;
+    while(!_d->threadPlay.joinable()) GSLAM::Rate::sleep(0.01);
     _d->threadPlay.join();
     _d->startAction->setDisabled(false);
     _d->pauseAction->setDisabled(true);
@@ -311,6 +315,7 @@ bool MainWindow::slotStop()
 
 bool MainWindow::slotAddSLAM(QString pluginPath)
 {
+#if defined(HAS_QT)&&defined(HAS_QGLVIEWER)
     SLAMVisualizer* slamVis=new SLAMVisualizer(this,pluginPath);
     if(slamVis->slam()&&slamVis->slam()->valid())
     {
@@ -319,6 +324,7 @@ bool MainWindow::slotAddSLAM(QString pluginPath)
         return true;
     }
     delete slamVis;
+#endif
     return false;
 }
 
@@ -336,7 +342,7 @@ bool MainWindow::slotStartDataset(QString dataset)
 
 void MainWindow::runSLAMMain()
 {
-    Rate rate(svar.GetInt("Frequency",30));
+    Rate rate(svar.GetInt("Frequency",100));
     while(_d->status!=STOP)
     {
         rate.sleep();

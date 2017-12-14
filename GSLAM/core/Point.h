@@ -25,6 +25,17 @@ struct Point2_
         return Point2_<Scalar>(x,y);
     }
 
+#ifdef EIGEN_MATRIX_H
+    template <typename Scalar>
+    operator Eigen::Matrix<Scalar,2,1>()
+    {
+        return Eigen::Matrix<Scalar,2,1>(x,y);
+    }
+
+    template <typename Scalar>
+    Point2_(const Eigen::Matrix<Scalar,2,1>& eig):x(eig[0]),y(eig[1]){}
+#endif
+
     inline Precision& operator[](int index)const
     {
         return ((Precision*)this)[index];
@@ -195,6 +206,17 @@ struct Point3_
         return Point3_<Scalar>(x,y,z);
     }
 
+#ifdef EIGEN_MATRIX_H
+    template <typename Scalar>
+    operator Eigen::Matrix<Scalar,3,1>()
+    {
+        return Eigen::Matrix<Scalar,3,1>(x,y,z);
+    }
+
+    template <typename Scalar>
+    Point3_(const Eigen::Matrix<Scalar,3,1>& eig):x(eig[0]),y(eig[1]),z(eig[2]){}
+#endif
+
 #ifdef HAS_TOON
     operator TooN::Vector<3,Precision>& ()
     {
@@ -205,6 +227,19 @@ struct Point3_
     Precision x,y,z;
 };
 
+typedef Point3_<unsigned char>  Point3ub;
+typedef Point3_<float>  Point3f;
+typedef Point3_<double> Point3d;
+typedef Point3_<int>    Point3i;
+}
+
+namespace GSLAM {
+using pi::Point2_;
+using pi::Point3_;
+
+typedef Point2_<int>            Point2i;
+typedef Point2_<float>          Point2f;
+typedef Point2_<double>         Point2d;
 typedef Point3_<unsigned char>  Point3ub;
 typedef Point3_<float>  Point3f;
 typedef Point3_<double> Point3d;
