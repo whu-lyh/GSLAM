@@ -129,17 +129,28 @@
 // TODO(hamaji): Add other platforms.
 #endif
 
+#if defined(OS_LINUX)
+    #include <unistd.h>
+#elif defined(OS_WINDOWS)
+    #include <windows.h>
+#endif
 
-#if defined(_MSC_VER)
+
+#if defined(_MSC_VER) && 0
 # define GSLAM_EXPORT __declspec(dllexport)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && 0
 # define GSLAM_EXPORT __declspec(dllimport)
 #else
 # define GSLAM_EXPORT
 #endif
+
 #ifdef ERROR
 #undef ERROR
 #endif
+#ifdef LOG
+#undef LOG
+#endif
+
 // Log severity level constants.
 const int FATAL   = -3;
 const int ERROR   = -2;
@@ -148,13 +159,9 @@ const int INFO    =  0;
 
 // ------------------------- Glog compatibility ------------------------------
 
-namespace google {
+namespace GSLAM {
 
 typedef int LogSeverity;
-const int INFO    = ::INFO;
-const int WARNING = ::WARNING;
-const int ERROR   = ::ERROR;
-const int FATAL   = ::FATAL;
 
 const int GLOG_INFO = 0, GLOG_WARNING = 1, GLOG_ERROR = 2, GLOG_FATAL = 3,
   NUM_SEVERITIES = 4;
@@ -178,12 +185,6 @@ inline void get_timeinfo(struct tm& ti)
     localtime_r(&rawtime, &ti);
 #endif
 }
-
-#if defined(OS_LINUX)
-    #include <unistd.h>
-#elif defined(OS_WINDOWS)
-    #include <windows.h>
-#endif
 
 // FIXME: How to get tid on Windows?
 inline int64_t GetTID()
@@ -440,12 +441,12 @@ class GSLAM_EXPORT MessageLogger {
  private:
   void LogToSinks(int severity) {
     struct tm timeinfo;
-    google::get_timeinfo(timeinfo);
+    GSLAM::get_timeinfo(timeinfo);
 
-    std::set<google::LogSink*>::iterator iter;
+    std::set<GSLAM::LogSink*>::iterator iter;
     // Send the log message to all sinks.
-    for (iter = google::getLogSinksGlobal().begin();
-         iter != google::getLogSinksGlobal().end(); ++iter) {
+    for (iter = GSLAM::getLogSinksGlobal().begin();
+         iter != GSLAM::getLogSinksGlobal().end(); ++iter) {
       (*iter)->send(severity, file_.c_str(), filename_only_.c_str(), line_,
                     &timeinfo, stream_.str().c_str(), stream_.str().size());
     }
@@ -453,11 +454,11 @@ class GSLAM_EXPORT MessageLogger {
 
   void WaitForSinks() {
     // TODO(settinger): Add locks for thread safety.
-    std::set<google::LogSink *>::iterator iter;
+    std::set<GSLAM::LogSink *>::iterator iter;
 
     // Call WaitTillSent() for all sinks.
-    for (iter = google::getLogSinksGlobal().begin();
-         iter != google::getLogSinksGlobal().end(); ++iter) {
+    for (iter = GSLAM::getLogSinksGlobal().begin();
+         iter != GSLAM::getLogSinksGlobal().end(); ++iter) {
       (*iter)->WaitTillSent();
     }
   }

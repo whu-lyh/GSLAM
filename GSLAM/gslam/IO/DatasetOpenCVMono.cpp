@@ -1,9 +1,9 @@
-//#ifdef HAS_OPENCV
-#include "../../../core/Dataset.h"
-#include "../../../core/VideoFrame.h"
-#include "../../../core/Svar.h"
-#include "../../../core/VecParament.h"
-#include "../../../core/Timer.h"
+#ifdef HAS_OPENCV
+#include "GSLAM/core/Dataset.h"
+#include "GSLAM/core/VideoFrame.h"
+#include "GSLAM/core/Svar.h"
+#include "GSLAM/core/VecParament.h"
+#include "GSLAM/core/Timer.h"
 
 
 #include <opencv2/highgui/highgui.hpp>
@@ -70,5 +70,5 @@ public:
 REGISTER_DATASET(DatasetOpenCVMono,cvmono)
 
 
-//#endif // HAS_OPENCV
+#endif // HAS_OPENCV
 

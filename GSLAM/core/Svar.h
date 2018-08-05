@@ -968,14 +968,15 @@ T Svar::get_var(const std::string& name, const T& def)
         //First: Use the var from SvarWithType
     SvarIter it;
     it=data.find(name);
-    if(it==data.end())
+    char* envStr=getenv(name.c_str());
+    if(it==data.end()&&!envStr)
     {
         return *(typed_map.get_ptr(name,def));
         //Third: Both did not get the var need,insert defaut var to SvarWithType
     }
     else
     {
-        std::string& str_var=it->second;
+        std::string str_var=it==data.end()?envStr:it->second;
         std::istringstream istr_var(str_var);
         T var;
         istr_var>>var;
@@ -1120,7 +1121,41 @@ inline bool Svar::ParseMain(int argc, char** argv, PARSEMODE mode)
     // parse main cmd
     int beginIdx=(mode==DEFAULT_CMD1?1:2);
     for(int i=beginIdx; i<argc; i++)
-        setvar(argv[i]);
+    {
+        string str=argv[i];
+        bool foundPrefix=false;
+        int j=0;
+        for(;j<2&&j<str.size()&&str.at(j)=='-';j++)
+            foundPrefix=true;
+
+        if(!foundPrefix)
+        {
+            if(!setvar(str))
+                cerr<<"Failed to parse argument "<<str<<", do you forgot '-"<<str<<"'?\n";
+            continue;
+        }
+
+        str=str.substr(j);
+        if(str.find('=')!=string::npos)
+        {
+            setvar(str);
+            continue;
+        }
+
+        if(i+1>=argc) {
+            insert(str,"1",true);
+            continue;
+        }
+        string str2=argv[i+1];
+        if(str2.front()=='-'){
+            insert(str,"1",true);
+            continue;
+        }
+
+        i++;
+        insert(str,argv[i]);
+        continue;
+    }
 
     // parse default config file
     string cfg_File=argv[0];
@@ -1162,11 +1197,18 @@ inline int& Svar::GetInt(const std::string& name, int def, SVARMODE mode)
 
     SvarIter it;
     it=data.find(name);
-    if(it!=data.end()) //Second: Use the var from Svar
+    char* envStr=NULL;
+    if(it==data.end()) envStr=getenv(name.c_str());
+    if(it!=data.end()||envStr) //Second: Use the var from Svar
     {
-        string& str_var=it->second;
+        string str_var=envStr?envStr:it->second;
         istringstream istr_var(str_var);
-        istr_var>>def;
+        try{
+            istr_var>>def;
+        }
+        catch(std::exception e){
+            cerr<<"Failed to read value from "<<str_var<<endl;
+        }
         while(!ptr)
         {
             ptr=(typed_map.get_ptr(name,def));
@@ -1203,11 +1245,18 @@ inline double& Svar::GetDouble(const std::string& name, double def, SVARMODE mod
 
     SvarIter it;
     it=data.find(name);
-    if(it!=data.end()) //Second: Use the var from Svar
+    char* envStr=NULL;
+    if(it==data.end()) envStr=getenv(name.c_str());
+    if(it!=data.end()||envStr) //Second: Use the var from Svar
     {
-        string& str_var=it->second;
+        string str_var=envStr?envStr:it->second;
         istringstream istr_var(str_var);
-        istr_var>>def;
+        try{
+            istr_var>>def;
+        }
+        catch(std::exception e){
+            cerr<<"Failed to read value from "<<str_var<<endl;
+        }
         while(!ptr)
         {
             ptr=(typed_map.get_ptr(name,def));
@@ -1479,7 +1528,7 @@ inline bool Scommand::Call(std::string sCommand, std::string sParams)
  */
 inline bool Scommand::Call(const std::string& sCommand)
 {
-    unsigned int found=sCommand.find_first_of(" ");
+    size_t found=sCommand.find_first_of(" ");
 //    cout<<"sCommand="<<sCommand<<"\nFound="<<found<<"\nCommand="<<sCommand.substr(0,found)<<"\nParaments="<<sCommand.substr(found+1);
     if(found<sCommand.size())
         return Call(sCommand.substr(0,found),sCommand.substr(found+1));

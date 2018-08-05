@@ -209,7 +209,7 @@ public:
         return ".dylib";
 #elif defined(hpux) || defined(_hpux)
         return ".sl";
-#elif defined(__CYGWIN__)
+#elif defined(WIN32) || defined(WIN64)
         return ".dll";
 #else
         return ".so";
@@ -227,6 +227,7 @@ private:
     std::string _path;
     void*       _handle;
 };
+typedef SPtr<SharedLibrary> SharedLibraryPtr;
 
 
 class Registry
@@ -278,7 +279,7 @@ public:
 protected:
     static bool fileExists(const std::string& filename)
     {
-        return access( filename.c_str(), F_OK ) == 0;
+        return access( filename.c_str(), 0 ) == 0;
     }
 
     static void convertStringPathIntoFilePathList(const std::string& paths,FilePathList& filepath)
@@ -310,7 +311,7 @@ protected:
     std::string getPluginName(std::string pluginName)
     {
         std::string suffix;
-        int idx=pluginName.find_last_of('.');
+        size_t idx=pluginName.find_last_of('.');
         if(idx!=std::string::npos)
         suffix=pluginName.substr(idx);
         if(suffix!=SharedLibrary::suffix())

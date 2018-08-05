@@ -23,8 +23,8 @@
 #include "SharedLibrary.h"
 
 #define GSLAM_VERSION_MAJOR 2
-#define GSLAM_VERSION_MINOR 3
-#define GSLAM_VERSION_PATCH 0
+#define GSLAM_VERSION_MINOR 4
+#define GSLAM_VERSION_PATCH 3
 #define GSLAM_COMMAND_STRHELPER(COMMAND) #COMMAND
 #define GSLAM_COMMAND_STR(COMMAND) GSLAM_COMMAND_STRHELPER(COMMAND)
 #define GSLAM_VERSION (GSLAM_COMMAND_STR(GSLAM_VERSION_MAJOR) "." \
@@ -35,7 +35,7 @@
     GSLAM::SLAMPtr createSLAMInstance(){return GSLAM::SLAMPtr(new SLAMCLASS());}}
 #define USE_GSLAM_PLUGIN(SLAMCLASS) USE_GSLAM_PLUGIN_(SLAMCLASS)
 namespace GSLAM {
-
+class GObject;
 class MapFrame;
 class MapPoint;
 class Map;
@@ -59,6 +59,7 @@ typedef pi::Point3d    Point3Type;
 typedef Point3ub       ColorType;
 typedef size_t         PointID;
 typedef size_t         FrameID;
+typedef SPtr<GObject>  GObjectPtr;
 typedef SPtr<MapFrame> FramePtr;
 typedef SPtr<MapPoint> PointPtr;
 typedef SPtr<Map>      MapPtr;
@@ -193,7 +194,7 @@ public:
     // When the frame contains one or more images captured from cameras
     virtual int     cameraNum()const{return 0;}                                      // Camera number
     virtual SE3     getCameraPose(int idx=0) const{return SE3();}                    // The transform from camera to local
-    virtual int     imageChannels(int idx=0) const{return IMAGE_RGBA;}               // Default is a colorful camera
+    virtual int     imageChannels(int idx=0) const{return IMAGE_BGRA;}               // Default is a colorful camera
     virtual Camera  getCamera(int idx=0){return Camera();}                           // The camera model
     virtual GImage  getImage(int idx=0,int channalMask=IMAGE_UNDEFINED){return GImage();}              // Just return the image if only one channel is available
     virtual bool    setImage(const GImage& img,int idx=0,int channalMask=IMAGE_UNDEFINED){return false;}
@@ -224,6 +225,7 @@ public:
     virtual bool    getKeyPoint(int idx, Point2f& pt)const{return false;}
     virtual bool    getKeyPoint(int idx, KeyPoint &pt) const{return false;}
     virtual bool    getKeyPoints(std::vector<Point2f>& keypoints)const{return false;}
+    virtual bool    getKeyPoints(std::vector<KeyPoint>& keypoints) const{return false;}
     virtual bool    getKeyPointColor(int idx,ColorType& color){return false;}
     virtual bool    getKeyPointIDepthInfo(int idx,Point2d& idepth){return false;}
     virtual PointID getKeyPointObserve(int idx){return 0;}
@@ -242,10 +244,10 @@ public:
 
     virtual SPtr<FrameConnection> getParent(GSLAM::FrameID parentId)const{return SPtr<FrameConnection>();}
     virtual SPtr<FrameConnection> getChild(GSLAM::FrameID childId)const{return SPtr<FrameConnection>();}
-    virtual bool    getParents(std::map<GSLAM::FrameID,SPtr<FrameConnection> >& parents)const{return false;}
-    virtual bool    getChildren(std::map<GSLAM::FrameID,SPtr<FrameConnection> >& children)const{return false;}
-    virtual bool    addParent(GSLAM::FrameID parentId,SPtr<FrameConnection>& parent){return false;}
-    virtual bool    addChildren(GSLAM::FrameID childId,SPtr<FrameConnection>& child){return false;}
+    virtual bool    getParents(std::map<GSLAM::FrameID, SPtr<FrameConnection> >& parents)const{return false;}
+    virtual bool    getChildren(std::map<GSLAM::FrameID, SPtr<FrameConnection> >& children)const{return false;}
+    virtual bool    addParent(GSLAM::FrameID parentId, const SPtr<FrameConnection>& parent){return false;}
+    virtual bool    addChildren(GSLAM::FrameID childId, const SPtr<FrameConnection>& child){return false;}
     virtual bool    eraseParent(GSLAM::FrameID parentId){return false;}
     virtual bool    eraseChild(GSLAM::FrameID  childId){return false;}
     virtual bool    clearParents(){return false;}
@@ -253,6 +255,10 @@ public:
 
     // Extra utils
     virtual double  getMedianDepth(){return getPoseScale().get_scale();}
+
+    static std::string channelTypeString(const int channels);
+    std::string	       channelString(int idx=0) const{return channelTypeString(imageChannels(idx));}
+
 public:
     const FrameID           _id;
     double                  _timestamp;
@@ -323,7 +329,7 @@ public:
     PointID getPid(){return _ptId++;}//obtain an unique point id
     FrameID getFid(){return _frId++;}//obtain an unique frame id
 
-private:
+protected:
     PointID _ptId;
     FrameID _frId;
 };
@@ -342,14 +348,17 @@ public:
     bool    setMap(const MapPtr& map);
     MapPtr  getMap()const;
 
+    virtual bool    setSvar(Svar& var);
+    virtual bool    setCallback(GObjectHandle* cbk){_handle=cbk;return true;}
     virtual bool    track(FramePtr& frame){return false;}
-    virtual bool    setCallback(GObjectHandle* cbk){return false;}
+    virtual bool    finalize(){return false;}
 
     static SLAMPtr create(const std::string& slamPlugin);
 
 protected:
     MapPtr          _curMap;
     mutable MutexRW _mutexMap;
+    GObjectHandle*  _handle;
 };
 
 inline MapPoint::MapPoint(const PointID& id,const Point3Type& position)
@@ -405,6 +414,28 @@ inline void MapFrame::setPose(const SIM3& pose)
     _c2w=pose;
 }
 
+inline std::string MapFrame::channelTypeString(const int channels)
+{
+    static std::string _type[32]={"RGBA","BGRA","GRAY","DEPTH","IDEPTH","GRE","NIR","RED","REG","LIDAR","SONAR","SAR","THUMBNAIL"};
+    std::string type="";
+    if(channels == 0) {
+        return "IMAGE_UNDEFINED";
+    }
+    else
+    {
+        for(int i=0; i<sizeof(channels)*8;i++)
+        {
+            int j = channels & (0x00000001<<i);
+            if(j !=0)
+            {
+                type+=(type.empty()?"":"|")+_type[i];
+            }
+        }
+        return type;
+    }
+}
+
+
 inline Map::Map():_ptId(1),_frId(1)
 {
 
@@ -414,12 +445,20 @@ inline bool SLAM::setMap(const MapPtr& map)
 {
     ReadMutex lock(_mutexMap);
     _curMap=map;
+    return true;
 }
 
 inline MapPtr SLAM::getMap()const
 {
     ReadMutex lock(_mutexMap);
     return _curMap;
+}
+
+inline bool SLAM::setSvar(Svar &var)
+{
+    for(auto it:var.get_data())
+        svar.insert(it.first,it.second);
+    return true;
 }
 
 inline SLAMPtr SLAM::create(const std::string& slamPlugin){

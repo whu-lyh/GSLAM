@@ -2,43 +2,44 @@
 #define SLAMVISUALIZER_H
 
 #include <QWidget>
-#include <qglviewer.h>
 
-#include "../../core/GSLAM.h"
+#include "GSLAM/core/GSLAM.h"
+#include "GSLAM/core/Event.h"
+
+#include "MapVisualizer.h"
 
 namespace GSLAM{
 
-class SLAMVisualizer : public QGLViewer, public GObjectHandle
+class SLAMVisualizer : public QObject, public GObjectHandle
 {
+    Q_OBJECT
 public:
-    SLAMVisualizer(QWidget* parent,QString pluginPath)
-        :QGLViewer(parent)
-    {
-        open(pluginPath);
-    }
-    virtual ~SLAMVisualizer(){_slam.reset();}
+    SLAMVisualizer(SLAMPtr slam_ptr,GObjectHandle* handle);
 
-    bool open(QString pluginPath){
-        _slam=SLAM::create(pluginPath.toStdString());
+    SLAMPtr slam(){return _slam;}
+    void releaseSLAM(){_slam=SLAMPtr();}
 
-        if(_slam) _slam->setCallback(this);
-        return _slam.get();
-    }
-
-    SLAMPtr& slam(){return _slam;}
-
-    virtual void draw(){
-        if(!_slam) return;
-        if(_slam->isDrawable()) _slam->draw();
-        else drawSLAM();
-    }
-
-    virtual void drawSLAM();
-
+    virtual void draw();
     virtual void handle(const SPtr<GObject>& obj);
+
+signals:
+    void signalUpdate();
+    void signalSetSceneRadius(qreal radius);
+    void signalSetSceneCenter(qreal x,qreal y,qreal z);
+    void signalSetViewPoint(qreal x,qreal y,qreal z,
+                            qreal rw,qreal rx,qreal ry,qreal rz);
 protected:
-    SLAMPtr   _slam;
+    void updateGL(){emit signalUpdate();}
+
+    SLAMPtr                           _slam;
+    GObjectHandle*                    _handle;
+    std::string                       _name;
+
+    std::map<std::string,SPtr<DrawableEvent> > _objects;
+    MapPtr                            _map;
+    SPtr<MapVisualizer>               _vis;
 };
 
+typedef SPtr<SLAMVisualizer> SLAMVisualizerPtr;
 }
 #endif
