@@ -2,6 +2,7 @@
 #define POINT_H
 
 #include <iostream>
+#include <sstream>
 #include <math.h>
 
 #ifdef HAS_TOON
@@ -89,9 +90,28 @@ struct Point2_
             return Point2_<Precision>(0,0);
     }
 
+    inline Precision dot(const Point2_& a)const
+    {
+        return x*a.x+y*a.y;
+    }
+
+    Precision at(int i)const{return (*this)[i];}
+    Precision getX()const{return x;}
+    Precision getY()const{return y;}
+
+    void setX(Precision X){x=X;}
+    void setY(Precision Y){y=Y;}
+
+    Point2_<Precision> add(const Point2_<Precision>& r)const{return (*this)+r;}
+    Point2_<Precision> sub(const Point2_<Precision>& r)const{return (*this)-r;}
+    Point2_<Precision> mul(Precision r)const{return (*this)*r;}
+    Point2_<Precision> div(Precision r)const{return (*this)/r;}
+
+    std::string toString()const{std::stringstream sst;sst<<*this;return sst.str();}
+
     friend inline std::ostream& operator <<(std::ostream& os,const Point2_& p)
     {
-        os<<p.x<<" "<<p.y;
+        os<<std::to_string(p.x)<<" "<<std::to_string(p.y);
         return os;
     }
 
@@ -125,12 +145,12 @@ struct Point3_
         return sqrt(x*x+y*y+z*z);
     }
 
-    inline Precision dot(const Point3_& a)
+    inline Precision dot(const Point3_& a)const
     {
         return x*a.x+y*a.y+z*a.z;
     }
 
-    inline Point3_<Precision> cross(const Point3_& a)
+    inline Point3_<Precision> cross(const Point3_& a)const
     {
         return Point3_<Precision>(y*a.z-z*a.y,z*a.x-x*a.z,x*a.y-y*a.x);
     }
@@ -145,7 +165,7 @@ struct Point3_
 
     friend inline std::ostream& operator <<(std::ostream& os,const Point3_& p)
     {
-        os<<p.x<<" "<<p.y<<" "<<p.z;
+        os<<std::to_string(p.x)<<" "<<std::to_string(p.y)<<" "<<std::to_string(p.z);
         return os;
     }
 
@@ -205,6 +225,22 @@ struct Point3_
     {
         return Point3_<Scalar>(x,y,z);
     }
+
+    Precision at(int i)const{return (*this)[i];}
+    Precision getX()const{return x;}
+    Precision getY()const{return y;}
+    Precision getZ()const{return z;}
+
+    void setX(Precision X){x=X;}
+    void setY(Precision Y){y=Y;}
+    void setZ(Precision Z){z=Z;}
+
+    Point3_<Precision> add(const Point3_<Precision>& r)const{return (*this)+r;}
+    Point3_<Precision> sub(const Point3_<Precision>& r)const{return (*this)-r;}
+    Point3_<Precision> mul(Precision r)const{return (*this)*r;}
+    Point3_<Precision> div(Precision r)const{return (*this)/r;}
+
+    std::string toString()const{std::stringstream sst;sst<<*this;return sst.str();}
 
 #ifdef EIGEN_MATRIX_H
     template <typename Scalar>
