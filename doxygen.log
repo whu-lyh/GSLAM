@@ -426,8 +426,8 @@ Generat/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:495: wa
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GPS.h:19: warning: Member Square(T x) (function) of namespace GSLAM is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GPS.h:20: warning: Member D2R(double degree) (function) of namespace GSLAM is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GPS.h:21: warning: Member R2D(double radian) (function) of namespace GSLAM is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Svar.h:1382: warning: Member buildInHandle(void *ptr, std::string command, std::string sParams) (function) of namespace GSLAM is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Svar.h:1401: warning: Member systemFunction(void *ptr, std::string, std::string sParams) (function) of namespace GSLAM is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Svar.h:1383: warning: Member buildInHandle(void *ptr, std::string command, std::string sParams) (function) of namespace GSLAM is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Svar.h:1402: warning: Member systemFunction(void *ptr, std::string, std::string sParams) (function) of namespace GSLAM is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/TileProjection.h:694: warning: Member min(const T &v1, const T &v2) (function) of namespace GSLAM is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/TileProjection.h:701: warning: Member max(const T &v1, const T &v2) (function) of namespace GSLAM is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Timer.h:210: warning: Member unitsFormat(const double val, int nDecimalDigits, bool middle_space) (function) of namespace GSLAM is not documented.
@@ -2558,5 +2558,5 @@ Generating file index...
 Generating file member index...
 Generating example index...
 finalizing index lists...
-lookup cache used 4274/65536 hits=36923 misses=4514
+lookup cache used 4274/65536 hits=36934 misses=4514
 finished...

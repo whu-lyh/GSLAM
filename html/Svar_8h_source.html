@@ -318,7 +318,7 @@
 <div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;  <span class="keywordtype">bool</span> ParseFile(std::string sFileName);</div>
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;</div>
 <div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;  <span class="keywordtype">void</span> Arg(<span class="keyword">const</span> std::string&amp; name, T def, <span class="keyword">const</span> std::string&amp; info);</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;  T&amp; Arg(<span class="keyword">const</span> std::string&amp; name, T def, <span class="keyword">const</span> std::string&amp; info);</div>
 <div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;  std::vector&lt;std::string&gt; ParseMain(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv,</div>
 <div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;                                     PARSEMODE mode = DEFAULT_CMD1);</div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;  std::string help();</div>
@@ -1063,7 +1063,7 @@
 <div class="line"><a name="l01010"></a><span class="lineno"> 1010</span>&#160;}</div>
 <div class="line"><a name="l01011"></a><span class="lineno"> 1011</span>&#160;</div>
 <div class="line"><a name="l01012"></a><span class="lineno"> 1012</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l01013"></a><span class="lineno"> 1013</span>&#160;<span class="keywordtype">void</span> Svar::Arg(<span class="keyword">const</span> std::string&amp; name, T def, <span class="keyword">const</span> std::string&amp; help) {</div>
+<div class="line"><a name="l01013"></a><span class="lineno"> 1013</span>&#160;T&amp; Svar::Arg(<span class="keyword">const</span> std::string&amp; name, T def, <span class="keyword">const</span> std::string&amp; help) {</div>
 <div class="line"><a name="l01014"></a><span class="lineno"> 1014</span>&#160;  std::stringstream sst;</div>
 <div class="line"><a name="l01015"></a><span class="lineno"> 1015</span>&#160;  sst &lt;&lt; def;</div>
 <div class="line"><a name="l01016"></a><span class="lineno"> 1016</span>&#160;  <span class="keywordflow">if</span> (!sst.str().empty()) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, sst.str(), <span class="keyword">false</span>);</div>
@@ -1074,456 +1074,457 @@
 <div class="line"><a name="l01021"></a><span class="lineno"> 1021</span>&#160;  argInfo.introduction = help;</div>
 <div class="line"><a name="l01022"></a><span class="lineno"> 1022</span>&#160;  argInfo.type = <span class="keyword">typeid</span>(T).name();</div>
 <div class="line"><a name="l01023"></a><span class="lineno"> 1023</span>&#160;  argInfo.def = sst.str();</div>
-<div class="line"><a name="l01024"></a><span class="lineno"> 1024</span>&#160;}</div>
-<div class="line"><a name="l01025"></a><span class="lineno"> 1025</span>&#160;</div>
-<div class="line"><a name="l01026"></a><span class="lineno"> 1026</span>&#160;<span class="keyword">inline</span> std::vector&lt;std::string&gt; Svar::ParseMain(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv,</div>
-<div class="line"><a name="l01027"></a><span class="lineno"> 1027</span>&#160;                                                PARSEMODE mode) {</div>
-<div class="line"><a name="l01028"></a><span class="lineno"> 1028</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01029"></a><span class="lineno"> 1029</span>&#160;  <span class="comment">// save main cmd things</span></div>
-<div class="line"><a name="l01030"></a><span class="lineno"> 1030</span>&#160;  GetInt(<span class="stringliteral">&quot;argc&quot;</span>) = argc;</div>
-<div class="line"><a name="l01031"></a><span class="lineno"> 1031</span>&#160;  GetPointer(<span class="stringliteral">&quot;argv&quot;</span>, NULL) = argv;</div>
-<div class="line"><a name="l01032"></a><span class="lineno"> 1032</span>&#160;  <span class="comment">// SvarWithType&lt;char**&gt;::instance()[&quot;argv&quot;] = argv;</span></div>
-<div class="line"><a name="l01033"></a><span class="lineno"> 1033</span>&#160;</div>
-<div class="line"><a name="l01034"></a><span class="lineno"> 1034</span>&#160;  <span class="comment">// parse main cmd</span></div>
-<div class="line"><a name="l01035"></a><span class="lineno"> 1035</span>&#160;  std::vector&lt;std::string&gt; unParsed;</div>
-<div class="line"><a name="l01036"></a><span class="lineno"> 1036</span>&#160;  <span class="keywordtype">int</span> beginIdx = (mode == DEFAULT_CMD1 ? 1 : 2);</div>
-<div class="line"><a name="l01037"></a><span class="lineno"> 1037</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = beginIdx; i &lt; argc; i++) {</div>
-<div class="line"><a name="l01038"></a><span class="lineno"> 1038</span>&#160;    <span class="keywordtype">string</span> str = argv[i];</div>
-<div class="line"><a name="l01039"></a><span class="lineno"> 1039</span>&#160;    <span class="keywordtype">bool</span> foundPrefix = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01040"></a><span class="lineno"> 1040</span>&#160;    <span class="keywordtype">int</span> j = 0;</div>
-<div class="line"><a name="l01041"></a><span class="lineno"> 1041</span>&#160;    <span class="keywordflow">for</span> (; j &lt; 2 &amp;&amp; j &lt; str.size() &amp;&amp; str.at(j) == <span class="charliteral">&#39;-&#39;</span>; j++) foundPrefix = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01042"></a><span class="lineno"> 1042</span>&#160;</div>
-<div class="line"><a name="l01043"></a><span class="lineno"> 1043</span>&#160;    <span class="keywordflow">if</span> (!foundPrefix) {</div>
-<div class="line"><a name="l01044"></a><span class="lineno"> 1044</span>&#160;      <span class="keywordflow">if</span> (!setvar(str)) unParsed.push_back(str);</div>
-<div class="line"><a name="l01045"></a><span class="lineno"> 1045</span>&#160;      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01046"></a><span class="lineno"> 1046</span>&#160;    }</div>
-<div class="line"><a name="l01047"></a><span class="lineno"> 1047</span>&#160;</div>
-<div class="line"><a name="l01048"></a><span class="lineno"> 1048</span>&#160;    str = str.substr(j);</div>
-<div class="line"><a name="l01049"></a><span class="lineno"> 1049</span>&#160;    <span class="keywordflow">if</span> (str.find(<span class="charliteral">&#39;=&#39;</span>) != string::npos) {</div>
-<div class="line"><a name="l01050"></a><span class="lineno"> 1050</span>&#160;      setvar(str);</div>
-<div class="line"><a name="l01051"></a><span class="lineno"> 1051</span>&#160;      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01052"></a><span class="lineno"> 1052</span>&#160;    }</div>
-<div class="line"><a name="l01053"></a><span class="lineno"> 1053</span>&#160;</div>
-<div class="line"><a name="l01054"></a><span class="lineno"> 1054</span>&#160;    <span class="keywordflow">if</span> (i + 1 &gt;= argc) {</div>
-<div class="line"><a name="l01055"></a><span class="lineno"> 1055</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, <span class="stringliteral">&quot;1&quot;</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l01056"></a><span class="lineno"> 1056</span>&#160;      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01057"></a><span class="lineno"> 1057</span>&#160;    }</div>
-<div class="line"><a name="l01058"></a><span class="lineno"> 1058</span>&#160;    <span class="keywordtype">string</span> str2 = argv[i + 1];</div>
-<div class="line"><a name="l01059"></a><span class="lineno"> 1059</span>&#160;    <span class="keywordflow">if</span> (str2.front() == <span class="charliteral">&#39;-&#39;</span>) {</div>
-<div class="line"><a name="l01060"></a><span class="lineno"> 1060</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, <span class="stringliteral">&quot;1&quot;</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l01061"></a><span class="lineno"> 1061</span>&#160;      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01062"></a><span class="lineno"> 1062</span>&#160;    }</div>
-<div class="line"><a name="l01063"></a><span class="lineno"> 1063</span>&#160;</div>
-<div class="line"><a name="l01064"></a><span class="lineno"> 1064</span>&#160;    i++;</div>
-<div class="line"><a name="l01065"></a><span class="lineno"> 1065</span>&#160;    <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, argv[i]);</div>
-<div class="line"><a name="l01066"></a><span class="lineno"> 1066</span>&#160;    <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01067"></a><span class="lineno"> 1067</span>&#160;  }</div>
-<div class="line"><a name="l01068"></a><span class="lineno"> 1068</span>&#160;</div>
-<div class="line"><a name="l01069"></a><span class="lineno"> 1069</span>&#160;  <span class="comment">// parse default config file</span></div>
-<div class="line"><a name="l01070"></a><span class="lineno"> 1070</span>&#160;  <span class="keywordtype">string</span> cfg_File = argv[0];</div>
-<div class="line"><a name="l01071"></a><span class="lineno"> 1071</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;argv0&quot;</span>, cfg_File);</div>
-<div class="line"><a name="l01072"></a><span class="lineno"> 1072</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;ProgramPath&quot;</span>, getFolderPath(cfg_File));</div>
-<div class="line"><a name="l01073"></a><span class="lineno"> 1073</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;ProgramName&quot;</span>, getFileName(cfg_File));</div>
-<div class="line"><a name="l01074"></a><span class="lineno"> 1074</span>&#160;  cfg_File += <span class="stringliteral">&quot;.cfg&quot;</span>;</div>
-<div class="line"><a name="l01075"></a><span class="lineno"> 1075</span>&#160;  ifstream ifs(cfg_File.c_str());</div>
-<div class="line"><a name="l01076"></a><span class="lineno"> 1076</span>&#160;</div>
-<div class="line"><a name="l01077"></a><span class="lineno"> 1077</span>&#160;  <span class="keywordflow">if</span> (!ifs.is_open()) {</div>
-<div class="line"><a name="l01078"></a><span class="lineno"> 1078</span>&#160;    cfg_File = <span class="stringliteral">&quot;./Default.cfg&quot;</span>;</div>
-<div class="line"><a name="l01079"></a><span class="lineno"> 1079</span>&#160;  } <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01080"></a><span class="lineno"> 1080</span>&#160;    ifs.close();</div>
-<div class="line"><a name="l01081"></a><span class="lineno"> 1081</span>&#160;</div>
-<div class="line"><a name="l01082"></a><span class="lineno"> 1082</span>&#160;  cfg_File = GetString(<span class="stringliteral">&quot;conf&quot;</span>, cfg_File);</div>
-<div class="line"><a name="l01083"></a><span class="lineno"> 1083</span>&#160;  <span class="comment">// cout &lt;&lt; &quot;Parsing file: &quot; &lt;&lt; cfg_File &lt;&lt; &quot; ....&quot; &lt;&lt; endl;</span></div>
-<div class="line"><a name="l01084"></a><span class="lineno"> 1084</span>&#160;  <span class="keywordtype">bool</span> ret = ParseFile(cfg_File);</div>
-<div class="line"><a name="l01085"></a><span class="lineno"> 1085</span>&#160;</div>
-<div class="line"><a name="l01086"></a><span class="lineno"> 1086</span>&#160;  <span class="keywordflow">return</span> unParsed;</div>
-<div class="line"><a name="l01087"></a><span class="lineno"> 1087</span>&#160;}</div>
-<div class="line"><a name="l01088"></a><span class="lineno"> 1088</span>&#160;</div>
-<div class="line"><a name="l01089"></a><span class="lineno"> 1089</span>&#160;<span class="keyword">inline</span> std::string Svar::typeName(std::string name) {</div>
-<div class="line"><a name="l01090"></a><span class="lineno"> 1090</span>&#160;  <span class="keyword">static</span> std::map&lt;std::string, std::string&gt; decode = {</div>
-<div class="line"><a name="l01091"></a><span class="lineno"> 1091</span>&#160;      {<span class="keyword">typeid</span>(int32_t).name(), <span class="stringliteral">&quot;int32_t&quot;</span>},</div>
-<div class="line"><a name="l01092"></a><span class="lineno"> 1092</span>&#160;      {<span class="keyword">typeid</span>(int64_t).name(), <span class="stringliteral">&quot;int64_t&quot;</span>},</div>
-<div class="line"><a name="l01093"></a><span class="lineno"> 1093</span>&#160;      {<span class="keyword">typeid</span>(uint32_t).name(), <span class="stringliteral">&quot;uint32_t&quot;</span>},</div>
-<div class="line"><a name="l01094"></a><span class="lineno"> 1094</span>&#160;      {<span class="keyword">typeid</span>(uint64_t).name(), <span class="stringliteral">&quot;uint64_t&quot;</span>},</div>
-<div class="line"><a name="l01095"></a><span class="lineno"> 1095</span>&#160;      {<span class="keyword">typeid</span>(u_char).name(), <span class="stringliteral">&quot;u_char&quot;</span>},</div>
-<div class="line"><a name="l01096"></a><span class="lineno"> 1096</span>&#160;      {<span class="keyword">typeid</span>(char).name(), <span class="stringliteral">&quot;char&quot;</span>},</div>
-<div class="line"><a name="l01097"></a><span class="lineno"> 1097</span>&#160;      {<span class="keyword">typeid</span>(float).name(), <span class="stringliteral">&quot;float&quot;</span>},</div>
-<div class="line"><a name="l01098"></a><span class="lineno"> 1098</span>&#160;      {<span class="keyword">typeid</span>(double).name(), <span class="stringliteral">&quot;double&quot;</span>},</div>
-<div class="line"><a name="l01099"></a><span class="lineno"> 1099</span>&#160;      {<span class="keyword">typeid</span>(std::string).name(), <span class="stringliteral">&quot;string&quot;</span>},</div>
-<div class="line"><a name="l01100"></a><span class="lineno"> 1100</span>&#160;      {<span class="keyword">typeid</span>(bool).name(), <span class="stringliteral">&quot;bool&quot;</span>}};</div>
-<div class="line"><a name="l01101"></a><span class="lineno"> 1101</span>&#160;  <span class="keyword">auto</span> it = decode.find(name);</div>
-<div class="line"><a name="l01102"></a><span class="lineno"> 1102</span>&#160;  <span class="keywordflow">if</span> (it == decode.end())</div>
-<div class="line"><a name="l01103"></a><span class="lineno"> 1103</span>&#160;    <span class="keywordflow">return</span> name;</div>
-<div class="line"><a name="l01104"></a><span class="lineno"> 1104</span>&#160;  <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01105"></a><span class="lineno"> 1105</span>&#160;    <span class="keywordflow">return</span> it-&gt;second;</div>
-<div class="line"><a name="l01106"></a><span class="lineno"> 1106</span>&#160;}</div>
-<div class="line"><a name="l01107"></a><span class="lineno"> 1107</span>&#160;</div>
-<div class="line"><a name="l01108"></a><span class="lineno"> 1108</span>&#160;<span class="keyword">inline</span> std::string Svar::help() {</div>
-<div class="line"><a name="l01109"></a><span class="lineno"> 1109</span>&#160;    std::stringstream sst;</div>
-<div class="line"><a name="l01110"></a><span class="lineno"> 1110</span>&#160;    sst &lt;&lt; GetString(<span class="stringliteral">&quot;Usage&quot;</span>,<span class="stringliteral">&quot;Usage:\n&quot;</span></div>
-<div class="line"><a name="l01111"></a><span class="lineno"> 1111</span>&#160;                     + GetString(<span class="stringliteral">&quot;ProgramName&quot;</span>, <span class="stringliteral">&quot;exe&quot;</span>)</div>
-<div class="line"><a name="l01112"></a><span class="lineno"> 1112</span>&#160;                     + <span class="stringliteral">&quot; [--help] [-conf configure_file]&quot;</span></div>
-<div class="line"><a name="l01113"></a><span class="lineno"> 1113</span>&#160;                       <span class="stringliteral">&quot; [-arg_name arg_value]...\n\n&quot;</span>);</div>
-<div class="line"><a name="l01114"></a><span class="lineno"> 1114</span>&#160;</div>
-<div class="line"><a name="l01115"></a><span class="lineno"> 1115</span>&#160;    <span class="keywordflow">if</span> (!GetString(<span class="stringliteral">&quot;Version&quot;</span>).empty())</div>
-<div class="line"><a name="l01116"></a><span class="lineno"> 1116</span>&#160;        sst &lt;&lt; <span class="stringliteral">&quot;Version: &quot;</span> &lt;&lt; GetString(<span class="stringliteral">&quot;Version&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;, &quot;</span>;</div>
-<div class="line"><a name="l01117"></a><span class="lineno"> 1117</span>&#160;    sst &lt;&lt; <span class="stringliteral">&quot;Using Svar supported argument parsing. The following table listed &quot;</span></div>
-<div class="line"><a name="l01118"></a><span class="lineno"> 1118</span>&#160;           <span class="stringliteral">&quot;several \nargument introductions.\n\n&quot;</span>;</div>
-<div class="line"><a name="l01119"></a><span class="lineno"> 1119</span>&#160;</div>
-<div class="line"><a name="l01120"></a><span class="lineno"> 1120</span>&#160;    Arg&lt;std::string&gt;(<span class="stringliteral">&quot;conf&quot;</span>, <span class="stringliteral">&quot;Default.cfg&quot;</span>,</div>
-<div class="line"><a name="l01121"></a><span class="lineno"> 1121</span>&#160;                     <span class="stringliteral">&quot;The default configure file going to parse.&quot;</span>);</div>
-<div class="line"><a name="l01122"></a><span class="lineno"> 1122</span>&#160;    Arg&lt;bool&gt;(<span class="stringliteral">&quot;help&quot;</span>, <span class="keyword">false</span>, <span class="stringliteral">&quot;Show the help information.&quot;</span>);</div>
-<div class="line"><a name="l01123"></a><span class="lineno"> 1123</span>&#160;    <span class="keywordtype">int</span> namePartWidth = GetInt(<span class="stringliteral">&quot;NamePartWidth&quot;</span>, 16);</div>
-<div class="line"><a name="l01124"></a><span class="lineno"> 1124</span>&#160;    <span class="keywordtype">int</span> statusPartWidth = GetInt(<span class="stringliteral">&quot;StatusPartWidth&quot;</span>, 30);</div>
-<div class="line"><a name="l01125"></a><span class="lineno"> 1125</span>&#160;    <span class="keywordtype">int</span> introPartWidth = GetInt(<span class="stringliteral">&quot;IntroPartWidth&quot;</span>, 40);</div>
-<div class="line"><a name="l01126"></a><span class="lineno"> 1126</span>&#160;    <span class="keyword">auto</span>&amp; inst = *(a-&gt;args);</div>
-<div class="line"><a name="l01127"></a><span class="lineno"> 1127</span>&#160;    sst &lt;&lt; std::setw(namePartWidth + 1) &lt;&lt; std::setiosflags(std::ios::left)</div>
-<div class="line"><a name="l01128"></a><span class="lineno"> 1128</span>&#160;        &lt;&lt; <span class="stringliteral">&quot;argument&quot;</span> &lt;&lt; std::setw(statusPartWidth + 1) &lt;&lt; <span class="stringliteral">&quot;type(default-&gt;setted)&quot;</span></div>
-<div class="line"><a name="l01129"></a><span class="lineno"> 1129</span>&#160;        &lt;&lt; std::setiosflags(std::ios::left) &lt;&lt; <span class="stringliteral">&quot;introduction&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l01130"></a><span class="lineno"> 1130</span>&#160;    sst &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
-<div class="line"><a name="l01131"></a><span class="lineno"> 1131</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span>;</div>
-<div class="line"><a name="l01132"></a><span class="lineno"> 1132</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; it : inst.get_data()) {</div>
-<div class="line"><a name="l01133"></a><span class="lineno"> 1133</span>&#160;        ArgumentInfo info = it.second;</div>
-<div class="line"><a name="l01134"></a><span class="lineno"> 1134</span>&#160;        std::string setted = getvar(it.first);</div>
-<div class="line"><a name="l01135"></a><span class="lineno"> 1135</span>&#160;        <span class="keywordflow">if</span> (setted != info.def)</div>
-<div class="line"><a name="l01136"></a><span class="lineno"> 1136</span>&#160;            setted = <span class="stringliteral">&quot;-&gt;&quot;</span> + setted;</div>
-<div class="line"><a name="l01137"></a><span class="lineno"> 1137</span>&#160;        <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01138"></a><span class="lineno"> 1138</span>&#160;            setted.clear();</div>
-<div class="line"><a name="l01139"></a><span class="lineno"> 1139</span>&#160;        std::string name = <span class="stringliteral">&quot;-&quot;</span> + it.first;</div>
-<div class="line"><a name="l01140"></a><span class="lineno"> 1140</span>&#160;        std::string status = typeName(info.type) + <span class="stringliteral">&quot;(&quot;</span> + info.def + setted + <span class="stringliteral">&quot;)&quot;</span>;</div>
-<div class="line"><a name="l01141"></a><span class="lineno"> 1141</span>&#160;        std::string intro = info.introduction;</div>
-<div class="line"><a name="l01142"></a><span class="lineno"> 1142</span>&#160;</div>
-<div class="line"><a name="l01143"></a><span class="lineno"> 1143</span>&#160;        <span class="keywordflow">for</span> (; name.size() || status.size() || intro.size();) {</div>
-<div class="line"><a name="l01144"></a><span class="lineno"> 1144</span>&#160;            sst &lt;&lt; std::setw(namePartWidth) &lt;&lt; name.substr(0, namePartWidth) &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a name="l01145"></a><span class="lineno"> 1145</span>&#160;                &lt;&lt; std::setw(statusPartWidth) &lt;&lt; status.substr(0, statusPartWidth)</div>
-<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;                &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; std::setw(introPartWidth) &lt;&lt; intro.substr(0, introPartWidth)</div>
-<div class="line"><a name="l01147"></a><span class="lineno"> 1147</span>&#160;                &lt;&lt; std::endl;</div>
-<div class="line"><a name="l01148"></a><span class="lineno"> 1148</span>&#160;            name = namePartWidth &lt; name.size() ? name.substr(namePartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01149"></a><span class="lineno"> 1149</span>&#160;            status =</div>
-<div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;                    statusPartWidth &lt; status.size() ? status.substr(statusPartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01151"></a><span class="lineno"> 1151</span>&#160;            intro = introPartWidth &lt; intro.size() ? intro.substr(introPartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01152"></a><span class="lineno"> 1152</span>&#160;        }</div>
-<div class="line"><a name="l01153"></a><span class="lineno"> 1153</span>&#160;    }</div>
-<div class="line"><a name="l01154"></a><span class="lineno"> 1154</span>&#160;    <span class="keywordflow">return</span> sst.str();</div>
-<div class="line"><a name="l01155"></a><span class="lineno"> 1155</span>&#160;}</div>
-<div class="line"><a name="l01156"></a><span class="lineno"> 1156</span>&#160;</div>
-<div class="line"><a name="l01157"></a><span class="lineno"> 1157</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">int</span>&amp; Svar::GetInt(<span class="keyword">const</span> std::string&amp; name, <span class="keywordtype">int</span> def, SVARMODE mode) {</div>
-<div class="line"><a name="l01158"></a><span class="lineno"> 1158</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01159"></a><span class="lineno"> 1159</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;i)</div>
-<div class="line"><a name="l01160"></a><span class="lineno"> 1160</span>&#160;    a-&gt;i = std::shared_ptr&lt;SvarWithType&lt;int&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;int&gt;());</div>
-<div class="line"><a name="l01161"></a><span class="lineno"> 1161</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
-<div class="line"><a name="l01162"></a><span class="lineno"> 1162</span>&#160;  SvarWithType&lt;int&gt;&amp; typed_map = *(a-&gt;i);</div>
-<div class="line"><a name="l01163"></a><span class="lineno"> 1163</span>&#160;</div>
-<div class="line"><a name="l01164"></a><span class="lineno"> 1164</span>&#160;  <span class="keywordtype">int</span>* ptr = typed_map.get_ptr(name);</div>
-<div class="line"><a name="l01165"></a><span class="lineno"> 1165</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01166"></a><span class="lineno"> 1166</span>&#160;</div>
-<div class="line"><a name="l01167"></a><span class="lineno"> 1167</span>&#160;  <span class="keywordtype">bool</span> exist = data-&gt;exist(name);</div>
-<div class="line"><a name="l01168"></a><span class="lineno"> 1168</span>&#160;  <span class="keywordtype">char</span>* envStr = NULL;</div>
-<div class="line"><a name="l01169"></a><span class="lineno"> 1169</span>&#160;  <span class="keywordflow">if</span> (!exist) envStr = getenv(name.c_str());</div>
-<div class="line"><a name="l01170"></a><span class="lineno"> 1170</span>&#160;  <span class="keywordflow">if</span> (exist || envStr)  <span class="comment">// Second: Use the var from Svar</span></div>
-<div class="line"><a name="l01171"></a><span class="lineno"> 1171</span>&#160;  {</div>
-<div class="line"><a name="l01172"></a><span class="lineno"> 1172</span>&#160;    <span class="keywordtype">string</span> str_var = envStr ? envStr : data-&gt;get_var(name, <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a name="l01173"></a><span class="lineno"> 1173</span>&#160;    istringstream istr_var(str_var);</div>
-<div class="line"><a name="l01174"></a><span class="lineno"> 1174</span>&#160;    <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l01175"></a><span class="lineno"> 1175</span>&#160;      istr_var &gt;&gt; def;</div>
-<div class="line"><a name="l01176"></a><span class="lineno"> 1176</span>&#160;    } <span class="keywordflow">catch</span> (std::exception e) {</div>
-<div class="line"><a name="l01177"></a><span class="lineno"> 1177</span>&#160;      cerr &lt;&lt; <span class="stringliteral">&quot;Failed to read value from &quot;</span> &lt;&lt; str_var &lt;&lt; endl;</div>
-<div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160;    }</div>
-<div class="line"><a name="l01179"></a><span class="lineno"> 1179</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01180"></a><span class="lineno"> 1180</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
-<div class="line"><a name="l01181"></a><span class="lineno"> 1181</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01182"></a><span class="lineno"> 1182</span>&#160;    }</div>
-<div class="line"><a name="l01183"></a><span class="lineno"> 1183</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01184"></a><span class="lineno"> 1184</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
-<div class="line"><a name="l01185"></a><span class="lineno"> 1185</span>&#160;          <span class="comment">// SvarWithType</span></div>
-<div class="line"><a name="l01186"></a><span class="lineno"> 1186</span>&#160;  {</div>
-<div class="line"><a name="l01187"></a><span class="lineno"> 1187</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01188"></a><span class="lineno"> 1188</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
-<div class="line"><a name="l01189"></a><span class="lineno"> 1189</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01190"></a><span class="lineno"> 1190</span>&#160;    }</div>
-<div class="line"><a name="l01191"></a><span class="lineno"> 1191</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, std::to_string(def));</div>
-<div class="line"><a name="l01192"></a><span class="lineno"> 1192</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01193"></a><span class="lineno"> 1193</span>&#160;  }</div>
-<div class="line"><a name="l01194"></a><span class="lineno"> 1194</span>&#160;}</div>
-<div class="line"><a name="l01195"></a><span class="lineno"> 1195</span>&#160;</div>
-<div class="line"><a name="l01196"></a><span class="lineno"> 1196</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">double</span>&amp; Svar::GetDouble(<span class="keyword">const</span> std::string&amp; name, <span class="keywordtype">double</span> def,</div>
-<div class="line"><a name="l01197"></a><span class="lineno"> 1197</span>&#160;                               SVARMODE mode) {</div>
-<div class="line"><a name="l01198"></a><span class="lineno"> 1198</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01199"></a><span class="lineno"> 1199</span>&#160;</div>
-<div class="line"><a name="l01200"></a><span class="lineno"> 1200</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;d)</div>
-<div class="line"><a name="l01201"></a><span class="lineno"> 1201</span>&#160;    a-&gt;d = std::shared_ptr&lt;SvarWithType&lt;double&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;double&gt;());</div>
-<div class="line"><a name="l01202"></a><span class="lineno"> 1202</span>&#160;</div>
-<div class="line"><a name="l01203"></a><span class="lineno"> 1203</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
-<div class="line"><a name="l01204"></a><span class="lineno"> 1204</span>&#160;  SvarWithType&lt;double&gt;&amp; typed_map = *(a-&gt;d);</div>
-<div class="line"><a name="l01205"></a><span class="lineno"> 1205</span>&#160;</div>
-<div class="line"><a name="l01206"></a><span class="lineno"> 1206</span>&#160;  <span class="keywordtype">double</span>* ptr = typed_map.get_ptr(name);</div>
-<div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;</div>
-<div class="line"><a name="l01209"></a><span class="lineno"> 1209</span>&#160;  <span class="keywordtype">bool</span> exist = data-&gt;exist(name);</div>
-<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;  <span class="keywordtype">char</span>* envStr = NULL;</div>
-<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;  <span class="keywordflow">if</span> (!exist) envStr = getenv(name.c_str());</div>
-<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;  <span class="keywordflow">if</span> (exist || envStr)  <span class="comment">// Second: Use the var from Svar</span></div>
-<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160;  {</div>
-<div class="line"><a name="l01214"></a><span class="lineno"> 1214</span>&#160;    <span class="keywordtype">string</span> str_var = envStr ? envStr : data-&gt;get_var(name, <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;    istringstream istr_var(str_var);</div>
-<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;      istr_var &gt;&gt; def;</div>
-<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;    } <span class="keywordflow">catch</span> (std::exception e) {</div>
-<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;      cerr &lt;&lt; <span class="stringliteral">&quot;Failed to read value from &quot;</span> &lt;&lt; str_var &lt;&lt; endl;</div>
-<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;    }</div>
-<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
-<div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;    }</div>
-<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
-<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;          <span class="comment">// SvarWithType</span></div>
-<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;  {</div>
-<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;      ptr = typed_map.get_ptr(name, def);</div>
-<div class="line"><a name="l01231"></a><span class="lineno"> 1231</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01232"></a><span class="lineno"> 1232</span>&#160;    }</div>
-<div class="line"><a name="l01233"></a><span class="lineno"> 1233</span>&#160;</div>
-<div class="line"><a name="l01234"></a><span class="lineno"> 1234</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, dtos(def, 12));</div>
-<div class="line"><a name="l01235"></a><span class="lineno"> 1235</span>&#160;</div>
-<div class="line"><a name="l01236"></a><span class="lineno"> 1236</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01237"></a><span class="lineno"> 1237</span>&#160;  }</div>
-<div class="line"><a name="l01238"></a><span class="lineno"> 1238</span>&#160;}</div>
-<div class="line"><a name="l01239"></a><span class="lineno"> 1239</span>&#160;</div>
-<div class="line"><a name="l01240"></a><span class="lineno"> 1240</span>&#160;<span class="keyword">inline</span> std::string&amp; Svar::GetString(<span class="keyword">const</span> std::string&amp; name,</div>
-<div class="line"><a name="l01241"></a><span class="lineno"> 1241</span>&#160;                                    <span class="keyword">const</span> std::string&amp; def, SVARMODE mode) {</div>
-<div class="line"><a name="l01242"></a><span class="lineno"> 1242</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01243"></a><span class="lineno"> 1243</span>&#160;</div>
-<div class="line"><a name="l01244"></a><span class="lineno"> 1244</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;s)</div>
-<div class="line"><a name="l01245"></a><span class="lineno"> 1245</span>&#160;    a-&gt;s = std::shared_ptr&lt;SvarWithType&lt;string&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;string&gt;());</div>
-<div class="line"><a name="l01246"></a><span class="lineno"> 1246</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
-<div class="line"><a name="l01247"></a><span class="lineno"> 1247</span>&#160;  SvarWithType&lt;string&gt;&amp; typed_map = *(a-&gt;s);</div>
-<div class="line"><a name="l01248"></a><span class="lineno"> 1248</span>&#160;</div>
-<div class="line"><a name="l01249"></a><span class="lineno"> 1249</span>&#160;  <span class="keywordtype">string</span>* ptr = typed_map.get_ptr(name);</div>
-<div class="line"><a name="l01250"></a><span class="lineno"> 1250</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01251"></a><span class="lineno"> 1251</span>&#160;</div>
-<div class="line"><a name="l01252"></a><span class="lineno"> 1252</span>&#160;  <span class="keywordflow">if</span> (data-&gt;exist(name))  <span class="comment">// Second: Use the var from Svar</span></div>
-<div class="line"><a name="l01253"></a><span class="lineno"> 1253</span>&#160;  {</div>
-<div class="line"><a name="l01254"></a><span class="lineno"> 1254</span>&#160;    <span class="keywordtype">string</span> _def = data-&gt;get_var(name, def);</div>
-<div class="line"><a name="l01255"></a><span class="lineno"> 1255</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01256"></a><span class="lineno"> 1256</span>&#160;      ptr = (typed_map.get_ptr(name, _def));</div>
-<div class="line"><a name="l01257"></a><span class="lineno"> 1257</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01258"></a><span class="lineno"> 1258</span>&#160;    }</div>
-<div class="line"><a name="l01259"></a><span class="lineno"> 1259</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01260"></a><span class="lineno"> 1260</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
-<div class="line"><a name="l01261"></a><span class="lineno"> 1261</span>&#160;          <span class="comment">// SvarWithType</span></div>
-<div class="line"><a name="l01262"></a><span class="lineno"> 1262</span>&#160;  {</div>
-<div class="line"><a name="l01263"></a><span class="lineno"> 1263</span>&#160;    <span class="keywordtype">string</span> _def = def;</div>
-<div class="line"><a name="l01264"></a><span class="lineno"> 1264</span>&#160;    <span class="keywordflow">if</span> (<span class="keywordtype">char</span>* ptr = getenv(name.c_str())) _def = ptr;</div>
-<div class="line"><a name="l01265"></a><span class="lineno"> 1265</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
-<div class="line"><a name="l01266"></a><span class="lineno"> 1266</span>&#160;      ptr = (typed_map.get_ptr(name, _def));</div>
-<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160;    }</div>
-<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;</div>
-<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, def);</div>
-<div class="line"><a name="l01271"></a><span class="lineno"> 1271</span>&#160;</div>
-<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
-<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;  }</div>
-<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;}</div>
-<div class="line"><a name="l01275"></a><span class="lineno"> 1275</span>&#160;</div>
-<div class="line"><a name="l01276"></a><span class="lineno"> 1276</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span>*&amp; Svar::GetPointer(<span class="keyword">const</span> std::string&amp; name, <span class="keyword">const</span> <span class="keywordtype">void</span>* ptr,</div>
-<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160;                               SVARMODE mode) {</div>
-<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;p)</div>
-<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160;    a-&gt;p = std::shared_ptr&lt;SvarWithType&lt;void*&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;void*&gt;());</div>
-<div class="line"><a name="l01280"></a><span class="lineno"> 1280</span>&#160;  <span class="keywordflow">return</span> *(a-&gt;p-&gt;get_ptr(name, (<span class="keywordtype">void</span>*)ptr));</div>
-<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160;}</div>
-<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160;</div>
-<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Svar::update() {</div>
-<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;  <span class="comment">// from i</span></div>
-<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160;  <span class="keywordflow">if</span> (a-&gt;i) {</div>
-<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;    SvarWithType&lt;int&gt;::DataMap data_i = a-&gt;i-&gt;get_data();</div>
-<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;int&gt;::DataIter it = data_i.begin(); it != data_i.end();</div>
-<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;         it++) {</div>
-<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
-<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, std::to_string(it-&gt;second), <span class="keyword">true</span>);</div>
-<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160;    }</div>
-<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;  }</div>
-<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;</div>
-<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160;  <span class="comment">// from d</span></div>
-<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160;  <span class="keywordflow">if</span> (a-&gt;d) {</div>
-<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160;    SvarWithType&lt;double&gt;::DataMap data_d = a-&gt;d-&gt;get_data();</div>
-<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;double&gt;::DataIter it = data_d.begin(); it != data_d.end();</div>
-<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;         it++) {</div>
-<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
-<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, Svar::dtos(it-&gt;second, 12));</div>
-<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;    }</div>
-<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;  }</div>
-<div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160;</div>
-<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160;  <span class="comment">// from s</span></div>
-<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;  <span class="keywordflow">if</span> (a-&gt;s) {</div>
-<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;    SvarWithType&lt;string&gt;::DataMap data_s = a-&gt;s-&gt;get_data();</div>
-<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;string&gt;::DataIter it = data_s.begin(); it != data_s.end();</div>
-<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;         it++) {</div>
-<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
-<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01314"></a><span class="lineno"> 1314</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, it-&gt;second);</div>
-<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160;    }</div>
-<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;  }</div>
-<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;}</div>
-<div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160;</div>
-<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Svar::save2file(std::string filename) {</div>
-<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;  <span class="keywordflow">if</span> (filename.size() == 0) filename = GetString(<span class="stringliteral">&quot;Config_File&quot;</span>, <span class="stringliteral">&quot;Default.cfg&quot;</span>);</div>
-<div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160;  ofstream ofs(filename.c_str());</div>
-<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;  <span class="keywordflow">if</span> (!ofs.is_open()) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;</div>
-<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;  SvarMap data_copy;</div>
-<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160;  { data_copy = data-&gt;get_data(); }</div>
-<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;  <span class="keywordflow">for</span> (SvarIter it = data_copy.begin(); it != data_copy.end(); it++) {</div>
-<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;    ofs &lt;&lt; it-&gt;first &lt;&lt; <span class="stringliteral">&quot; = &quot;</span> &lt;&lt; it-&gt;second &lt;&lt; endl;</div>
-<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;  }</div>
-<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160;}</div>
-<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;</div>
-<div class="line"><a name="l01333"></a><span class="lineno"><a class="line" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04"> 1333</a></span>&#160;<span class="keyword">inline</span> std::string <a class="code" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">Svar::getStatsAsText</a>() {</div>
-<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;  SvarMap data = this-&gt;data-&gt;get_data();</div>
-<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;</div>
-<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;  <span class="keywordtype">int</span> count = data.size();</div>
-<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;  <span class="keywordflow">if</span> (a-&gt;i) count += a-&gt;i-&gt;get_data().size();</div>
-<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;  <span class="keywordflow">if</span> (a-&gt;d) count += a-&gt;d-&gt;get_data().size();</div>
-<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;  <span class="keywordflow">if</span> (a-&gt;s) count += a-&gt;s-&gt;get_data().size();</div>
-<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;  <span class="keywordflow">if</span> (count == 0) <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01342"></a><span class="lineno"> 1342</span>&#160;  ostringstream ost;</div>
-<div class="line"><a name="l01343"></a><span class="lineno"> 1343</span>&#160;  <span class="keywordtype">string</span> str;</div>
-<div class="line"><a name="l01344"></a><span class="lineno"> 1344</span>&#160;</div>
-<div class="line"><a name="l01345"></a><span class="lineno"> 1345</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;================================== Svar report &quot;</span></div>
-<div class="line"><a name="l01346"></a><span class="lineno"> 1346</span>&#160;         <span class="stringliteral">&quot;===============================\n&quot;</span>;</div>
-<div class="line"><a name="l01347"></a><span class="lineno"> 1347</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;NAME                                     VALUE                       &quot;</span></div>
-<div class="line"><a name="l01348"></a><span class="lineno"> 1348</span>&#160;         <span class="stringliteral">&quot;         \n&quot;</span>;</div>
-<div class="line"><a name="l01349"></a><span class="lineno"> 1349</span>&#160;  str = a-&gt;i ? a-&gt;i-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01350"></a><span class="lineno"> 1350</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
-<div class="line"><a name="l01351"></a><span class="lineno"> 1351</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
-<div class="line"><a name="l01352"></a><span class="lineno"> 1352</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
-<div class="line"><a name="l01353"></a><span class="lineno"> 1353</span>&#160;        &lt;&lt; str;</div>
-<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;  str = a-&gt;d ? a-&gt;d-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01355"></a><span class="lineno"> 1355</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
-<div class="line"><a name="l01356"></a><span class="lineno"> 1356</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
-<div class="line"><a name="l01357"></a><span class="lineno"> 1357</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
-<div class="line"><a name="l01358"></a><span class="lineno"> 1358</span>&#160;        &lt;&lt; str;</div>
-<div class="line"><a name="l01359"></a><span class="lineno"> 1359</span>&#160;  str = a-&gt;s ? a-&gt;s-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l01360"></a><span class="lineno"> 1360</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
-<div class="line"><a name="l01361"></a><span class="lineno"> 1361</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
-<div class="line"><a name="l01362"></a><span class="lineno"> 1362</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
-<div class="line"><a name="l01363"></a><span class="lineno"> 1363</span>&#160;        &lt;&lt; str;</div>
-<div class="line"><a name="l01364"></a><span class="lineno"> 1364</span>&#160;  <span class="comment">// if(data.size()){</span></div>
-<div class="line"><a name="l01365"></a><span class="lineno"> 1365</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;---------------------------------------------------------------------&quot;</span></div>
-<div class="line"><a name="l01366"></a><span class="lineno"> 1366</span>&#160;         <span class="stringliteral">&quot;---------\n&quot;</span>;</div>
-<div class="line"><a name="l01367"></a><span class="lineno"> 1367</span>&#160;  <span class="keywordflow">for</span> (SvarIter it = data.begin(); it != data.end(); it++)</div>
-<div class="line"><a name="l01368"></a><span class="lineno"> 1368</span>&#160;    ost &lt;&lt; setw(39) &lt;&lt; setiosflags(ios::left) &lt;&lt; it-&gt;first &lt;&lt; <span class="stringliteral">&quot;  &quot;</span> &lt;&lt; setw(39)</div>
-<div class="line"><a name="l01369"></a><span class="lineno"> 1369</span>&#160;        &lt;&lt; setiosflags(ios::left) &lt;&lt; it-&gt;second &lt;&lt; endl;</div>
-<div class="line"><a name="l01370"></a><span class="lineno"> 1370</span>&#160;  <span class="comment">//}</span></div>
-<div class="line"><a name="l01371"></a><span class="lineno"> 1371</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;=============================== End of Svar report &quot;</span></div>
-<div class="line"><a name="l01372"></a><span class="lineno"> 1372</span>&#160;         <span class="stringliteral">&quot;===========================\n\n&quot;</span>;</div>
-<div class="line"><a name="l01373"></a><span class="lineno"> 1373</span>&#160;</div>
-<div class="line"><a name="l01374"></a><span class="lineno"> 1374</span>&#160;  <span class="keywordflow">return</span> ost.str();</div>
-<div class="line"><a name="l01375"></a><span class="lineno"> 1375</span>&#160;}</div>
-<div class="line"><a name="l01376"></a><span class="lineno"> 1376</span>&#160;</div>
-<div class="line"><a name="l01377"></a><span class="lineno"> 1377</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Svar::dumpAllVars() {</div>
-<div class="line"><a name="l01378"></a><span class="lineno"> 1378</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01379"></a><span class="lineno"> 1379</span>&#160;  cout &lt;&lt; endl &lt;&lt; <a class="code" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">getStatsAsText</a>();</div>
-<div class="line"><a name="l01380"></a><span class="lineno"> 1380</span>&#160;}</div>
-<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;</div>
-<div class="line"><a name="l01382"></a><span class="lineno"> 1382</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> buildInHandle(<span class="keywordtype">void</span>* ptr, std::string command, std::string sParams) {</div>
-<div class="line"><a name="l01383"></a><span class="lineno"> 1383</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01384"></a><span class="lineno"> 1384</span>&#160;  <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;include&quot;</span> || command == <span class="stringliteral">&quot;parse&quot;</span>) {</div>
-<div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
-<div class="line"><a name="l01386"></a><span class="lineno"> 1386</span>&#160;    svar_ptr-&gt;ParseFile(sParams);</div>
-<div class="line"><a name="l01387"></a><span class="lineno"> 1387</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;echo&quot;</span>) {</div>
-<div class="line"><a name="l01388"></a><span class="lineno"> 1388</span>&#160;    cout &lt;&lt; sParams &lt;&lt; endl;</div>
-<div class="line"><a name="l01389"></a><span class="lineno"> 1389</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetString&quot;</span>) {</div>
-<div class="line"><a name="l01390"></a><span class="lineno"> 1390</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
-<div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;    svar_ptr-&gt;insert(sParams, svar_ptr-&gt;GetString(sParams, <span class="stringliteral">&quot;&quot;</span>));</div>
-<div class="line"><a name="l01392"></a><span class="lineno"> 1392</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetInt&quot;</span>) {</div>
-<div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
-<div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;    svar_ptr-&gt;insert(sParams, std::to_string(svar_ptr-&gt;GetInt(sParams, 0)));</div>
-<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetDouble&quot;</span>) {</div>
-<div class="line"><a name="l01396"></a><span class="lineno"> 1396</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
-<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160;    svar_ptr-&gt;insert(sParams, Svar::dtos(svar_ptr-&gt;GetDouble(sParams, 0), 12));</div>
-<div class="line"><a name="l01398"></a><span class="lineno"> 1398</span>&#160;  }</div>
-<div class="line"><a name="l01399"></a><span class="lineno"> 1399</span>&#160;}</div>
-<div class="line"><a name="l01400"></a><span class="lineno"> 1400</span>&#160;</div>
-<div class="line"><a name="l01401"></a><span class="lineno"> 1401</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> systemFunction(<span class="keywordtype">void</span>* ptr, std::string, std::string sParams) {</div>
-<div class="line"><a name="l01402"></a><span class="lineno"> 1402</span>&#160;  Svar* svar_ptr = (Svar*)ptr;</div>
-<div class="line"><a name="l01403"></a><span class="lineno"> 1403</span>&#160;  svar_ptr-&gt;GetInt(<span class="stringliteral">&quot;System.Result&quot;</span>) = system(sParams.c_str());</div>
-<div class="line"><a name="l01404"></a><span class="lineno"> 1404</span>&#160;}</div>
-<div class="line"><a name="l01405"></a><span class="lineno"> 1405</span>&#160;</div>
-<div class="line"><a name="l01406"></a><span class="lineno"> 1406</span>&#160;<span class="keyword">inline</span> Scommand::Scommand(Svar&amp; var) : language(new SvarLanguage(*this, var)) {</div>
-<div class="line"><a name="l01407"></a><span class="lineno"> 1407</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;include&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01408"></a><span class="lineno"> 1408</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;parse&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01409"></a><span class="lineno"> 1409</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;echo&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01410"></a><span class="lineno"> 1410</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetVar&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01411"></a><span class="lineno"> 1411</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetInt&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01412"></a><span class="lineno"> 1412</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetDouble&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01413"></a><span class="lineno"> 1413</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetString&quot;</span>, buildInHandle, &amp;var);</div>
-<div class="line"><a name="l01414"></a><span class="lineno"> 1414</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;system&quot;</span>, systemFunction, &amp;var);</div>
-<div class="line"><a name="l01415"></a><span class="lineno"> 1415</span>&#160;}</div>
-<div class="line"><a name="l01416"></a><span class="lineno"> 1416</span>&#160;</div>
-<div class="line"><a name="l01417"></a><span class="lineno"> 1417</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::RegisterCommand(std::string sCommandName,</div>
-<div class="line"><a name="l01418"></a><span class="lineno"> 1418</span>&#160;                                      <a class="code" href="namespaceGSLAM.html#a1709a3b10db56e4dd7c00c23f3164b50">CallbackProc</a> callback, <span class="keywordtype">void</span>* thisptr) {</div>
-<div class="line"><a name="l01419"></a><span class="lineno"> 1419</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
-<div class="line"><a name="l01420"></a><span class="lineno"> 1420</span>&#160;  calls.push_back(CallbackInfoStruct(callback, thisptr));</div>
-<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160;}</div>
-<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;</div>
-<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(std::string sCommandName) {</div>
-<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
-<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160;  calls.clear();</div>
-<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;}</div>
-<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;</div>
-<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(std::string sCommandName,</div>
-<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;                                        <span class="keywordtype">void</span>* thisptr) {</div>
-<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
-<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = static_cast&lt;int&gt;(calls.size()) - 1; i &gt;= 0; i--)</div>
-<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160;    <span class="keywordflow">if</span> (calls[i].thisptr == thisptr) calls.erase(calls.begin() + i);</div>
-<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;}</div>
-<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160;</div>
-<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(<span class="keywordtype">void</span>* thisptr) {</div>
-<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;  <span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160;  map&lt;string, CallbackVector&gt;&amp; mmCallBackMap = *(data.get_ptr());</div>
-<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160;  <span class="keywordflow">for</span> (map&lt;string, CallbackVector&gt;::iterator i = mmCallBackMap.begin();</div>
-<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160;       i != mmCallBackMap.end(); i++)</div>
-<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;    UnRegisterCommand(i-&gt;first, thisptr);</div>
-<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160;}</div>
-<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;</div>
-<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Scommand::Call(std::string sCommand, std::string sParams) {</div>
-<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;  <span class="keywordflow">if</span> (!data.exist(sCommand)) {</div>
-<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;    <span class="comment">// cerr &lt;&lt; &quot;Can not find command: &quot; &lt;&lt; sCommand &lt;&lt; &quot;\n\n&quot;;</span></div>
-<div class="line"><a name="l01446"></a><span class="lineno"> 1446</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;  }</div>
-<div class="line"><a name="l01448"></a><span class="lineno"> 1448</span>&#160;</div>
-<div class="line"><a name="l01449"></a><span class="lineno"> 1449</span>&#160;  CallbackVector&amp; calls = data[sCommand];</div>
-<div class="line"><a name="l01450"></a><span class="lineno"> 1450</span>&#160;  <span class="keywordflow">for</span> (CallbackVector::iterator it = calls.begin(); it != calls.end(); it++)</div>
-<div class="line"><a name="l01451"></a><span class="lineno"> 1451</span>&#160;    it-&gt;cbp(it-&gt;thisptr, sCommand, sParams);</div>
-<div class="line"><a name="l01452"></a><span class="lineno"> 1452</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01453"></a><span class="lineno"> 1453</span>&#160;}</div>
-<div class="line"><a name="l01454"></a><span class="lineno"> 1454</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l01455"></a><span class="lineno"> 1455</span>&#160;<span class="comment">/** split the command and paraments from a string</span></div>
-<div class="line"><a name="l01456"></a><span class="lineno"> 1456</span>&#160;<span class="comment"> * eg:Call(&quot;shell ls&quot;); equal Call(&quot;shell&quot;,&quot;ls&quot;);</span></div>
-<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l01458"></a><span class="lineno"><a class="line" href="classGSLAM_1_1Scommand.html#a558371811e2898fb9ef11d3fc2a02b82"> 1458</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Scommand::Call(<span class="keyword">const</span> std::string&amp; sCommand) {</div>
-<div class="line"><a name="l01459"></a><span class="lineno"> 1459</span>&#160;  <span class="keywordtype">size_t</span> found = sCommand.find_first_of(<span class="stringliteral">&quot; &quot;</span>);</div>
-<div class="line"><a name="l01460"></a><span class="lineno"> 1460</span>&#160;  <span class="comment">//    cout&lt;&lt;&quot;sCommand=&quot;&lt;&lt;sCommand&lt;&lt;&quot;\nFound=&quot;&lt;&lt;found&lt;&lt;&quot;\nCommand=&quot;&lt;&lt;sCommand.substr(0,found)&lt;&lt;&quot;\nParaments=&quot;&lt;&lt;sCommand.substr(found+1);</span></div>
-<div class="line"><a name="l01461"></a><span class="lineno"> 1461</span>&#160;  <span class="keywordflow">if</span> (found &lt; sCommand.size())</div>
-<div class="line"><a name="l01462"></a><span class="lineno"> 1462</span>&#160;    <span class="keywordflow">return</span> Call(sCommand.substr(0, found), sCommand.substr(found + 1));</div>
-<div class="line"><a name="l01463"></a><span class="lineno"> 1463</span>&#160;  <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01464"></a><span class="lineno"> 1464</span>&#160;    <span class="keywordflow">return</span> Call(sCommand, <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a name="l01465"></a><span class="lineno"> 1465</span>&#160;}</div>
-<div class="line"><a name="l01466"></a><span class="lineno"> 1466</span>&#160;</div>
-<div class="line"><a name="l01467"></a><span class="lineno"> 1467</span>&#160;<span class="keyword">inline</span> <a class="code" href="classGSLAM_1_1Scommand.html">Scommand</a>&amp; Scommand::instance() {</div>
-<div class="line"><a name="l01468"></a><span class="lineno"> 1468</span>&#160;  <span class="keyword">static</span> thread_local std::shared_ptr&lt;Scommand&gt; g_Scommand(<span class="keyword">new</span> <a class="code" href="classGSLAM_1_1Scommand.html">Scommand</a>());</div>
-<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;  <span class="keywordflow">return</span> *g_Scommand;</div>
-<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;}</div>
+<div class="line"><a name="l01024"></a><span class="lineno"> 1024</span>&#160;  <span class="keywordflow">return</span> Get&lt;T&gt;(name,def);</div>
+<div class="line"><a name="l01025"></a><span class="lineno"> 1025</span>&#160;}</div>
+<div class="line"><a name="l01026"></a><span class="lineno"> 1026</span>&#160;</div>
+<div class="line"><a name="l01027"></a><span class="lineno"> 1027</span>&#160;<span class="keyword">inline</span> std::vector&lt;std::string&gt; Svar::ParseMain(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv,</div>
+<div class="line"><a name="l01028"></a><span class="lineno"> 1028</span>&#160;                                                PARSEMODE mode) {</div>
+<div class="line"><a name="l01029"></a><span class="lineno"> 1029</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01030"></a><span class="lineno"> 1030</span>&#160;  <span class="comment">// save main cmd things</span></div>
+<div class="line"><a name="l01031"></a><span class="lineno"> 1031</span>&#160;  GetInt(<span class="stringliteral">&quot;argc&quot;</span>) = argc;</div>
+<div class="line"><a name="l01032"></a><span class="lineno"> 1032</span>&#160;  GetPointer(<span class="stringliteral">&quot;argv&quot;</span>, NULL) = argv;</div>
+<div class="line"><a name="l01033"></a><span class="lineno"> 1033</span>&#160;  <span class="comment">// SvarWithType&lt;char**&gt;::instance()[&quot;argv&quot;] = argv;</span></div>
+<div class="line"><a name="l01034"></a><span class="lineno"> 1034</span>&#160;</div>
+<div class="line"><a name="l01035"></a><span class="lineno"> 1035</span>&#160;  <span class="comment">// parse main cmd</span></div>
+<div class="line"><a name="l01036"></a><span class="lineno"> 1036</span>&#160;  std::vector&lt;std::string&gt; unParsed;</div>
+<div class="line"><a name="l01037"></a><span class="lineno"> 1037</span>&#160;  <span class="keywordtype">int</span> beginIdx = (mode == DEFAULT_CMD1 ? 1 : 2);</div>
+<div class="line"><a name="l01038"></a><span class="lineno"> 1038</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = beginIdx; i &lt; argc; i++) {</div>
+<div class="line"><a name="l01039"></a><span class="lineno"> 1039</span>&#160;    <span class="keywordtype">string</span> str = argv[i];</div>
+<div class="line"><a name="l01040"></a><span class="lineno"> 1040</span>&#160;    <span class="keywordtype">bool</span> foundPrefix = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01041"></a><span class="lineno"> 1041</span>&#160;    <span class="keywordtype">int</span> j = 0;</div>
+<div class="line"><a name="l01042"></a><span class="lineno"> 1042</span>&#160;    <span class="keywordflow">for</span> (; j &lt; 2 &amp;&amp; j &lt; str.size() &amp;&amp; str.at(j) == <span class="charliteral">&#39;-&#39;</span>; j++) foundPrefix = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01043"></a><span class="lineno"> 1043</span>&#160;</div>
+<div class="line"><a name="l01044"></a><span class="lineno"> 1044</span>&#160;    <span class="keywordflow">if</span> (!foundPrefix) {</div>
+<div class="line"><a name="l01045"></a><span class="lineno"> 1045</span>&#160;      <span class="keywordflow">if</span> (!setvar(str)) unParsed.push_back(str);</div>
+<div class="line"><a name="l01046"></a><span class="lineno"> 1046</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01047"></a><span class="lineno"> 1047</span>&#160;    }</div>
+<div class="line"><a name="l01048"></a><span class="lineno"> 1048</span>&#160;</div>
+<div class="line"><a name="l01049"></a><span class="lineno"> 1049</span>&#160;    str = str.substr(j);</div>
+<div class="line"><a name="l01050"></a><span class="lineno"> 1050</span>&#160;    <span class="keywordflow">if</span> (str.find(<span class="charliteral">&#39;=&#39;</span>) != string::npos) {</div>
+<div class="line"><a name="l01051"></a><span class="lineno"> 1051</span>&#160;      setvar(str);</div>
+<div class="line"><a name="l01052"></a><span class="lineno"> 1052</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01053"></a><span class="lineno"> 1053</span>&#160;    }</div>
+<div class="line"><a name="l01054"></a><span class="lineno"> 1054</span>&#160;</div>
+<div class="line"><a name="l01055"></a><span class="lineno"> 1055</span>&#160;    <span class="keywordflow">if</span> (i + 1 &gt;= argc) {</div>
+<div class="line"><a name="l01056"></a><span class="lineno"> 1056</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, <span class="stringliteral">&quot;1&quot;</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l01057"></a><span class="lineno"> 1057</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01058"></a><span class="lineno"> 1058</span>&#160;    }</div>
+<div class="line"><a name="l01059"></a><span class="lineno"> 1059</span>&#160;    <span class="keywordtype">string</span> str2 = argv[i + 1];</div>
+<div class="line"><a name="l01060"></a><span class="lineno"> 1060</span>&#160;    <span class="keywordflow">if</span> (str2.front() == <span class="charliteral">&#39;-&#39;</span>) {</div>
+<div class="line"><a name="l01061"></a><span class="lineno"> 1061</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, <span class="stringliteral">&quot;1&quot;</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l01062"></a><span class="lineno"> 1062</span>&#160;      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01063"></a><span class="lineno"> 1063</span>&#160;    }</div>
+<div class="line"><a name="l01064"></a><span class="lineno"> 1064</span>&#160;</div>
+<div class="line"><a name="l01065"></a><span class="lineno"> 1065</span>&#160;    i++;</div>
+<div class="line"><a name="l01066"></a><span class="lineno"> 1066</span>&#160;    <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(str, argv[i]);</div>
+<div class="line"><a name="l01067"></a><span class="lineno"> 1067</span>&#160;    <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01068"></a><span class="lineno"> 1068</span>&#160;  }</div>
+<div class="line"><a name="l01069"></a><span class="lineno"> 1069</span>&#160;</div>
+<div class="line"><a name="l01070"></a><span class="lineno"> 1070</span>&#160;  <span class="comment">// parse default config file</span></div>
+<div class="line"><a name="l01071"></a><span class="lineno"> 1071</span>&#160;  <span class="keywordtype">string</span> cfg_File = argv[0];</div>
+<div class="line"><a name="l01072"></a><span class="lineno"> 1072</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;argv0&quot;</span>, cfg_File);</div>
+<div class="line"><a name="l01073"></a><span class="lineno"> 1073</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;ProgramPath&quot;</span>, getFolderPath(cfg_File));</div>
+<div class="line"><a name="l01074"></a><span class="lineno"> 1074</span>&#160;  <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(<span class="stringliteral">&quot;ProgramName&quot;</span>, getFileName(cfg_File));</div>
+<div class="line"><a name="l01075"></a><span class="lineno"> 1075</span>&#160;  cfg_File += <span class="stringliteral">&quot;.cfg&quot;</span>;</div>
+<div class="line"><a name="l01076"></a><span class="lineno"> 1076</span>&#160;  ifstream ifs(cfg_File.c_str());</div>
+<div class="line"><a name="l01077"></a><span class="lineno"> 1077</span>&#160;</div>
+<div class="line"><a name="l01078"></a><span class="lineno"> 1078</span>&#160;  <span class="keywordflow">if</span> (!ifs.is_open()) {</div>
+<div class="line"><a name="l01079"></a><span class="lineno"> 1079</span>&#160;    cfg_File = <span class="stringliteral">&quot;./Default.cfg&quot;</span>;</div>
+<div class="line"><a name="l01080"></a><span class="lineno"> 1080</span>&#160;  } <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01081"></a><span class="lineno"> 1081</span>&#160;    ifs.close();</div>
+<div class="line"><a name="l01082"></a><span class="lineno"> 1082</span>&#160;</div>
+<div class="line"><a name="l01083"></a><span class="lineno"> 1083</span>&#160;  cfg_File = GetString(<span class="stringliteral">&quot;conf&quot;</span>, cfg_File);</div>
+<div class="line"><a name="l01084"></a><span class="lineno"> 1084</span>&#160;  <span class="comment">// cout &lt;&lt; &quot;Parsing file: &quot; &lt;&lt; cfg_File &lt;&lt; &quot; ....&quot; &lt;&lt; endl;</span></div>
+<div class="line"><a name="l01085"></a><span class="lineno"> 1085</span>&#160;  <span class="keywordtype">bool</span> ret = ParseFile(cfg_File);</div>
+<div class="line"><a name="l01086"></a><span class="lineno"> 1086</span>&#160;</div>
+<div class="line"><a name="l01087"></a><span class="lineno"> 1087</span>&#160;  <span class="keywordflow">return</span> unParsed;</div>
+<div class="line"><a name="l01088"></a><span class="lineno"> 1088</span>&#160;}</div>
+<div class="line"><a name="l01089"></a><span class="lineno"> 1089</span>&#160;</div>
+<div class="line"><a name="l01090"></a><span class="lineno"> 1090</span>&#160;<span class="keyword">inline</span> std::string Svar::typeName(std::string name) {</div>
+<div class="line"><a name="l01091"></a><span class="lineno"> 1091</span>&#160;  <span class="keyword">static</span> std::map&lt;std::string, std::string&gt; decode = {</div>
+<div class="line"><a name="l01092"></a><span class="lineno"> 1092</span>&#160;      {<span class="keyword">typeid</span>(int32_t).name(), <span class="stringliteral">&quot;int32_t&quot;</span>},</div>
+<div class="line"><a name="l01093"></a><span class="lineno"> 1093</span>&#160;      {<span class="keyword">typeid</span>(int64_t).name(), <span class="stringliteral">&quot;int64_t&quot;</span>},</div>
+<div class="line"><a name="l01094"></a><span class="lineno"> 1094</span>&#160;      {<span class="keyword">typeid</span>(uint32_t).name(), <span class="stringliteral">&quot;uint32_t&quot;</span>},</div>
+<div class="line"><a name="l01095"></a><span class="lineno"> 1095</span>&#160;      {<span class="keyword">typeid</span>(uint64_t).name(), <span class="stringliteral">&quot;uint64_t&quot;</span>},</div>
+<div class="line"><a name="l01096"></a><span class="lineno"> 1096</span>&#160;      {<span class="keyword">typeid</span>(u_char).name(), <span class="stringliteral">&quot;u_char&quot;</span>},</div>
+<div class="line"><a name="l01097"></a><span class="lineno"> 1097</span>&#160;      {<span class="keyword">typeid</span>(char).name(), <span class="stringliteral">&quot;char&quot;</span>},</div>
+<div class="line"><a name="l01098"></a><span class="lineno"> 1098</span>&#160;      {<span class="keyword">typeid</span>(float).name(), <span class="stringliteral">&quot;float&quot;</span>},</div>
+<div class="line"><a name="l01099"></a><span class="lineno"> 1099</span>&#160;      {<span class="keyword">typeid</span>(double).name(), <span class="stringliteral">&quot;double&quot;</span>},</div>
+<div class="line"><a name="l01100"></a><span class="lineno"> 1100</span>&#160;      {<span class="keyword">typeid</span>(std::string).name(), <span class="stringliteral">&quot;string&quot;</span>},</div>
+<div class="line"><a name="l01101"></a><span class="lineno"> 1101</span>&#160;      {<span class="keyword">typeid</span>(bool).name(), <span class="stringliteral">&quot;bool&quot;</span>}};</div>
+<div class="line"><a name="l01102"></a><span class="lineno"> 1102</span>&#160;  <span class="keyword">auto</span> it = decode.find(name);</div>
+<div class="line"><a name="l01103"></a><span class="lineno"> 1103</span>&#160;  <span class="keywordflow">if</span> (it == decode.end())</div>
+<div class="line"><a name="l01104"></a><span class="lineno"> 1104</span>&#160;    <span class="keywordflow">return</span> name;</div>
+<div class="line"><a name="l01105"></a><span class="lineno"> 1105</span>&#160;  <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01106"></a><span class="lineno"> 1106</span>&#160;    <span class="keywordflow">return</span> it-&gt;second;</div>
+<div class="line"><a name="l01107"></a><span class="lineno"> 1107</span>&#160;}</div>
+<div class="line"><a name="l01108"></a><span class="lineno"> 1108</span>&#160;</div>
+<div class="line"><a name="l01109"></a><span class="lineno"> 1109</span>&#160;<span class="keyword">inline</span> std::string Svar::help() {</div>
+<div class="line"><a name="l01110"></a><span class="lineno"> 1110</span>&#160;    std::stringstream sst;</div>
+<div class="line"><a name="l01111"></a><span class="lineno"> 1111</span>&#160;    sst &lt;&lt; GetString(<span class="stringliteral">&quot;Usage&quot;</span>,<span class="stringliteral">&quot;Usage:\n&quot;</span></div>
+<div class="line"><a name="l01112"></a><span class="lineno"> 1112</span>&#160;                     + GetString(<span class="stringliteral">&quot;ProgramName&quot;</span>, <span class="stringliteral">&quot;exe&quot;</span>)</div>
+<div class="line"><a name="l01113"></a><span class="lineno"> 1113</span>&#160;                     + <span class="stringliteral">&quot; [--help] [-conf configure_file]&quot;</span></div>
+<div class="line"><a name="l01114"></a><span class="lineno"> 1114</span>&#160;                       <span class="stringliteral">&quot; [-arg_name arg_value]...\n\n&quot;</span>);</div>
+<div class="line"><a name="l01115"></a><span class="lineno"> 1115</span>&#160;</div>
+<div class="line"><a name="l01116"></a><span class="lineno"> 1116</span>&#160;    <span class="keywordflow">if</span> (!GetString(<span class="stringliteral">&quot;Version&quot;</span>).empty())</div>
+<div class="line"><a name="l01117"></a><span class="lineno"> 1117</span>&#160;        sst &lt;&lt; <span class="stringliteral">&quot;Version: &quot;</span> &lt;&lt; GetString(<span class="stringliteral">&quot;Version&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;, &quot;</span>;</div>
+<div class="line"><a name="l01118"></a><span class="lineno"> 1118</span>&#160;    sst &lt;&lt; <span class="stringliteral">&quot;Using Svar supported argument parsing. The following table listed &quot;</span></div>
+<div class="line"><a name="l01119"></a><span class="lineno"> 1119</span>&#160;           <span class="stringliteral">&quot;several \nargument introductions.\n\n&quot;</span>;</div>
+<div class="line"><a name="l01120"></a><span class="lineno"> 1120</span>&#160;</div>
+<div class="line"><a name="l01121"></a><span class="lineno"> 1121</span>&#160;    Arg&lt;std::string&gt;(<span class="stringliteral">&quot;conf&quot;</span>, <span class="stringliteral">&quot;Default.cfg&quot;</span>,</div>
+<div class="line"><a name="l01122"></a><span class="lineno"> 1122</span>&#160;                     <span class="stringliteral">&quot;The default configure file going to parse.&quot;</span>);</div>
+<div class="line"><a name="l01123"></a><span class="lineno"> 1123</span>&#160;    Arg&lt;bool&gt;(<span class="stringliteral">&quot;help&quot;</span>, <span class="keyword">false</span>, <span class="stringliteral">&quot;Show the help information.&quot;</span>);</div>
+<div class="line"><a name="l01124"></a><span class="lineno"> 1124</span>&#160;    <span class="keywordtype">int</span> namePartWidth = GetInt(<span class="stringliteral">&quot;NamePartWidth&quot;</span>, 16);</div>
+<div class="line"><a name="l01125"></a><span class="lineno"> 1125</span>&#160;    <span class="keywordtype">int</span> statusPartWidth = GetInt(<span class="stringliteral">&quot;StatusPartWidth&quot;</span>, 30);</div>
+<div class="line"><a name="l01126"></a><span class="lineno"> 1126</span>&#160;    <span class="keywordtype">int</span> introPartWidth = GetInt(<span class="stringliteral">&quot;IntroPartWidth&quot;</span>, 40);</div>
+<div class="line"><a name="l01127"></a><span class="lineno"> 1127</span>&#160;    <span class="keyword">auto</span>&amp; inst = *(a-&gt;args);</div>
+<div class="line"><a name="l01128"></a><span class="lineno"> 1128</span>&#160;    sst &lt;&lt; std::setw(namePartWidth + 1) &lt;&lt; std::setiosflags(std::ios::left)</div>
+<div class="line"><a name="l01129"></a><span class="lineno"> 1129</span>&#160;        &lt;&lt; <span class="stringliteral">&quot;argument&quot;</span> &lt;&lt; std::setw(statusPartWidth + 1) &lt;&lt; <span class="stringliteral">&quot;type(default-&gt;setted)&quot;</span></div>
+<div class="line"><a name="l01130"></a><span class="lineno"> 1130</span>&#160;        &lt;&lt; std::setiosflags(std::ios::left) &lt;&lt; <span class="stringliteral">&quot;introduction&quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l01131"></a><span class="lineno"> 1131</span>&#160;    sst &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
+<div class="line"><a name="l01132"></a><span class="lineno"> 1132</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span>;</div>
+<div class="line"><a name="l01133"></a><span class="lineno"> 1133</span>&#160;    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; it : inst.get_data()) {</div>
+<div class="line"><a name="l01134"></a><span class="lineno"> 1134</span>&#160;        ArgumentInfo info = it.second;</div>
+<div class="line"><a name="l01135"></a><span class="lineno"> 1135</span>&#160;        std::string setted = getvar(it.first);</div>
+<div class="line"><a name="l01136"></a><span class="lineno"> 1136</span>&#160;        <span class="keywordflow">if</span> (setted != info.def)</div>
+<div class="line"><a name="l01137"></a><span class="lineno"> 1137</span>&#160;            setted = <span class="stringliteral">&quot;-&gt;&quot;</span> + setted;</div>
+<div class="line"><a name="l01138"></a><span class="lineno"> 1138</span>&#160;        <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01139"></a><span class="lineno"> 1139</span>&#160;            setted.clear();</div>
+<div class="line"><a name="l01140"></a><span class="lineno"> 1140</span>&#160;        std::string name = <span class="stringliteral">&quot;-&quot;</span> + it.first;</div>
+<div class="line"><a name="l01141"></a><span class="lineno"> 1141</span>&#160;        std::string status = typeName(info.type) + <span class="stringliteral">&quot;(&quot;</span> + info.def + setted + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l01142"></a><span class="lineno"> 1142</span>&#160;        std::string intro = info.introduction;</div>
+<div class="line"><a name="l01143"></a><span class="lineno"> 1143</span>&#160;</div>
+<div class="line"><a name="l01144"></a><span class="lineno"> 1144</span>&#160;        <span class="keywordflow">for</span> (; name.size() || status.size() || intro.size();) {</div>
+<div class="line"><a name="l01145"></a><span class="lineno"> 1145</span>&#160;            sst &lt;&lt; std::setw(namePartWidth) &lt;&lt; name.substr(0, namePartWidth) &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;                &lt;&lt; std::setw(statusPartWidth) &lt;&lt; status.substr(0, statusPartWidth)</div>
+<div class="line"><a name="l01147"></a><span class="lineno"> 1147</span>&#160;                &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; std::setw(introPartWidth) &lt;&lt; intro.substr(0, introPartWidth)</div>
+<div class="line"><a name="l01148"></a><span class="lineno"> 1148</span>&#160;                &lt;&lt; std::endl;</div>
+<div class="line"><a name="l01149"></a><span class="lineno"> 1149</span>&#160;            name = namePartWidth &lt; name.size() ? name.substr(namePartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;            status =</div>
+<div class="line"><a name="l01151"></a><span class="lineno"> 1151</span>&#160;                    statusPartWidth &lt; status.size() ? status.substr(statusPartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01152"></a><span class="lineno"> 1152</span>&#160;            intro = introPartWidth &lt; intro.size() ? intro.substr(introPartWidth) : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01153"></a><span class="lineno"> 1153</span>&#160;        }</div>
+<div class="line"><a name="l01154"></a><span class="lineno"> 1154</span>&#160;    }</div>
+<div class="line"><a name="l01155"></a><span class="lineno"> 1155</span>&#160;    <span class="keywordflow">return</span> sst.str();</div>
+<div class="line"><a name="l01156"></a><span class="lineno"> 1156</span>&#160;}</div>
+<div class="line"><a name="l01157"></a><span class="lineno"> 1157</span>&#160;</div>
+<div class="line"><a name="l01158"></a><span class="lineno"> 1158</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">int</span>&amp; Svar::GetInt(<span class="keyword">const</span> std::string&amp; name, <span class="keywordtype">int</span> def, SVARMODE mode) {</div>
+<div class="line"><a name="l01159"></a><span class="lineno"> 1159</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01160"></a><span class="lineno"> 1160</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;i)</div>
+<div class="line"><a name="l01161"></a><span class="lineno"> 1161</span>&#160;    a-&gt;i = std::shared_ptr&lt;SvarWithType&lt;int&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;int&gt;());</div>
+<div class="line"><a name="l01162"></a><span class="lineno"> 1162</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
+<div class="line"><a name="l01163"></a><span class="lineno"> 1163</span>&#160;  SvarWithType&lt;int&gt;&amp; typed_map = *(a-&gt;i);</div>
+<div class="line"><a name="l01164"></a><span class="lineno"> 1164</span>&#160;</div>
+<div class="line"><a name="l01165"></a><span class="lineno"> 1165</span>&#160;  <span class="keywordtype">int</span>* ptr = typed_map.get_ptr(name);</div>
+<div class="line"><a name="l01166"></a><span class="lineno"> 1166</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01167"></a><span class="lineno"> 1167</span>&#160;</div>
+<div class="line"><a name="l01168"></a><span class="lineno"> 1168</span>&#160;  <span class="keywordtype">bool</span> exist = data-&gt;exist(name);</div>
+<div class="line"><a name="l01169"></a><span class="lineno"> 1169</span>&#160;  <span class="keywordtype">char</span>* envStr = NULL;</div>
+<div class="line"><a name="l01170"></a><span class="lineno"> 1170</span>&#160;  <span class="keywordflow">if</span> (!exist) envStr = getenv(name.c_str());</div>
+<div class="line"><a name="l01171"></a><span class="lineno"> 1171</span>&#160;  <span class="keywordflow">if</span> (exist || envStr)  <span class="comment">// Second: Use the var from Svar</span></div>
+<div class="line"><a name="l01172"></a><span class="lineno"> 1172</span>&#160;  {</div>
+<div class="line"><a name="l01173"></a><span class="lineno"> 1173</span>&#160;    <span class="keywordtype">string</span> str_var = envStr ? envStr : data-&gt;get_var(name, <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l01174"></a><span class="lineno"> 1174</span>&#160;    istringstream istr_var(str_var);</div>
+<div class="line"><a name="l01175"></a><span class="lineno"> 1175</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l01176"></a><span class="lineno"> 1176</span>&#160;      istr_var &gt;&gt; def;</div>
+<div class="line"><a name="l01177"></a><span class="lineno"> 1177</span>&#160;    } <span class="keywordflow">catch</span> (std::exception e) {</div>
+<div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160;      cerr &lt;&lt; <span class="stringliteral">&quot;Failed to read value from &quot;</span> &lt;&lt; str_var &lt;&lt; endl;</div>
+<div class="line"><a name="l01179"></a><span class="lineno"> 1179</span>&#160;    }</div>
+<div class="line"><a name="l01180"></a><span class="lineno"> 1180</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01181"></a><span class="lineno"> 1181</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
+<div class="line"><a name="l01182"></a><span class="lineno"> 1182</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01183"></a><span class="lineno"> 1183</span>&#160;    }</div>
+<div class="line"><a name="l01184"></a><span class="lineno"> 1184</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01185"></a><span class="lineno"> 1185</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
+<div class="line"><a name="l01186"></a><span class="lineno"> 1186</span>&#160;          <span class="comment">// SvarWithType</span></div>
+<div class="line"><a name="l01187"></a><span class="lineno"> 1187</span>&#160;  {</div>
+<div class="line"><a name="l01188"></a><span class="lineno"> 1188</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01189"></a><span class="lineno"> 1189</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
+<div class="line"><a name="l01190"></a><span class="lineno"> 1190</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01191"></a><span class="lineno"> 1191</span>&#160;    }</div>
+<div class="line"><a name="l01192"></a><span class="lineno"> 1192</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, std::to_string(def));</div>
+<div class="line"><a name="l01193"></a><span class="lineno"> 1193</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01194"></a><span class="lineno"> 1194</span>&#160;  }</div>
+<div class="line"><a name="l01195"></a><span class="lineno"> 1195</span>&#160;}</div>
+<div class="line"><a name="l01196"></a><span class="lineno"> 1196</span>&#160;</div>
+<div class="line"><a name="l01197"></a><span class="lineno"> 1197</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">double</span>&amp; Svar::GetDouble(<span class="keyword">const</span> std::string&amp; name, <span class="keywordtype">double</span> def,</div>
+<div class="line"><a name="l01198"></a><span class="lineno"> 1198</span>&#160;                               SVARMODE mode) {</div>
+<div class="line"><a name="l01199"></a><span class="lineno"> 1199</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01200"></a><span class="lineno"> 1200</span>&#160;</div>
+<div class="line"><a name="l01201"></a><span class="lineno"> 1201</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;d)</div>
+<div class="line"><a name="l01202"></a><span class="lineno"> 1202</span>&#160;    a-&gt;d = std::shared_ptr&lt;SvarWithType&lt;double&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;double&gt;());</div>
+<div class="line"><a name="l01203"></a><span class="lineno"> 1203</span>&#160;</div>
+<div class="line"><a name="l01204"></a><span class="lineno"> 1204</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
+<div class="line"><a name="l01205"></a><span class="lineno"> 1205</span>&#160;  SvarWithType&lt;double&gt;&amp; typed_map = *(a-&gt;d);</div>
+<div class="line"><a name="l01206"></a><span class="lineno"> 1206</span>&#160;</div>
+<div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;  <span class="keywordtype">double</span>* ptr = typed_map.get_ptr(name);</div>
+<div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01209"></a><span class="lineno"> 1209</span>&#160;</div>
+<div class="line"><a name="l01210"></a><span class="lineno"> 1210</span>&#160;  <span class="keywordtype">bool</span> exist = data-&gt;exist(name);</div>
+<div class="line"><a name="l01211"></a><span class="lineno"> 1211</span>&#160;  <span class="keywordtype">char</span>* envStr = NULL;</div>
+<div class="line"><a name="l01212"></a><span class="lineno"> 1212</span>&#160;  <span class="keywordflow">if</span> (!exist) envStr = getenv(name.c_str());</div>
+<div class="line"><a name="l01213"></a><span class="lineno"> 1213</span>&#160;  <span class="keywordflow">if</span> (exist || envStr)  <span class="comment">// Second: Use the var from Svar</span></div>
+<div class="line"><a name="l01214"></a><span class="lineno"> 1214</span>&#160;  {</div>
+<div class="line"><a name="l01215"></a><span class="lineno"> 1215</span>&#160;    <span class="keywordtype">string</span> str_var = envStr ? envStr : data-&gt;get_var(name, <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l01216"></a><span class="lineno"> 1216</span>&#160;    istringstream istr_var(str_var);</div>
+<div class="line"><a name="l01217"></a><span class="lineno"> 1217</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l01218"></a><span class="lineno"> 1218</span>&#160;      istr_var &gt;&gt; def;</div>
+<div class="line"><a name="l01219"></a><span class="lineno"> 1219</span>&#160;    } <span class="keywordflow">catch</span> (std::exception e) {</div>
+<div class="line"><a name="l01220"></a><span class="lineno"> 1220</span>&#160;      cerr &lt;&lt; <span class="stringliteral">&quot;Failed to read value from &quot;</span> &lt;&lt; str_var &lt;&lt; endl;</div>
+<div class="line"><a name="l01221"></a><span class="lineno"> 1221</span>&#160;    }</div>
+<div class="line"><a name="l01222"></a><span class="lineno"> 1222</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01223"></a><span class="lineno"> 1223</span>&#160;      ptr = (typed_map.get_ptr(name, def));</div>
+<div class="line"><a name="l01224"></a><span class="lineno"> 1224</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01225"></a><span class="lineno"> 1225</span>&#160;    }</div>
+<div class="line"><a name="l01226"></a><span class="lineno"> 1226</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01227"></a><span class="lineno"> 1227</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
+<div class="line"><a name="l01228"></a><span class="lineno"> 1228</span>&#160;          <span class="comment">// SvarWithType</span></div>
+<div class="line"><a name="l01229"></a><span class="lineno"> 1229</span>&#160;  {</div>
+<div class="line"><a name="l01230"></a><span class="lineno"> 1230</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01231"></a><span class="lineno"> 1231</span>&#160;      ptr = typed_map.get_ptr(name, def);</div>
+<div class="line"><a name="l01232"></a><span class="lineno"> 1232</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01233"></a><span class="lineno"> 1233</span>&#160;    }</div>
+<div class="line"><a name="l01234"></a><span class="lineno"> 1234</span>&#160;</div>
+<div class="line"><a name="l01235"></a><span class="lineno"> 1235</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, dtos(def, 12));</div>
+<div class="line"><a name="l01236"></a><span class="lineno"> 1236</span>&#160;</div>
+<div class="line"><a name="l01237"></a><span class="lineno"> 1237</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01238"></a><span class="lineno"> 1238</span>&#160;  }</div>
+<div class="line"><a name="l01239"></a><span class="lineno"> 1239</span>&#160;}</div>
+<div class="line"><a name="l01240"></a><span class="lineno"> 1240</span>&#160;</div>
+<div class="line"><a name="l01241"></a><span class="lineno"> 1241</span>&#160;<span class="keyword">inline</span> std::string&amp; Svar::GetString(<span class="keyword">const</span> std::string&amp; name,</div>
+<div class="line"><a name="l01242"></a><span class="lineno"> 1242</span>&#160;                                    <span class="keyword">const</span> std::string&amp; def, SVARMODE mode) {</div>
+<div class="line"><a name="l01243"></a><span class="lineno"> 1243</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01244"></a><span class="lineno"> 1244</span>&#160;</div>
+<div class="line"><a name="l01245"></a><span class="lineno"> 1245</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;s)</div>
+<div class="line"><a name="l01246"></a><span class="lineno"> 1246</span>&#160;    a-&gt;s = std::shared_ptr&lt;SvarWithType&lt;string&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;string&gt;());</div>
+<div class="line"><a name="l01247"></a><span class="lineno"> 1247</span>&#160;  <span class="comment">// First: Use the var from SvarWithType, this is a fast operation</span></div>
+<div class="line"><a name="l01248"></a><span class="lineno"> 1248</span>&#160;  SvarWithType&lt;string&gt;&amp; typed_map = *(a-&gt;s);</div>
+<div class="line"><a name="l01249"></a><span class="lineno"> 1249</span>&#160;</div>
+<div class="line"><a name="l01250"></a><span class="lineno"> 1250</span>&#160;  <span class="keywordtype">string</span>* ptr = typed_map.get_ptr(name);</div>
+<div class="line"><a name="l01251"></a><span class="lineno"> 1251</span>&#160;  <span class="keywordflow">if</span> (ptr) <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01252"></a><span class="lineno"> 1252</span>&#160;</div>
+<div class="line"><a name="l01253"></a><span class="lineno"> 1253</span>&#160;  <span class="keywordflow">if</span> (data-&gt;exist(name))  <span class="comment">// Second: Use the var from Svar</span></div>
+<div class="line"><a name="l01254"></a><span class="lineno"> 1254</span>&#160;  {</div>
+<div class="line"><a name="l01255"></a><span class="lineno"> 1255</span>&#160;    <span class="keywordtype">string</span> _def = data-&gt;get_var(name, def);</div>
+<div class="line"><a name="l01256"></a><span class="lineno"> 1256</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01257"></a><span class="lineno"> 1257</span>&#160;      ptr = (typed_map.get_ptr(name, _def));</div>
+<div class="line"><a name="l01258"></a><span class="lineno"> 1258</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01259"></a><span class="lineno"> 1259</span>&#160;    }</div>
+<div class="line"><a name="l01260"></a><span class="lineno"> 1260</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01261"></a><span class="lineno"> 1261</span>&#160;  } <span class="keywordflow">else</span>  <span class="comment">// Third:Both did not get the var need,insert defaut var to</span></div>
+<div class="line"><a name="l01262"></a><span class="lineno"> 1262</span>&#160;          <span class="comment">// SvarWithType</span></div>
+<div class="line"><a name="l01263"></a><span class="lineno"> 1263</span>&#160;  {</div>
+<div class="line"><a name="l01264"></a><span class="lineno"> 1264</span>&#160;    <span class="keywordtype">string</span> _def = def;</div>
+<div class="line"><a name="l01265"></a><span class="lineno"> 1265</span>&#160;    <span class="keywordflow">if</span> (<span class="keywordtype">char</span>* ptr = getenv(name.c_str())) _def = ptr;</div>
+<div class="line"><a name="l01266"></a><span class="lineno"> 1266</span>&#160;    <span class="keywordflow">while</span> (!ptr) {</div>
+<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;      ptr = (typed_map.get_ptr(name, _def));</div>
+<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160;      <span class="keywordflow">if</span> (ptr) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;    }</div>
+<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;</div>
+<div class="line"><a name="l01271"></a><span class="lineno"> 1271</span>&#160;    <span class="keywordflow">if</span> (mode &amp; UPDATE) <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, def);</div>
+<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;</div>
+<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;    <span class="keywordflow">return</span> *ptr;</div>
+<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;  }</div>
+<div class="line"><a name="l01275"></a><span class="lineno"> 1275</span>&#160;}</div>
+<div class="line"><a name="l01276"></a><span class="lineno"> 1276</span>&#160;</div>
+<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span>*&amp; Svar::GetPointer(<span class="keyword">const</span> std::string&amp; name, <span class="keyword">const</span> <span class="keywordtype">void</span>* ptr,</div>
+<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;                               SVARMODE mode) {</div>
+<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160;  <span class="keywordflow">if</span> (!a-&gt;p)</div>
+<div class="line"><a name="l01280"></a><span class="lineno"> 1280</span>&#160;    a-&gt;p = std::shared_ptr&lt;SvarWithType&lt;void*&gt; &gt;(<span class="keyword">new</span> SvarWithType&lt;void*&gt;());</div>
+<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160;  <span class="keywordflow">return</span> *(a-&gt;p-&gt;get_ptr(name, (<span class="keywordtype">void</span>*)ptr));</div>
+<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160;}</div>
+<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;</div>
+<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Svar::update() {</div>
+<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160;  <span class="comment">// from i</span></div>
+<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;  <span class="keywordflow">if</span> (a-&gt;i) {</div>
+<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;    SvarWithType&lt;int&gt;::DataMap data_i = a-&gt;i-&gt;get_data();</div>
+<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;int&gt;::DataIter it = data_i.begin(); it != data_i.end();</div>
+<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;         it++) {</div>
+<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
+<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, std::to_string(it-&gt;second), <span class="keyword">true</span>);</div>
+<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;    }</div>
+<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;  }</div>
+<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160;</div>
+<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160;  <span class="comment">// from d</span></div>
+<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160;  <span class="keywordflow">if</span> (a-&gt;d) {</div>
+<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;    SvarWithType&lt;double&gt;::DataMap data_d = a-&gt;d-&gt;get_data();</div>
+<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;double&gt;::DataIter it = data_d.begin(); it != data_d.end();</div>
+<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160;         it++) {</div>
+<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
+<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, Svar::dtos(it-&gt;second, 12));</div>
+<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;    }</div>
+<div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160;  }</div>
+<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160;</div>
+<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;  <span class="comment">// from s</span></div>
+<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;  <span class="keywordflow">if</span> (a-&gt;s) {</div>
+<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160;    SvarWithType&lt;string&gt;::DataMap data_s = a-&gt;s-&gt;get_data();</div>
+<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;    <span class="keywordflow">for</span> (SvarWithType&lt;string&gt;::DataIter it = data_s.begin(); it != data_s.end();</div>
+<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160;         it++) {</div>
+<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160;      <span class="keyword">const</span> <span class="keywordtype">string</span>&amp; name = it-&gt;first;</div>
+<div class="line"><a name="l01314"></a><span class="lineno"> 1314</span>&#160;      <span class="keywordflow">if</span> (!exist(name)) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160;      <a class="code" href="classGSLAM_1_1Svar.html#a2f60e7d932a2b4df4f7060ed51256c32">insert</a>(name, it-&gt;second);</div>
+<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;    }</div>
+<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;  }</div>
+<div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160;}</div>
+<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;</div>
+<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Svar::save2file(std::string filename) {</div>
+<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160;  <span class="keywordflow">if</span> (filename.size() == 0) filename = GetString(<span class="stringliteral">&quot;Config_File&quot;</span>, <span class="stringliteral">&quot;Default.cfg&quot;</span>);</div>
+<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;  ofstream ofs(filename.c_str());</div>
+<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;  <span class="keywordflow">if</span> (!ofs.is_open()) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;</div>
+<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160;  SvarMap data_copy;</div>
+<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;  { data_copy = data-&gt;get_data(); }</div>
+<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;  <span class="keywordflow">for</span> (SvarIter it = data_copy.begin(); it != data_copy.end(); it++) {</div>
+<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;    ofs &lt;&lt; it-&gt;first &lt;&lt; <span class="stringliteral">&quot; = &quot;</span> &lt;&lt; it-&gt;second &lt;&lt; endl;</div>
+<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;  }</div>
+<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;}</div>
+<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;</div>
+<div class="line"><a name="l01334"></a><span class="lineno"><a class="line" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04"> 1334</a></span>&#160;<span class="keyword">inline</span> std::string <a class="code" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">Svar::getStatsAsText</a>() {</div>
+<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;  SvarMap data = this-&gt;data-&gt;get_data();</div>
+<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;</div>
+<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;  <span class="keywordtype">int</span> count = data.size();</div>
+<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;  <span class="keywordflow">if</span> (a-&gt;i) count += a-&gt;i-&gt;get_data().size();</div>
+<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;  <span class="keywordflow">if</span> (a-&gt;d) count += a-&gt;d-&gt;get_data().size();</div>
+<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;  <span class="keywordflow">if</span> (a-&gt;s) count += a-&gt;s-&gt;get_data().size();</div>
+<div class="line"><a name="l01342"></a><span class="lineno"> 1342</span>&#160;  <span class="keywordflow">if</span> (count == 0) <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01343"></a><span class="lineno"> 1343</span>&#160;  ostringstream ost;</div>
+<div class="line"><a name="l01344"></a><span class="lineno"> 1344</span>&#160;  <span class="keywordtype">string</span> str;</div>
+<div class="line"><a name="l01345"></a><span class="lineno"> 1345</span>&#160;</div>
+<div class="line"><a name="l01346"></a><span class="lineno"> 1346</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;================================== Svar report &quot;</span></div>
+<div class="line"><a name="l01347"></a><span class="lineno"> 1347</span>&#160;         <span class="stringliteral">&quot;===============================\n&quot;</span>;</div>
+<div class="line"><a name="l01348"></a><span class="lineno"> 1348</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;NAME                                     VALUE                       &quot;</span></div>
+<div class="line"><a name="l01349"></a><span class="lineno"> 1349</span>&#160;         <span class="stringliteral">&quot;         \n&quot;</span>;</div>
+<div class="line"><a name="l01350"></a><span class="lineno"> 1350</span>&#160;  str = a-&gt;i ? a-&gt;i-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01351"></a><span class="lineno"> 1351</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l01352"></a><span class="lineno"> 1352</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
+<div class="line"><a name="l01353"></a><span class="lineno"> 1353</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
+<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;        &lt;&lt; str;</div>
+<div class="line"><a name="l01355"></a><span class="lineno"> 1355</span>&#160;  str = a-&gt;d ? a-&gt;d-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01356"></a><span class="lineno"> 1356</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l01357"></a><span class="lineno"> 1357</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
+<div class="line"><a name="l01358"></a><span class="lineno"> 1358</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
+<div class="line"><a name="l01359"></a><span class="lineno"> 1359</span>&#160;        &lt;&lt; str;</div>
+<div class="line"><a name="l01360"></a><span class="lineno"> 1360</span>&#160;  str = a-&gt;s ? a-&gt;s-&gt;getStatsAsText() : <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l01361"></a><span class="lineno"> 1361</span>&#160;  <span class="keywordflow">if</span> (str != <span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l01362"></a><span class="lineno"> 1362</span>&#160;    ost &lt;&lt; <span class="stringliteral">&quot;-------------------------------------------------------------------&quot;</span></div>
+<div class="line"><a name="l01363"></a><span class="lineno"> 1363</span>&#160;           <span class="stringliteral">&quot;-----------\n&quot;</span></div>
+<div class="line"><a name="l01364"></a><span class="lineno"> 1364</span>&#160;        &lt;&lt; str;</div>
+<div class="line"><a name="l01365"></a><span class="lineno"> 1365</span>&#160;  <span class="comment">// if(data.size()){</span></div>
+<div class="line"><a name="l01366"></a><span class="lineno"> 1366</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;---------------------------------------------------------------------&quot;</span></div>
+<div class="line"><a name="l01367"></a><span class="lineno"> 1367</span>&#160;         <span class="stringliteral">&quot;---------\n&quot;</span>;</div>
+<div class="line"><a name="l01368"></a><span class="lineno"> 1368</span>&#160;  <span class="keywordflow">for</span> (SvarIter it = data.begin(); it != data.end(); it++)</div>
+<div class="line"><a name="l01369"></a><span class="lineno"> 1369</span>&#160;    ost &lt;&lt; setw(39) &lt;&lt; setiosflags(ios::left) &lt;&lt; it-&gt;first &lt;&lt; <span class="stringliteral">&quot;  &quot;</span> &lt;&lt; setw(39)</div>
+<div class="line"><a name="l01370"></a><span class="lineno"> 1370</span>&#160;        &lt;&lt; setiosflags(ios::left) &lt;&lt; it-&gt;second &lt;&lt; endl;</div>
+<div class="line"><a name="l01371"></a><span class="lineno"> 1371</span>&#160;  <span class="comment">//}</span></div>
+<div class="line"><a name="l01372"></a><span class="lineno"> 1372</span>&#160;  ost &lt;&lt; <span class="stringliteral">&quot;=============================== End of Svar report &quot;</span></div>
+<div class="line"><a name="l01373"></a><span class="lineno"> 1373</span>&#160;         <span class="stringliteral">&quot;===========================\n\n&quot;</span>;</div>
+<div class="line"><a name="l01374"></a><span class="lineno"> 1374</span>&#160;</div>
+<div class="line"><a name="l01375"></a><span class="lineno"> 1375</span>&#160;  <span class="keywordflow">return</span> ost.str();</div>
+<div class="line"><a name="l01376"></a><span class="lineno"> 1376</span>&#160;}</div>
+<div class="line"><a name="l01377"></a><span class="lineno"> 1377</span>&#160;</div>
+<div class="line"><a name="l01378"></a><span class="lineno"> 1378</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Svar::dumpAllVars() {</div>
+<div class="line"><a name="l01379"></a><span class="lineno"> 1379</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01380"></a><span class="lineno"> 1380</span>&#160;  cout &lt;&lt; endl &lt;&lt; <a class="code" href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">getStatsAsText</a>();</div>
+<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;}</div>
+<div class="line"><a name="l01382"></a><span class="lineno"> 1382</span>&#160;</div>
+<div class="line"><a name="l01383"></a><span class="lineno"> 1383</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> buildInHandle(<span class="keywordtype">void</span>* ptr, std::string command, std::string sParams) {</div>
+<div class="line"><a name="l01384"></a><span class="lineno"> 1384</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;  <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;include&quot;</span> || command == <span class="stringliteral">&quot;parse&quot;</span>) {</div>
+<div class="line"><a name="l01386"></a><span class="lineno"> 1386</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
+<div class="line"><a name="l01387"></a><span class="lineno"> 1387</span>&#160;    svar_ptr-&gt;ParseFile(sParams);</div>
+<div class="line"><a name="l01388"></a><span class="lineno"> 1388</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;echo&quot;</span>) {</div>
+<div class="line"><a name="l01389"></a><span class="lineno"> 1389</span>&#160;    cout &lt;&lt; sParams &lt;&lt; endl;</div>
+<div class="line"><a name="l01390"></a><span class="lineno"> 1390</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetString&quot;</span>) {</div>
+<div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
+<div class="line"><a name="l01392"></a><span class="lineno"> 1392</span>&#160;    svar_ptr-&gt;insert(sParams, svar_ptr-&gt;GetString(sParams, <span class="stringliteral">&quot;&quot;</span>));</div>
+<div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetInt&quot;</span>) {</div>
+<div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
+<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;    svar_ptr-&gt;insert(sParams, std::to_string(svar_ptr-&gt;GetInt(sParams, 0)));</div>
+<div class="line"><a name="l01396"></a><span class="lineno"> 1396</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (command == <span class="stringliteral">&quot;GetDouble&quot;</span>) {</div>
+<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160;    Svar* svar_ptr = (Svar*)ptr;</div>
+<div class="line"><a name="l01398"></a><span class="lineno"> 1398</span>&#160;    svar_ptr-&gt;insert(sParams, Svar::dtos(svar_ptr-&gt;GetDouble(sParams, 0), 12));</div>
+<div class="line"><a name="l01399"></a><span class="lineno"> 1399</span>&#160;  }</div>
+<div class="line"><a name="l01400"></a><span class="lineno"> 1400</span>&#160;}</div>
+<div class="line"><a name="l01401"></a><span class="lineno"> 1401</span>&#160;</div>
+<div class="line"><a name="l01402"></a><span class="lineno"> 1402</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> systemFunction(<span class="keywordtype">void</span>* ptr, std::string, std::string sParams) {</div>
+<div class="line"><a name="l01403"></a><span class="lineno"> 1403</span>&#160;  Svar* svar_ptr = (Svar*)ptr;</div>
+<div class="line"><a name="l01404"></a><span class="lineno"> 1404</span>&#160;  svar_ptr-&gt;GetInt(<span class="stringliteral">&quot;System.Result&quot;</span>) = system(sParams.c_str());</div>
+<div class="line"><a name="l01405"></a><span class="lineno"> 1405</span>&#160;}</div>
+<div class="line"><a name="l01406"></a><span class="lineno"> 1406</span>&#160;</div>
+<div class="line"><a name="l01407"></a><span class="lineno"> 1407</span>&#160;<span class="keyword">inline</span> Scommand::Scommand(Svar&amp; var) : language(new SvarLanguage(*this, var)) {</div>
+<div class="line"><a name="l01408"></a><span class="lineno"> 1408</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;include&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01409"></a><span class="lineno"> 1409</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;parse&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01410"></a><span class="lineno"> 1410</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;echo&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01411"></a><span class="lineno"> 1411</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetVar&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01412"></a><span class="lineno"> 1412</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetInt&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01413"></a><span class="lineno"> 1413</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetDouble&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01414"></a><span class="lineno"> 1414</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;GetString&quot;</span>, buildInHandle, &amp;var);</div>
+<div class="line"><a name="l01415"></a><span class="lineno"> 1415</span>&#160;  RegisterCommand(<span class="stringliteral">&quot;system&quot;</span>, systemFunction, &amp;var);</div>
+<div class="line"><a name="l01416"></a><span class="lineno"> 1416</span>&#160;}</div>
+<div class="line"><a name="l01417"></a><span class="lineno"> 1417</span>&#160;</div>
+<div class="line"><a name="l01418"></a><span class="lineno"> 1418</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::RegisterCommand(std::string sCommandName,</div>
+<div class="line"><a name="l01419"></a><span class="lineno"> 1419</span>&#160;                                      <a class="code" href="namespaceGSLAM.html#a1709a3b10db56e4dd7c00c23f3164b50">CallbackProc</a> callback, <span class="keywordtype">void</span>* thisptr) {</div>
+<div class="line"><a name="l01420"></a><span class="lineno"> 1420</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
+<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160;  calls.push_back(CallbackInfoStruct(callback, thisptr));</div>
+<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;}</div>
+<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;</div>
+<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(std::string sCommandName) {</div>
+<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
+<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;  calls.clear();</div>
+<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;}</div>
+<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;</div>
+<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(std::string sCommandName,</div>
+<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160;                                        <span class="keywordtype">void</span>* thisptr) {</div>
+<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;  CallbackVector&amp; calls = data[sCommandName];</div>
+<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = static_cast&lt;int&gt;(calls.size()) - 1; i &gt;= 0; i--)</div>
+<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;    <span class="keywordflow">if</span> (calls[i].thisptr == thisptr) calls.erase(calls.begin() + i);</div>
+<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160;}</div>
+<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;</div>
+<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">void</span> Scommand::UnRegisterCommand(<span class="keywordtype">void</span>* thisptr) {</div>
+<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160;  <span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160;  map&lt;string, CallbackVector&gt;&amp; mmCallBackMap = *(data.get_ptr());</div>
+<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160;  <span class="keywordflow">for</span> (map&lt;string, CallbackVector&gt;::iterator i = mmCallBackMap.begin();</div>
+<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;       i != mmCallBackMap.end(); i++)</div>
+<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160;    UnRegisterCommand(i-&gt;first, thisptr);</div>
+<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;}</div>
+<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160;</div>
+<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Scommand::Call(std::string sCommand, std::string sParams) {</div>
+<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;  <span class="keywordflow">if</span> (!data.exist(sCommand)) {</div>
+<div class="line"><a name="l01446"></a><span class="lineno"> 1446</span>&#160;    <span class="comment">// cerr &lt;&lt; &quot;Can not find command: &quot; &lt;&lt; sCommand &lt;&lt; &quot;\n\n&quot;;</span></div>
+<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01448"></a><span class="lineno"> 1448</span>&#160;  }</div>
+<div class="line"><a name="l01449"></a><span class="lineno"> 1449</span>&#160;</div>
+<div class="line"><a name="l01450"></a><span class="lineno"> 1450</span>&#160;  CallbackVector&amp; calls = data[sCommand];</div>
+<div class="line"><a name="l01451"></a><span class="lineno"> 1451</span>&#160;  <span class="keywordflow">for</span> (CallbackVector::iterator it = calls.begin(); it != calls.end(); it++)</div>
+<div class="line"><a name="l01452"></a><span class="lineno"> 1452</span>&#160;    it-&gt;cbp(it-&gt;thisptr, sCommand, sParams);</div>
+<div class="line"><a name="l01453"></a><span class="lineno"> 1453</span>&#160;  <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01454"></a><span class="lineno"> 1454</span>&#160;}</div>
+<div class="line"><a name="l01455"></a><span class="lineno"> 1455</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l01456"></a><span class="lineno"> 1456</span>&#160;<span class="comment">/** split the command and paraments from a string</span></div>
+<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;<span class="comment"> * eg:Call(&quot;shell ls&quot;); equal Call(&quot;shell&quot;,&quot;ls&quot;);</span></div>
+<div class="line"><a name="l01458"></a><span class="lineno"> 1458</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l01459"></a><span class="lineno"><a class="line" href="classGSLAM_1_1Scommand.html#a558371811e2898fb9ef11d3fc2a02b82"> 1459</a></span>&#160;<span class="keyword">inline</span> <span class="keywordtype">bool</span> Scommand::Call(<span class="keyword">const</span> std::string&amp; sCommand) {</div>
+<div class="line"><a name="l01460"></a><span class="lineno"> 1460</span>&#160;  <span class="keywordtype">size_t</span> found = sCommand.find_first_of(<span class="stringliteral">&quot; &quot;</span>);</div>
+<div class="line"><a name="l01461"></a><span class="lineno"> 1461</span>&#160;  <span class="comment">//    cout&lt;&lt;&quot;sCommand=&quot;&lt;&lt;sCommand&lt;&lt;&quot;\nFound=&quot;&lt;&lt;found&lt;&lt;&quot;\nCommand=&quot;&lt;&lt;sCommand.substr(0,found)&lt;&lt;&quot;\nParaments=&quot;&lt;&lt;sCommand.substr(found+1);</span></div>
+<div class="line"><a name="l01462"></a><span class="lineno"> 1462</span>&#160;  <span class="keywordflow">if</span> (found &lt; sCommand.size())</div>
+<div class="line"><a name="l01463"></a><span class="lineno"> 1463</span>&#160;    <span class="keywordflow">return</span> Call(sCommand.substr(0, found), sCommand.substr(found + 1));</div>
+<div class="line"><a name="l01464"></a><span class="lineno"> 1464</span>&#160;  <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01465"></a><span class="lineno"> 1465</span>&#160;    <span class="keywordflow">return</span> Call(sCommand, <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l01466"></a><span class="lineno"> 1466</span>&#160;}</div>
+<div class="line"><a name="l01467"></a><span class="lineno"> 1467</span>&#160;</div>
+<div class="line"><a name="l01468"></a><span class="lineno"> 1468</span>&#160;<span class="keyword">inline</span> <a class="code" href="classGSLAM_1_1Scommand.html">Scommand</a>&amp; Scommand::instance() {</div>
+<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;  <span class="keyword">static</span> thread_local std::shared_ptr&lt;Scommand&gt; g_Scommand(<span class="keyword">new</span> <a class="code" href="classGSLAM_1_1Scommand.html">Scommand</a>());</div>
+<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;  <span class="keywordflow">return</span> *g_Scommand;</div>
 <div class="line"><a name="l01471"></a><span class="lineno"> 1471</span>&#160;}</div>
-<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;</div>
-<div class="line"><a name="l01473"></a><span class="lineno"> 1473</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;}</div>
+<div class="line"><a name="l01473"></a><span class="lineno"> 1473</span>&#160;</div>
+<div class="line"><a name="l01474"></a><span class="lineno"> 1474</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="classGSLAM_1_1Svar_html_a772a25de748c244c23974cab9f18f8ec"><div class="ttname"><a href="classGSLAM_1_1Svar.html#a772a25de748c244c23974cab9f18f8ec">GSLAM::Svar::instance</a></div><div class="ttdeci">static Svar &amp; instance()</div><div class="ttdoc">This gives us singletons instance. </div><div class="ttdef"><b>Definition:</b> Svar.h:733</div></div>
 <div class="ttc" id="classGSLAM_1_1Scommand_html"><div class="ttname"><a href="classGSLAM_1_1Scommand.html">GSLAM::Scommand</a></div><div class="ttdef"><b>Definition:</b> Svar.h:372</div></div>
 <div class="ttc" id="classGSLAM_1_1SvarWithType_html_a159a2957e00cd70b5fa1050d0f90560f"><div class="ttname"><a href="classGSLAM_1_1SvarWithType.html#a159a2957e00cd70b5fa1050d0f90560f">GSLAM::SvarWithType::get_var</a></div><div class="ttdeci">VarType get_var(const KeyType &amp;name, const VarType &amp;def)</div><div class="ttdoc">function get_var() return the value found in the map, </div><div class="ttdef"><b>Definition:</b> Svar.h:171</div></div>
@@ -1542,11 +1543,11 @@
 <div class="ttc" id="namespaceGSLAM_html_a1709a3b10db56e4dd7c00c23f3164b50"><div class="ttname"><a href="namespaceGSLAM.html#a1709a3b10db56e4dd7c00c23f3164b50">GSLAM::CallbackProc</a></div><div class="ttdeci">void(* CallbackProc)(void *ptr, std::string sCommand, std::string sParams)</div><div class="ttdoc">ptr - class pointer sCommand - command string sParams - parameters </div><div class="ttdef"><b>Definition:</b> Svar.h:355</div></div>
 <div class="ttc" id="classGSLAM_1_1SvarWithType_html_a24f0ae2131c4e2ec66766d6e75465847"><div class="ttname"><a href="classGSLAM_1_1SvarWithType.html#a24f0ae2131c4e2ec66766d6e75465847">GSLAM::SvarWithType::instance</a></div><div class="ttdeci">static SvarWithType &amp; instance()</div><div class="ttdoc">This gives us singletons instance. </div><div class="ttdef"><b>Definition:</b> Svar.h:95</div></div>
 <div class="ttc" id="classGSLAM_1_1SvarWithType_html_a95c44f38bffe505e2b0f478dce8a5806"><div class="ttname"><a href="classGSLAM_1_1SvarWithType.html#a95c44f38bffe505e2b0f478dce8a5806">GSLAM::SvarWithType::dumpAllVars</a></div><div class="ttdeci">void dumpAllVars(const size_t column_width=80)</div><div class="ttdoc">this print all the names with var to the screen, </div><div class="ttdef"><b>Definition:</b> Svar.h:219</div></div>
-<div class="ttc" id="classGSLAM_1_1Svar_html_aa164b478ef06884f7b9aa3e54ee0da04"><div class="ttname"><a href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">GSLAM::Svar::getStatsAsText</a></div><div class="ttdeci">std::string getStatsAsText()</div><div class="ttdoc">other utils </div><div class="ttdef"><b>Definition:</b> Svar.h:1333</div></div>
+<div class="ttc" id="classGSLAM_1_1Svar_html_aa164b478ef06884f7b9aa3e54ee0da04"><div class="ttname"><a href="classGSLAM_1_1Svar.html#aa164b478ef06884f7b9aa3e54ee0da04">GSLAM::Svar::getStatsAsText</a></div><div class="ttdeci">std::string getStatsAsText()</div><div class="ttdoc">other utils </div><div class="ttdef"><b>Definition:</b> Svar.h:1334</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Nov 20 2018 13:22:58 for GSLAM by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Nov 21 2018 12:59:35 for GSLAM by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
