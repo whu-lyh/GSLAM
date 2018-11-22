@@ -18,7 +18,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">GSLAM
-   &#160;<span id="projectnumber">2.4.6</span>
+   &#160;<span id="projectnumber">2.4.7</span>
    </div>
   </td>
  </tr>
@@ -59,18 +59,21 @@
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>advertise</b>(const std::string &amp;topic, uint32_t queue_size=0, bool latch=false) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>findPublisher</b>(Subscriber &amp;sub) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>findSubscriber</b>(const std::shared_ptr&lt; Publisher::Impl &gt; &amp;pub) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>getPublishers</b>() const  (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getSubscribers</b>() const  (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>instance</b>() (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>Messenger</b>() (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, std::function&lt; void(const std::shared_ptr&lt; M &gt; &amp;)&gt; callback) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, void(T::*fp)(const std::shared_ptr&lt; M &gt; &amp;), T *obj) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, int queue_size, void(*fp)(const std::shared_ptr&lt; M &gt; &amp;)) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, int queue_size, void(*fp)(const M &amp;)) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, void(T::*fp)(const M &amp;), T *obj) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~Messenger</b>() (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>introduction</b>() const  (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>Messenger</b>() (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, std::function&lt; void(const std::shared_ptr&lt; M &gt; &amp;)&gt; callback) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, void(T::*fp)(const std::shared_ptr&lt; M &gt; &amp;), T *obj) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, int queue_size, void(*fp)(const std::shared_ptr&lt; M &gt; &amp;)) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, int queue_size, void(*fp)(const M &amp;)) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>subscribe</b>(const std::string &amp;topic, uint32_t queue_size, void(T::*fp)(const M &amp;), T *obj) (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>~Messenger</b>() (defined in <a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a>)</td><td class="entry"><a class="el" href="classGSLAM_1_1Messenger.html">Messenger</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Nov 21 2018 12:59:35 for GSLAM by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Nov 22 2018 01:46:31 for GSLAM by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

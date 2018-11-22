@@ -65,7 +65,7 @@ Parsing file /home/travis/build/zdzhaoyong/G/home/travis/build/zdzhaoyong/GSLAM/
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Timer.h:44: warning: Compound GSLAM::Rate is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Timer.h:69: warning: Compound GSLAM::Timer is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Timer.h:122: warning: Compound GSLAM::ScopedTimer is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:291: warning: Compound GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:304: warning: Compound GSLAM::Publisher::Impl is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Point.h:133: warning: Compound pi::Point3_ is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/CPUMetric.h:137: warning: Compound GSLAM::CPUMetric is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Point.h:19: warning: Compound pi::Point2_ is not documented.
@@ -121,7 +121,7 @@ Parsing file /home/travis/build/zdzhaoyong/G/home/travis/build/zdzhaoyong/GSLAM/
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GSLAM.h:308: warning: Compound GSLAM::LoopDetector is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/stb_image.h:346: warning: Compound stbi_io_callbacks is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Array.h:112: warning: Compound pi::Byte is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:313: warning: Compound GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:326: warning: Compound GSLAM::Messenger is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:47: warning: Compound GSLAM::GElement< uint8_t > is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Evaluation.h:15: warning: Compound GSLAM::Evaluation is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/VideoFrame.h:144: warning: Compound GSLAM::FrameMonoIMU is not documented.
@@ -139,11 +139,11 @@ Parsing file /home/travis/build/zdzhaoyong/G/home/travis/build/zdzhaoyong/GSLAM/
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:75: warning: Compound GSLAM::GElement< int32_t > is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/XML.h:4267: warning: Compound tinyxml2::LongFitsIntoSizeTMinusOne< false > is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Mutex.h:35: warning: Compound GSLAM::Event is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:224: warning: Compound GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:229: warning: Compound GSLAM::Publisher is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/TileProjection.h:396: warning: Compound GSLAM::MercatorProjection is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/XML.h:4259: warning: Compound tinyxml2::LongFitsIntoSizeTMinusOne is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:61: warning: Compound GSLAM::GElement< int16_t > is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:187: warning: Compound GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:192: warning: Compound GSLAM::Subscriber::Impl is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/XML.h:123: warning: Compound tinyxml2::StrPair is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:271: warning: Compound GSLAM::LogFileSink is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Array.h:35: warning: Compound pi::Array_< float, Size > is not documented.
@@ -640,19 +640,19 @@ Generat/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:495: wa
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:208: warning: Member clone() const  (function) of class GSLAM::GImage is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:214: warning: Member at(int idx) (function) of class GSLAM::GImage is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:217: warning: Member at(int ix, int iy) (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:295: warning: Member release() (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:330: warning: Member ptr(int i0=0) (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:332: warning: Member ptr(int i0=0) const  (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:334: warning: Member row(int idx=0) const  (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:336: warning: Member getWidth() const  (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:337: warning: Member getHeight() const  (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:304: warning: Member release() (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:339: warning: Member ptr(int i0=0) (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:341: warning: Member ptr(int i0=0) const  (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:343: warning: Member row(int idx=0) const  (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:345: warning: Member getWidth() const  (function) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:346: warning: Member getHeight() const  (function) of class GSLAM::GImage is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:188: warning: Member create(int rows, int cols, int type=GImageType<>::Type, uchar *src=NULL, bool copy=false, int imageAlign=16) (function) of class GSLAM::GImage is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:193: warning: Member zeros(int rows, int cols, int type=GImageType<>::Type, uchar *src=NULL, bool copy=false, int imageAlign=16) (function) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:387: warning: Member cols (variable) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:387: warning: Member rows (variable) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:387: warning: Member flags (variable) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:388: warning: Member data (variable) of class GSLAM::GImage is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:389: warning: Member refCount (variable) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:400: warning: Member cols (variable) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:400: warning: Member rows (variable) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:400: warning: Member flags (variable) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:401: warning: Member data (variable) of class GSLAM::GImage is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/GImage.h:402: warning: Member refCount (variable) of class GSLAM::GImage is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:210: warning: Member send(LogSeverity severity, const char *full_filename, const char *base_filename, int line, const struct tm *tm_time, const char *message, size_t message_len)=0 (function) of class GSLAM::LogSink is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:217: warning: Member WaitTillSent()=0 (function) of class GSLAM::LogSink is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:219: warning: Member ToString(LogSeverity severity, const char *file, int line, const struct::tm *tm_time, const char *message, size_t message_len) (function) of class GSLAM::LogSink is not documented.
@@ -924,45 +924,49 @@ Generat/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Glog.h:495: wa
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/MemoryMetric.h:62: warning: Member processUsage() (function) of class GSLAM::MemoryMetric is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:143: warning: Member CallBackFunc (typedef) of class GSLAM::Subscriber is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:163: warning: Member getTopic() const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:176: warning: Member operator void *() const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:178: warning: Member operator<(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:180: warning: Member operator==(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:182: warning: Member operator!=(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:206: warning: Member Subscriber(Subscriber::Impl *impl) (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:207: warning: Member publish(const std::type_info &typeinfo, const std::shared_ptr< int > &message) const  (function) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:221: warning: Member impl_ (variable) of class GSLAM::Subscriber is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:188: warning: Member Impl(const std::string &topic, const std::string &type, const CallBackFunc &callback, size_t queue_size=0) (function) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:197: warning: Member topic_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:197: warning: Member type_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:198: warning: Member callback_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:199: warning: Member unsubscribed_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:200: warning: Member publishers_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:201: warning: Member mutex_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:202: warning: Member queue_size_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:203: warning: Member workthread_ (variable) of class GSLAM::Subscriber::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:280: warning: Member operator void *() const  (function) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:282: warning: Member operator<(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:284: warning: Member operator==(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:286: warning: Member operator!=(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:308: warning: Member Publisher(Impl *implement) (function) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:310: warning: Member impl_ (variable) of class GSLAM::Publisher is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:292: warning: Member Impl(const std::string &topic, const std::string &type, Messenger *messenger, size_t queue_size=0) (function) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:300: warning: Member topic_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:301: warning: Member type_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:302: warning: Member subscribers (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:303: warning: Member messenger_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:304: warning: Member queue_size_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:305: warning: Member workthread_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:306: warning: Member mutex_ (variable) of class GSLAM::Publisher::Impl is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:324: warning: Member advertise(const std::string &topic, uint32_t queue_size=0, bool latch=false) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:337: warning: Member subscribe(const std::string &topic, uint32_t queue_size, std::function< void(const std::shared_ptr< M > &)> callback) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:352: warning: Member subscribe(const std::string &topic, uint32_t queue_size, void(T::*fp)(const std::shared_ptr< M > &), T *obj) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:360: warning: Member subscribe(const std::string &topic, int queue_size, void(*fp)(const std::shared_ptr< M > &)) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:367: warning: Member subscribe(const std::string &topic, int queue_size, void(*fp)(const M &)) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:378: warning: Member subscribe(const std::string &topic, uint32_t queue_size, void(T::*fp)(const M &), T *obj) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:389: warning: Member findSubscriber(const std::shared_ptr< Publisher::Impl > &pub) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:400: warning: Member findPublisher(Subscriber &sub) (function) of class GSLAM::Messenger is not documented.
-/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:318: warning: Member instance() (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:168: warning: Member getTypeName() const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:181: warning: Member operator void *() const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:183: warning: Member operator<(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:185: warning: Member operator==(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:187: warning: Member operator!=(const Subscriber &rhs) const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:211: warning: Member Subscriber(Subscriber::Impl *impl) (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:212: warning: Member publish(const std::type_info &typeinfo, const std::shared_ptr< int > &message) const  (function) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:226: warning: Member impl_ (variable) of class GSLAM::Subscriber is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:193: warning: Member Impl(const std::string &topic, const std::string &type, const CallBackFunc &callback, size_t queue_size=0) (function) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:202: warning: Member topic_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:202: warning: Member type_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:203: warning: Member callback_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:204: warning: Member unsubscribed_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:205: warning: Member publishers_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:206: warning: Member mutex_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:207: warning: Member queue_size_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:208: warning: Member workthread_ (variable) of class GSLAM::Subscriber::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:293: warning: Member operator void *() const  (function) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:295: warning: Member operator<(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:297: warning: Member operator==(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:299: warning: Member operator!=(const Publisher &rhs) const  (function) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:321: warning: Member Publisher(Impl *implement) (function) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:323: warning: Member impl_ (variable) of class GSLAM::Publisher is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:305: warning: Member Impl(const std::string &topic, const std::string &type, Messenger *messenger, size_t queue_size=0) (function) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:313: warning: Member topic_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:314: warning: Member type_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:315: warning: Member subscribers (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:316: warning: Member messenger_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:317: warning: Member queue_size_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:318: warning: Member workthread_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:319: warning: Member mutex_ (variable) of class GSLAM::Publisher::Impl is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:337: warning: Member advertise(const std::string &topic, uint32_t queue_size=0, bool latch=false) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:350: warning: Member subscribe(const std::string &topic, uint32_t queue_size, std::function< void(const std::shared_ptr< M > &)> callback) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:365: warning: Member subscribe(const std::string &topic, uint32_t queue_size, void(T::*fp)(const std::shared_ptr< M > &), T *obj) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:373: warning: Member subscribe(const std::string &topic, int queue_size, void(*fp)(const std::shared_ptr< M > &)) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:380: warning: Member subscribe(const std::string &topic, int queue_size, void(*fp)(const M &)) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:391: warning: Member subscribe(const std::string &topic, uint32_t queue_size, void(T::*fp)(const M &), T *obj) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:402: warning: Member findSubscriber(const std::shared_ptr< Publisher::Impl > &pub) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:413: warning: Member findPublisher(Subscriber &sub) (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:430: warning: Member getPublishers() const  (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:434: warning: Member getSubscribers() const  (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:438: warning: Member introduction() const  (function) of class GSLAM::Messenger is not documented.
+/home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Messenger.h:331: warning: Member instance() (function) of class GSLAM::Messenger is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Mutex.h:37: warning: Member Event(bool autoReset=true) (function) of class GSLAM::Event is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Mutex.h:42: warning: Member set() (function) of class GSLAM::Event is not documented.
 /home/travis/build/zdzhaoyong/GSLAM/build/GSLAM/GSLAM/core/Mutex.h:44: warning: Member wait() (function) of class GSLAM::Event is not documented.
@@ -2558,5 +2562,5 @@ Generating file index...
 Generating file member index...
 Generating example index...
 finalizing index lists...
-lookup cache used 4274/65536 hits=36934 misses=4514
+lookup cache used 4279/65536 hits=36998 misses=4519
 finished...
