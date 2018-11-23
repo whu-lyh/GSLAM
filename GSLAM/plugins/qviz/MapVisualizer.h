@@ -1,4 +1,5 @@
 #include <GSLAM/core/GSLAM.h>
+#include <GSLAM/core/Messenger.h>
 
 namespace GSLAM{
 typedef unsigned int uint;
@@ -6,14 +7,15 @@ class MapVisualizer : public GSLAM::GObject
 {
 public:
     MapVisualizer(MapPtr slam_map,std::string slam_name,GObjectHandle* _handle);
+    MapVisualizer(std::string slam_name,GObjectHandle* _handle);
 
-    void setMap(MapPtr map){_map=map;}
+    void setMap(const MapPtr& map){_map=map;update();}
 
     virtual void draw();
     void drawRect(GSLAM::SIM3 pose,GSLAM::ColorType color);
 
     void update();
-    void update(const GSLAM::FramePtr& curFrame);
+    void updateCurframe(const GSLAM::FramePtr& curFrame);
 
 private:
     static bool compareFr(GSLAM::FramePtr a,GSLAM::FramePtr b)

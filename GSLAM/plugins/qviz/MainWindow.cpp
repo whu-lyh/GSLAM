@@ -9,7 +9,7 @@
 #include <QFileInfo>
 
 #include <GSLAM/core/Messenger.h>
-#include <Evaluation.h>
+#include <GSLAM/core/Evaluation.h>
 
 #include "MainWindow.h"
 
@@ -166,9 +166,12 @@ MainWindow::MainWindow(QWidget *parent)
     scommand.RegisterCommand("MainWindow.SetRadius",GuiHandle,this);
     // setup layout
     setupLayout();
-    connect(this, SIGNAL(call_signal(QString) ), this, SLOT(call_slot(QString)) );
-
-    if(defaultDataset.size()) slotStartDataset(defaultDataset.c_str());
+    connect(this, SIGNAL(call_signal(QString) ),
+            this, SLOT(call_slot(QString)) );
+    connect(this,SIGNAL(signalDatasetStatusUpdated(int)),
+            this,SLOT(slotDatasetStatusUpdated(int)));
+    connect(this,SIGNAL(signalTryVisualize(QString,QString)),
+            this,SLOT(slotTryVisualize(QString,QString)));
 }
 
 int MainWindow::setupLayout(void)
@@ -242,12 +245,7 @@ int MainWindow::setupLayout(void)
     addDockWidget(Qt::LeftDockWidgetArea,operateDock);
     frameVis      =new FrameVisualizer(splitterLeft);
     gimageVis     =new GImageVisualizer(splitterLeft);
-    win3d         =new Win3D(this,&slamVis);
-
-    for(std::string plugin:defaultSLAMs.data)
-    {
-        slotAddSLAM(plugin.c_str());
-    }
+    win3d         =new Win3D(this);
 
     setCentralWidget(win3d);
 
@@ -344,83 +342,27 @@ bool MainWindow::slotOpen(QString filePath)
 
 bool MainWindow::slotStart()
 {
-    if(status==PAUSE)
-    {
-        status=RUNNING;
-    }
-    else if(status==RUNNING)
-    {
-        // still running and need to stop first
-        if(!slotStop())
-        {
-            return false;
-        }
-    }
-
-    if(status==READY)
-    {
-        if(!dataset.isOpened())
-        {
-            slotShowMessage(tr("Please open a dataset first!\n"));
-        }
-        status=RUNNING;
-        threadPlay=std::thread(&MainWindow::runSLAMMain,this);
-    }
-
-    startAction->setDisabled(true);
-    pauseAction->setDisabled(false);
-    stopAction->setDisabled(false);
-    oneStepAction->setDisabled(true);
+    pub_gui.publish<std::string>("Dataset Start");
 
     return true;
 }
 
 bool MainWindow::slotPause()
 {
-    if(status!=RUNNING) return false;
-
-    status=PAUSE;
-    startAction->setDisabled(false);
-    pauseAction->setDisabled(true);
-    stopAction->setDisabled(false);
-    oneStepAction->setDisabled(false);
+    pub_gui.publish<std::string>("Dataset Pause");
 
     return true;
 }
 
 bool MainWindow::slotOneStep()
 {
-    if(status==READY)
-    {
-        if(!dataset.isOpened())
-        {
-            slotShowMessage(tr("Please open a dataset first!\n"));
-        }
-        status=PAUSE;
-        threadPlay=std::thread(&MainWindow::runSLAMMain,this);
-    }
-    if(status==PAUSE)
-    {
-        status=ONESTEP;
-    }
-
-    startAction->setDisabled(false);
-    pauseAction->setDisabled(true);
-    stopAction->setDisabled(false);
-    oneStepAction->setDisabled(false);
+    pub_gui.publish<std::string>("Dataset Step");
     return true;
 }
 
 bool MainWindow::slotStop()
 {
-    if(status==STOP) return false;
-    status=STOP;
-    if(threadPlay.joinable())
-        threadPlay.join();
-    startAction->setDisabled(true);
-    pauseAction->setDisabled(true);
-    stopAction->setDisabled(true);
-    oneStepAction->setDisabled(true);
+    pub_gui.publish<std::string>("Dataset Stop");
 
     if(svar.GetInt("AutoClose")) close();
     return true;
@@ -428,34 +370,23 @@ bool MainWindow::slotStop()
 
 bool MainWindow::slotAddSLAM(QString pluginPath)
 {
-    SLAMPtr slam=SLAM::create(pluginPath.toStdString());
-    if(!slam||!slam->valid()) return false;
-
-    SPtr<SLAMVisualizer> vis(new SLAMVisualizer(slam,dynamic_cast<GObjectHandle*>(this)));
-    slamVis.push_back(vis);
-    SLAMVisualizer* visPtr=vis.get();
-    connect(visPtr,SIGNAL(signalUpdate()),this,SLOT(slotUpdate()));
-    connect(visPtr,SIGNAL(signalSetSceneCenter(qreal,qreal,qreal)),
-            this,SLOT(slotSetSceneCenter(qreal,qreal,qreal)));
-    connect(visPtr,SIGNAL(signalSetSceneRadius(qreal)),
-            this,SLOT(slotSetSceneRadius(qreal)));
-    connect(visPtr,SIGNAL(signalSetViewPoint(qreal,qreal,qreal,qreal,qreal,qreal,qreal)),
-            this,SLOT(slotSetViewPoint(qreal,qreal,qreal,qreal,qreal,qreal,qreal)));
+//    SPtr<SLAMVisualizer> vis(new SLAMVisualizer(slam,dynamic_cast<GObjectHandle*>(this)));
+//    slamVis.push_back(vis);
+//    SLAMVisualizer* visPtr=vis.get();
+//    connect(visPtr,SIGNAL(signalUpdate()),this,SLOT(slotUpdate()));
+//    connect(visPtr,SIGNAL(signalSetSceneCenter(qreal,qreal,qreal)),
+//            this,SLOT(slotSetSceneCenter(qreal,qreal,qreal)));
+//    connect(visPtr,SIGNAL(signalSetSceneRadius(qreal)),
+//            this,SLOT(slotSetSceneRadius(qreal)));
+//    connect(visPtr,SIGNAL(signalSetViewPoint(qreal,qreal,qreal,qreal,qreal,qreal,qreal)),
+//            this,SLOT(slotSetViewPoint(qreal,qreal,qreal,qreal,qreal,qreal,qreal)));
 
     return false;
 }
 
 bool MainWindow::slotStartDataset(QString datasetPath)
 {
-    if(!dataset.open(datasetPath.toStdString()))
-    {
-        slotShowMessage(tr("Failed to open dataset ")+datasetPath);
-        return false;
-    }
-    status=READY;
-    startAction->setEnabled(true);
-    oneStepAction->setEnabled(true);
-    if(svar.GetInt("AutoStart",0)) slotStart();
+    pub_gui.publish<std::string>("Dataset Open "+datasetPath.toStdString());
     return true;
 }
 
@@ -480,80 +411,149 @@ void MainWindow::slotSetViewPoint(qreal x,qreal y,qreal z,
     win3d->camera()->setOrientation(qglviewer::Quaternion(rw,rz,-ry,-rx));
 }
 
+void MainWindow::slotDatasetStatusUpdated(int status)
+{
+    switch (status) {
+    case DatasetPlayer::READY:{
+        startAction->setEnabled(true);
+        oneStepAction->setEnabled(true);
+    }
+        break;
+    case DatasetPlayer::PLAYING:{
+        startAction->setDisabled(true);
+        pauseAction->setDisabled(false);
+        stopAction->setDisabled(false);
+        oneStepAction->setDisabled(true);
+    }
+        break;
+    case DatasetPlayer::PAUSED:{
+        startAction->setDisabled(false);
+        pauseAction->setDisabled(true);
+        stopAction->setDisabled(false);
+        oneStepAction->setDisabled(false);
+    }
+        break;
+    case DatasetPlayer::FINISHING:{
+        slotStop();
+    }
+        break;
+    case DatasetPlayer::FINISHED:{
+        startAction->setDisabled(true);
+        pauseAction->setDisabled(true);
+        stopAction->setDisabled(true);
+        oneStepAction->setDisabled(true);
+    }
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::slotTryVisualize(QString topic,QString type)
+{
+//    LOG(INFO)<<"Try visualize "<<topic.toStdString();
+    std::string typeName=type.toStdString();
+    if(typeid(GSLAM::Map).name()==typeName){
+        std::string topicName=topic.toStdString();
+        int idx=topicName.find("/map");
+        if(idx==std::string::npos) return;
+        std::string slamName =topicName.substr(0,idx);
+        if(slamName.empty()) return;
+        if(!win3d->_objects.exist(slamName)){
+            SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
+            win3d->_objects.insert(slamName,vis);
+        }
+    }
+    else if(typeid(GSLAM::MapFrame).name()==typeName){
+        std::string topicName=topic.toStdString();
+        int idx=topicName.find("/map");
+        if(idx==std::string::npos) return;
+        std::string slamName =topicName.substr(0,idx);
+        if(slamName.empty()) return;
+        if(!win3d->_objects.exist(slamName)){
+            SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
+            win3d->_objects.insert(slamName,vis);
+        }
+    }
+    else if(typeid(GSLAM::GImage).name()==typeName){
+
+    }
+}
+
 void MainWindow::runSLAMMain()
 {
-    Evaluation evaluation;
-    auto msg=GSLAM::Messenger::instance();
-    auto pub_curframe=msg.advertise<GSLAM::MapFrame>("curframe");
-    auto pub_processed_frame=msg.advertise<GSLAM::MapFrame>("processed_frame");
-    double speed=svar.GetDouble("PlaySpeed",1.);
-    double startTime=-1;
-    double& playSpeedWarningTime=svar.GetDouble("PlaySpeedWarning",5);
-    GSLAM::TicToc tictoc,tictocWarning;
-    GSLAM::FramePtr frame;
+//    Evaluation evaluation;
+//    auto msg=GSLAM::Messenger::instance();
+//    auto pub_curframe=msg.advertise<GSLAM::MapFrame>("curframe");
+//    auto pub_processed_frame=msg.advertise<GSLAM::MapFrame>("processed_frame");
+//    double speed=svar.GetDouble("PlaySpeed",1.);
+//    double startTime=-1;
+//    double& playSpeedWarningTime=svar.GetDouble("PlaySpeedWarning",5);
+//    GSLAM::TicToc tictoc,tictocWarning;
+//    GSLAM::FramePtr frame;
 
-    while(status!=STOP)
-    {
-        if(status==PAUSE)
-        {
-            GSLAM::Rate::sleep(0.001);
-            startTime=-1;
-            continue;
-        }
+//    while(status!=STOP)
+//    {
+//        if(status==PAUSE)
+//        {
+//            GSLAM::Rate::sleep(0.001);
+//            startTime=-1;
+//            continue;
+//        }
 
-        {
-            GSLAM::ScopedTimer mt("Dataset::grabFrame");
-            frame=dataset.grabFrame();
-        }
+//        {
+//            GSLAM::ScopedTimer mt("Dataset::grabFrame");
+//            frame=dataset.grabFrame();
+//        }
 
-        if(!frame) break;
+//        if(!frame) break;
 
-        if(startTime<0){
-            startTime=frame->timestamp();
-            tictoc.Tic();
-        }
-        else{
-            double shouldSleep=(frame->timestamp()-startTime)/speed-tictoc.Tac();
-            if(shouldSleep<-2){
-                if(tictocWarning.Tac()>playSpeedWarningTime)// Don't bother
-                {
-                    LOG(WARNING)<<"Play speed not realtime! Speed approximate "
-                               <<(frame->timestamp()-startTime)/tictoc.Tac();
-                    tictocWarning.Tic();
-                }
-            }
-            else GSLAM::Rate::sleep(shouldSleep);
-        }
+//        if(startTime<0){
+//            startTime=frame->timestamp();
+//            tictoc.Tic();
+//        }
+//        else{
+//            double shouldSleep=(frame->timestamp()-startTime)/speed-tictoc.Tac();
+//            if(shouldSleep<-2){
+//                if(tictocWarning.Tac()>playSpeedWarningTime)// Don't bother
+//                {
+//                    LOG(WARNING)<<"Play speed not realtime! Speed approximate "
+//                               <<(frame->timestamp()-startTime)/tictoc.Tac();
+//                    tictocWarning.Tic();
+//                }
+//            }
+//            else GSLAM::Rate::sleep(shouldSleep);
+//        }
 
-        for(auto& vis:slamVis)
-        {
-            string str=vis->slam()->type()+"::Track";
-            GSLAM::ScopedTimer mt(str.c_str());
-            pub_curframe.publish(frame);
-            vis->slam()->track(frame);
-            pub_processed_frame.publish(frame);
-        }
+//        for(auto& vis:slamVis)
+//        {
+//            string str=vis->slam()->type()+"::Track";
+//            GSLAM::ScopedTimer mt(str.c_str());
+//            pub_curframe.publish(frame);
+//            vis->slam()->track(frame);
+//            pub_processed_frame.publish(frame);
+//        }
 
-        frameVis->showFrame(frame);
-//        gimageVis->imshow("CurrentImage",frame->getImage());
+//        frameVis->showFrame(frame);
+////        gimageVis->imshow("CurrentImage",frame->getImage());
 
-        if(status==ONESTEP){
-            status=PAUSE;
-        }
-    }
+//        if(status==ONESTEP){
+//            status=PAUSE;
+//        }
+//    }
 
-    for(auto& vis:slamVis)
-    {
-        string str=vis->slam()->type()+"::Finalize";
-        GSLAM::ScopedTimer mt(str.c_str());
-        vis->slam()->finalize();
-    }
-    std::cerr<<"Play thread stoped."<<endl;
-    for(auto& vis:slamVis)
-    {
-        vis->releaseSLAM();
-    }
-    emit signalStop();
+//    for(auto& vis:slamVis)
+//    {
+//        string str=vis->slam()->type()+"::Finalize";
+//        GSLAM::ScopedTimer mt(str.c_str());
+//        vis->slam()->finalize();
+//    }
+//    std::cerr<<"Play thread stoped."<<endl;
+//    for(auto& vis:slamVis)
+//    {
+//        vis->releaseSLAM();
+//    }
+//    emit signalStop();
 }
 
 SCommandAction::SCommandAction(const QString &cmd, const QString &text, QMenu *parent)
@@ -578,6 +578,16 @@ void MainWindow::handle(const SPtr<GObject>& obj)
     if(auto e=dynamic_pointer_cast<DebugImageEvent>(obj)){
         gimageVis->imshow(e->_name,e->_img);
     }
+    else if(auto e=dynamic_pointer_cast<ScenceCenterEvent>(obj))
+    {
+        Point3d c=e->_center;
+        win3d->setSceneCenter(qglviewer::Vec(c.x,c.y,c.z));
+    }
+    else if(auto e=dynamic_pointer_cast<ScenceRadiusEvent>(obj))
+    {
+        win3d->setSceneRadius(e->_radius);
+    }
+    else win3d->update();
 }
 
 }

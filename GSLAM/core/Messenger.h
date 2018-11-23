@@ -156,9 +156,7 @@ class Subscriber {
    * immediately
    * unsubscribes the callback associated with this Subscriber
    */
-  void shutdown() {
-    if (impl_) impl_->unsubscribed_ = true;
-  }
+  void shutdown() ;
 
   std::string getTopic() const {
     if (impl_) return impl_->topic_;
@@ -202,13 +200,16 @@ class Subscriber {
     std::string topic_, type_;
     CallBackFunc callback_;
     bool unsubscribed_;
-    std::vector<Publisher> publishers_;
+    std::set<Publisher> publishers_;
     std::mutex mutex_;
     size_t queue_size_;
     std::shared_ptr<ThreadPool> workthread_;
   };
 
-  Subscriber(Subscriber::Impl* impl) : impl_(impl) {}
+  Subscriber(std::shared_ptr<Subscriber::Impl> impl) : impl_(impl) {}
+  Subscriber(const std::string& topic, const std::string& type,
+             const CallBackFunc& callback, size_t queue_size = 0)
+      : impl_(new Impl(topic,type,callback,queue_size)) {}
   virtual void publish(const std::type_info& typeinfo,
                        const std::shared_ptr<int>& message) const {
     //        LOG(INFO)<<"Node "<<impl_->topic_<<" publishing message
@@ -222,6 +223,16 @@ class Subscriber {
     }
     impl_->callback_(message);
   }
+  std::string key()const{return getTopic()+"#"+getTypeName();}
+  void addPublisher(const Publisher& pub)const{
+      std::unique_lock<std::mutex> lock(impl_->mutex_);
+      impl_->publishers_.insert(pub);
+  }
+
+  void erasePublisher(const Publisher& pub)const{
+      std::unique_lock<std::mutex> lock(impl_->mutex_);
+      impl_->publishers_.erase(pub);
+  }
 
   std::shared_ptr<Impl> impl_;
 };
@@ -230,7 +241,7 @@ class Publisher {
  public:
   Publisher() {}
 
-  virtual ~Publisher() { shutdown(); }
+  virtual ~Publisher() { }
 
   /**
    * \brief Publish a message on the topic associated with this Publisher.
@@ -258,7 +269,13 @@ class Publisher {
    * NodeHandle::advertise(), this will
    * only remove the one associated with this Publisher
    */
-  void shutdown() {}
+  void shutdown() {
+      if (!impl_) return;
+
+      for(Subscriber it:impl_->subscribers)
+          it.erasePublisher(*this);
+      impl_.reset();
+  }
 
   /**
    * \brief Returns the topic that this Publisher will publish on.
@@ -298,27 +315,39 @@ class Publisher {
 
   bool operator!=(const Publisher& rhs) const { return impl_ != rhs.impl_; }
 
+
  protected:
   friend class Messenger;
+  friend class Subscriber;
 
   struct Impl {
     Impl(const std::string& topic, const std::string& type,
-         Messenger* messenger, size_t queue_size = 0)
+         size_t queue_size = 0)
         : topic_(topic),
           type_(type),
-          messenger_(messenger),
           queue_size_(queue_size),
           workthread_(queue_size ? new ThreadPool(1) : nullptr) {}
 
     std::string topic_;
     std::string type_;
-    std::vector<Subscriber> subscribers;
-    Messenger* messenger_;
+    std::set<Subscriber> subscribers;
     size_t queue_size_;
     std::shared_ptr<ThreadPool> workthread_;
     std::mutex mutex_;
   };
   Publisher(Impl* implement) : impl_(implement) {}
+  Publisher(const std::string& topic, const std::string& type,
+            size_t queue_size = 0)
+      :impl_(new Impl(topic,type,queue_size)){}
+  std::string key()const{return getTopic()+"#"+getTypeName();}
+  void addSubscriber(const Subscriber& sub)const{
+      std::unique_lock<std::mutex> lock(impl_->mutex_);
+      impl_->subscribers.insert(sub);
+  }
+  void eraseSubscriber(const Subscriber& sub)const{
+      std::unique_lock<std::mutex> lock(impl_->mutex_);
+      impl_->subscribers.erase(sub);
+  }
 
   std::shared_ptr<Impl> impl_;
 };
@@ -336,13 +365,8 @@ class Messenger {
   template <class M>
   Publisher advertise(const std::string& topic, uint32_t queue_size = 0,
                       bool latch = false) {
-    Publisher pub(new Publisher::Impl(topic, std::string(typeid(M).name()),
-                                      this, queue_size));
-    {
-      std::unique_lock<std::mutex> lock(d->mutex_);
-      d->publishers_[topic].push_back(pub);
-    }
-    findSubscriber(pub.impl_);
+    Publisher pub(topic, std::string(typeid(M).name()),queue_size);
+    join(pub);
     return pub;
   }
 
@@ -350,15 +374,11 @@ class Messenger {
   Subscriber subscribe(
       const std::string& topic, uint32_t queue_size,
       std::function<void(const std::shared_ptr<M>&)> callback) {
-    Subscriber sub(new Subscriber::Impl(topic, typeid(M).name(),
-                                        *(Subscriber::CallBackFunc*)(&callback),
-                                        queue_size));
-    {
-      std::unique_lock<std::mutex> lock(d->mutex_);
-      d->subscribers_[topic].push_back(sub);
-    }
-    findPublisher(sub);
-    return sub;
+      Subscriber sub(topic, typeid(M).name(),
+                     *(Subscriber::CallBackFunc*)(&callback),
+                     queue_size);
+      join(sub);
+      return sub;
   }
 
   template <class T, class M>
@@ -399,50 +419,59 @@ class Messenger {
     return subscribe(topic, queue_size, cbk);
   }
 
-  bool findSubscriber(const std::shared_ptr<Publisher::Impl>& pub) {
+  bool findSubscriber(const Publisher& pub) const{
     std::unique_lock<std::mutex> lock(d->mutex_);
-    auto it = d->subscribers_.find(pub->topic_);
+    auto it = d->subscribers_.find(pub.key());
     if (it == d->subscribers_.end()) return false;
     {
-      std::unique_lock<std::mutex> lock(pub->mutex_);
-      pub->subscribers = it->second;
+        {
+            std::unique_lock<std::mutex> lock(pub.impl_->mutex_);
+            pub.impl_->subscribers = it->second;
+        }
+      for (const Subscriber& sub : it->second) {
+          if (!sub) continue;
+          if (sub.impl_->type_ != pub.impl_->type_) continue;
+            sub.addPublisher(pub);
+        }
     }
     return true;
   }
 
-  bool findPublisher(Subscriber& sub) {
+  bool findPublisher(const Subscriber& sub) const{
     std::unique_lock<std::mutex> lock(d->mutex_);
     if (!sub) return false;
-    auto it = d->publishers_.find(sub.getTopic());
+    auto it = d->publishers_.find(sub.key());
     if (it == d->publishers_.end()) return false;
 
     {
       std::unique_lock<std::mutex> lock(sub.impl_->mutex_);
       sub.impl_->publishers_ = it->second;
-      for (Publisher& pub : it->second) {
+      for (const Publisher& pub : it->second) {
         if (!pub) continue;
         if (sub.impl_->type_ != pub.impl_->type_) continue;
-        pub.impl_->subscribers.push_back(sub);
+        pub.addSubscriber(sub);
       }
     }
   }
 
-  const std::map<std::string, std::vector<Publisher> >& getPublishers()const{
+  const std::map<std::string, std::set<Publisher> >& getPublishers()const{
       return d->publishers_;
   }
 
-  const std::map<std::string, std::vector<Subscriber> >& getSubscribers()const{
+  const std::map<std::string, std::set<Subscriber> >& getSubscribers()const{
       return d->subscribers_;
   }
 
   std::string introduction()const{
       std::stringstream sst;
-      sst<<"The following publishers are advertised:\n";
+      if(getPublishers().size())
+          sst<<"The following publishers are advertised:\n";
       for(auto it:getPublishers())
           for(const Publisher& pub:it.second){
               sst<<pub.getTopic()<<" : "<<pub.getTypeName()<<std::endl;
           }
-      sst<<"The following subscribers are subscribed:\n";
+      if(getSubscribers().size())
+          sst<<"The following subscribers are subscribed:\n";
       for(auto it:getSubscribers())
           for(const Subscriber& pub:it.second){
               sst<<pub.getTopic()<<" : "<<pub.getTypeName()<<std::endl;
@@ -450,14 +479,51 @@ class Messenger {
       return sst.str();
   }
 
+  void join(const Publisher& pub){
+      {
+        std::unique_lock<std::mutex> lock(d->mutex_);
+        d->publishers_[pub.key()].insert(pub);
+      }
+      findSubscriber(pub);
+  }
+
+  void join(const Subscriber& sub){
+      {
+        std::unique_lock<std::mutex> lock(d->mutex_);
+        d->subscribers_[sub.key()].insert(sub);
+      }
+      findPublisher(sub);
+  }
+
+  void join(Messenger another){
+      for(auto it:another.getPublishers())
+          for(const Publisher& pub:it.second){
+              join(pub);
+          }
+      for(auto it:another.getSubscribers())
+          for(const Subscriber& sub:it.second){
+              join(sub);
+          }
+  }
+
  private:
   struct Data{
       std::mutex mutex_;
-      std::map<std::string, std::vector<Publisher> > publishers_;
-      std::map<std::string, std::vector<Subscriber> > subscribers_;
+      std::map<std::string, std::set<Publisher> >  publishers_;
+      std::map<std::string, std::set<Subscriber> > subscribers_;
   };
   std::shared_ptr<Data> d;
 };
+
+inline void Subscriber::shutdown()
+{
+    if (!impl_) return;
+
+    impl_->unsubscribed_ = true;
+    for(Publisher it:impl_->publishers_)
+        it.eraseSubscriber(*this);
+    impl_.reset();
+}
 
 template <typename M>
 void Publisher::publish(const std::shared_ptr<M>& message) const {
@@ -475,8 +541,7 @@ void Publisher::publish(const std::shared_ptr<M>& message) const {
   }
 
   if (impl_->subscribers.empty()) {
-    if (!impl_->messenger_) return;
-    if (!impl_->messenger_->findSubscriber(impl_)) return;
+      return;
   }
 
   if (impl_->workthread_ &&
@@ -484,20 +549,20 @@ void Publisher::publish(const std::shared_ptr<M>& message) const {
       // FIXME: what to do when queue size large
     impl_->workthread_->Add([this, message]() {
 
-      std::vector<Subscriber> subscribers;
+      std::set<Subscriber> subscribers;
       {
         std::unique_lock<std::mutex> lock(impl_->mutex_);
         subscribers = impl_->subscribers;
       }
 
-      for (auto& s : subscribers) {
+      for (const auto& s : subscribers) {
         s.publish(typeid(M), *(const std::shared_ptr<int>*)&message);
       }
     });
     return;
   }
 
-  std::vector<Subscriber> subscribers;
+  std::set<Subscriber> subscribers;
   {
     std::unique_lock<std::mutex> lock(impl_->mutex_);
     subscribers = impl_->subscribers;

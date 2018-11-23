@@ -27,6 +27,21 @@ MapVisualizer::MapVisualizer(MapPtr slam_map,std::string slam_name,GObjectHandle
     }
 }
 
+MapVisualizer::MapVisualizer(std::string slam_name,GObjectHandle* handle)
+    : _name(slam_name),_handle(handle),
+      _vetexTrajBuffer(0),_mapUpdated(false),_curFrameUpdated(false),_firstUpdate(true){
+    if(!_name.empty())
+    {
+        scommand.Call("AddLayer",_name+".Trajectory");
+        scommand.Call("AddLayer",_name+".Connects");
+        scommand.Call("AddLayer",_name+".PointCloud");
+        scommand.Call("AddLayer",_name+".Frames");
+        scommand.Call("AddLayer",_name+".CurrentFrame");
+    }
+    Subscriber sub=Messenger::instance().subscribe(slam_name+"/map",10,&MapVisualizer::setMap,this);
+    Subscriber sub1=Messenger::instance().subscribe(slam_name+"/curframe",10,&MapVisualizer::updateCurframe,this);
+}
+
 void MapVisualizer::draw()
 {
     if(!svar.GetInt("SLAM.All",1)) return;
@@ -405,7 +420,7 @@ void MapVisualizer::update()
     }
 }
 
-void MapVisualizer::update(const GSLAM::FramePtr& curFrame)
+void MapVisualizer::updateCurframe(const GSLAM::FramePtr& curFrame)
 {
     _curFrame=curFrame;
     Point3d t=_curFrame->getPose().get_translation();
@@ -427,6 +442,7 @@ void MapVisualizer::update(const GSLAM::FramePtr& curFrame)
         _curConnection=curConnection;
         _curFrameUpdated=true;
     }
+    _handle->handle(curFrame);
 }
 
 

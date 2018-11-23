@@ -1,7 +1,7 @@
 #ifndef FRAMEVISUALIZER_H
 #define FRAMEVISUALIZER_H
-#include "../../core/GSLAM.h"
-#include "../../core/Svar.h"
+#include "GSLAM/core/GSLAM.h"
+#include "GSLAM/core/Svar.h"
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QSplitter>
@@ -9,9 +9,32 @@
 #include <QPainter>
 #include <QWheelEvent>
 #include <QComboBox>
+#include <GSLAM/core/Messenger.h>
 
 namespace GSLAM
 {
+//class Visualizer{
+//public:
+//    ~Visualizer(){}
+//    virtual std::vector<void*> widgets();
+//    virtual std::vector<
+//    std::string         topic_;
+//    std::string         type_;
+//    std::string         name;
+//    SharedLibraryPtr    plugin_;
+//};
+
+//class VisualizerManager{
+//    VisualizerManager(){}
+
+//    struct VisualizerPlugin{
+//        VisualizerPlugin(std::string path){}
+//        SharedLibraryPtr plugin_;
+
+//    };
+
+//    SvarWithType<> visualizers;
+//};
 
 class QImageWidget : public QWidget
 {
@@ -160,7 +183,6 @@ public:
     QPixmap curPixmap;
 };
 
-
 class GImageWidget : public QImageWidget
 {
 public:
@@ -276,6 +298,7 @@ public:
         _infos=new InfomationViewer(this);
         _splitter->addWidget(_infos);
         connect(this,SIGNAL(signalFrameUpdated()),this,SLOT(slotFrameUpdated()));
+        Messenger::instance().subscribe("images",0,&FrameVisualizer::showFrame,this);
     }
     virtual ~FrameVisualizer(){}
 

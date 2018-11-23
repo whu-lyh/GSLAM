@@ -269,6 +269,9 @@ class GSLAM_API Svar {
   std::vector<std::string> ParseMain(int argc, char** argv,
                                      PARSEMODE mode = DEFAULT_CMD1);
   std::string help();
+  void setUsage(const std::string& usage){
+      GetString("Usage")=usage;
+  }
 
   /** \brief
  */

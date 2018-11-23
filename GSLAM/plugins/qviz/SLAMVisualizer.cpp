@@ -52,7 +52,7 @@ void SLAMVisualizer::handle(const SPtr<GObject>& obj){
     else if(auto e=std::dynamic_pointer_cast<CurrentFrameEvent>(obj))
     {
         if(_vis)
-            _vis->update(e->_frame);
+            _vis->updateCurframe(e->_frame);
         updateGL();
 //        LOG(INFO)<<"CurrentFrameEvent";
     }

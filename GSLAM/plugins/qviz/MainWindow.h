@@ -10,12 +10,13 @@
 #include "FrameVisualizer.h"
 #include "SLAMVisualizer.h"
 
-#include "../../core/Svar.h"
-#include "../../core/GSLAM.h"
-#include "../../core/Dataset.h"
-#include "../../core/Svar.h"
-#include "../../core/Timer.h"
-#include "../../core/VecParament.h"
+#include "GSLAM/core/Svar.h"
+#include "GSLAM/core/GSLAM.h"
+#include "GSLAM/core/Dataset.h"
+#include "GSLAM/core/Svar.h"
+#include "GSLAM/core/Timer.h"
+#include "GSLAM/core/VecParament.h"
+#include <GSLAM/core/Messenger.h>
 
 #include "QGLViewer/qglviewer.h"
 
@@ -24,25 +25,27 @@ namespace GSLAM{
 class Win3D : public QGLViewer
 {
 public:
-    Win3D(QWidget* parent,std::vector<SLAMVisualizerPtr>* visualizers)
-        : QGLViewer(parent),_visualizers(visualizers),_fastDraw(svar.GetInt("FastDrawing",0)){}
+    Win3D(QWidget* parent)
+        : QGLViewer(parent),_fastDraw(svar.GetInt("FastDrawing",0)){}
 
     virtual void draw()
     {
         _fastDraw=0;
-        for(SLAMVisualizerPtr& vis : *_visualizers)
-            vis->draw();
+        const auto& objects=_objects.get_data();
+        for(auto it : objects)
+            it.second->draw();
     }
 
     virtual void fastDraw()
     {
         _fastDraw=1;
-        for(SLAMVisualizerPtr& vis : *_visualizers)
-            vis->draw();
+        const auto& objects=_objects.get_data();
+        for(auto it : objects)
+            it.second->draw();
     }
 
     int&                            _fastDraw;
-    std::vector<SLAMVisualizerPtr>* _visualizers;
+    SvarWithType<GObjectPtr>        _objects;
 };
 
 class MainWindow: public QMainWindow,GObjectHandle
@@ -50,7 +53,9 @@ class MainWindow: public QMainWindow,GObjectHandle
     Q_OBJECT
 public:
     MainWindow(QWidget *parent = 0);
-    virtual ~MainWindow(){slotStop();}
+    virtual ~MainWindow(){
+        slotStop();
+    }
 
     virtual int setupLayout(void);
     virtual void handle(const SPtr<GObject>& obj);
@@ -60,6 +65,8 @@ public:
 signals:
     void call_signal(QString cmd);
     void signalStop();
+    void signalDatasetStatusUpdated(int);
+    void signalTryVisualize(QString topic,QString type);
 
 public slots:
     void call_slot(QString cmd);
@@ -77,6 +84,8 @@ public slots:
     void slotSetSceneCenter(qreal x,qreal y,qreal z);
     void slotSetViewPoint(qreal x,qreal y,qreal z,
                             qreal rw,qreal rx,qreal ry,qreal rz);
+    void slotDatasetStatusUpdated(int status);
+    void slotTryVisualize(QString topic,QString type);
 
 protected:
     void keyPressEvent(QKeyEvent *event);
@@ -84,6 +93,17 @@ protected:
     void closeEvent(QCloseEvent *event);
 
     void runSLAMMain();
+public:
+    void datasetStatusUpdated(const int& status)
+    {
+        emit signalDatasetStatusUpdated(status);
+    }
+
+    void tryVisualize(const GSLAM::Publisher& pub)
+    {
+        emit signalTryVisualize(pub.getTopic().c_str(),pub.getTypeName().c_str());
+    }
+protected:
 
     QMenu    *fileMenu,*exportMenu,*historyMenu,*runMenu;
     QToolBar *toolBar;
@@ -91,7 +111,7 @@ protected:
 
     Dataset                 dataset; // current dataset, load implementations
     FrameVisualizer         *frameVis;
-    std::vector<SLAMVisualizerPtr> slamVis;
+    SvarWithType<SLAMVisualizerPtr> slamVis;
 
     QDockWidget             *operateDock;
     QSplitter               *splitterLeft;
@@ -99,11 +119,12 @@ protected:
 //    QTabWidget              *slamTab;
     Win3D                   *win3d;
 
-    std::thread             threadPlay;
     int                     status;
 
     std::string                  historyFile,lastOpenFile,defaultDataset;
     VecParament<std::string> defaultSLAMs;
+public:
+    Publisher               pub_gui;
 };
 
 class SCommandAction : public QAction
