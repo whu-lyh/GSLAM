@@ -42,6 +42,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #define HAS_GSLAM
@@ -49,6 +50,7 @@
 #if defined(HAS_GSLAM)
 #include <GSLAM/core/Glog.h>
 #include <GSLAM/core/Mutex.h>
+#include <GSLAM/core/Map.h>
 #elif !defined(GSLAM_MUTEX__H)
 #include <atomic>
 #include <condition_variable>
@@ -463,20 +465,82 @@ class Messenger {
   }
 
   std::string introduction()const{
+      if(getPublishers().size()+getSubscribers().size()==0)
+          return "";
       std::stringstream sst;
-      if(getPublishers().size())
-          sst<<"The following publishers are advertised:\n";
+      sst<<"Publisher and Subscriber lists:\n";
+      int width=svar.GetInt("COLUMNS",80);
+      sst<<printTable({{width/5-1,"Type"},
+                       {width*2/5-1,"Topic"},
+                       {width*2/5,"Payload"}});
+
+      for(int i=0;i<width;i++)
+          sst<<"-";
+      sst<<std::endl;
+
       for(auto it:getPublishers())
           for(const Publisher& pub:it.second){
-              sst<<pub.getTopic()<<" : "<<pub.getTypeName()<<std::endl;
+              sst<<printTable({{width/5-1,"Publisher"},
+                               {width*2/5-1,pub.getTopic()},
+                               {width*2/5,translate(pub.getTypeName())}});
           }
-      if(getSubscribers().size())
-          sst<<"The following subscribers are subscribed:\n";
+
       for(auto it:getSubscribers())
-          for(const Subscriber& pub:it.second){
-              sst<<pub.getTopic()<<" : "<<pub.getTypeName()<<std::endl;
+          for(const Subscriber& sub:it.second){
+              sst<<printTable({{width/5-1,"Subscriber"},
+                               {width*2/5-1,sub.getTopic()},
+                               {width*2/5,translate(sub.getTypeName())}});
           }
       return sst.str();
+  }
+
+  static std::string printTable(std::vector<std::pair<int,std::string> > line){
+      std::stringstream sst;
+      while(true){
+          int emptyCount=0;
+          for(auto& it:line){
+              int width=it.first;
+              std::string& str=it.second;
+              if(str.size()<=width){
+                  sst<< std::setw(width)
+                     <<std::setiosflags(std::ios::left)
+                    <<str<<" ";
+                  str.clear();
+                  emptyCount++;
+              }else{
+                  sst<<str.substr(0,width)<<" ";
+                  str=str.substr(width);
+              }
+          }
+          sst<<std::endl;
+          if(emptyCount==line.size()) break;
+      }
+      return sst.str();
+  }
+
+  static std::string translate(const std::string& name){
+      static std::map<std::string, std::string> decode = {
+          {typeid(int32_t).name(), "int32_t"},
+          {typeid(int64_t).name(), "int64_t"},
+          {typeid(uint32_t).name(), "uint32_t"},
+          {typeid(uint64_t).name(), "uint64_t"},
+          {typeid(u_char).name(), "u_char"},
+          {typeid(char).name(), "char"},
+          {typeid(float).name(), "float"},
+          {typeid(double).name(), "double"},
+          {typeid(std::string).name(), "string"},
+          {typeid(bool).name(), "bool"},
+          {typeid(Publisher).name(), "GSLAM::Publisher"},
+          {typeid(Subscriber).name(), "GSLAM::Subscriber"},
+          {typeid(Map).name(), "GSLAM::Map"},
+          {typeid(GImage).name(), "GSLAM::GImage"},
+          {typeid(MapFrame).name(), "GSLAM::MapFrame"},
+      };
+      auto it = decode.find(name);
+      if (it == decode.end())
+        return name;
+      else
+        return it->second;
   }
 
   void join(const Publisher& pub){

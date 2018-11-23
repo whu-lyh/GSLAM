@@ -11,9 +11,6 @@ int main(int argc,char** argv)
     auto messenger=GSLAM::Messenger::instance();
     GSLAM::ScopedTimer tm("Main");
     auto unParsed=svar.ParseMain(argc,argv);
-    svar.Arg<std::string>("Act","Tests","The default action going to excute. "
-                                        "use \"Act=Tests\" to excute module testing.");
-    svar.Arg<std::string>("SLAM","","The SLAM plugin path,eg. libgslam.so");
     auto datasetPath=svar.Arg<std::string>("Dataset","","The Dataset location with extesion.");
     bool qviz=svar.Arg<bool>("qviz",true,"Use buildin Qt visualizer or not.");
     svar.Arg<double>("PlaySpeed",1.,"The Dataset play speed factor, 1 means the original speed.");

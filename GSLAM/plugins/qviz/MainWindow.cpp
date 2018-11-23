@@ -463,10 +463,11 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
             SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
             win3d->_objects.insert(slamName,vis);
         }
+        LOG(INFO)<<"Auto visualize Map "<<topicName;
     }
     else if(typeid(GSLAM::MapFrame).name()==typeName){
         std::string topicName=topic.toStdString();
-        int idx=topicName.find("/map");
+        int idx=topicName.find("/curframe");
         if(idx==std::string::npos) return;
         std::string slamName =topicName.substr(0,idx);
         if(slamName.empty()) return;
@@ -474,9 +475,15 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
             SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
             win3d->_objects.insert(slamName,vis);
         }
+        LOG(INFO)<<"Auto visualize MapFrame "<<topicName;
     }
     else if(typeid(GSLAM::GImage).name()==typeName){
-
+        std::string topicName=topic.toStdString();
+        Subscriber sub=GSLAM::Messenger::instance().
+                subscribe<GImage>(topicName,0,[this,topicName](const SPtr<GImage>& img){
+            gimageVis->imshow(topicName,*img);
+        });
+        LOG(INFO)<<"Auto visualize GImage "<<topicName;
     }
 }
 

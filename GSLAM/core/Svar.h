@@ -71,7 +71,7 @@ class SvarLanguage;
  files and stream.
  */
 
-/// 
+///
 /**@ingroup gInterface
  @brief The class Svar will be shared in the same process, it help users to
  transform paraments use a name id,
@@ -318,6 +318,7 @@ class GSLAM_API Svar {
   static std::string getBaseName(const std::string& path);
   static std::string getFileName(const std::string& path);
   static std::vector<std::string> ChopAndUnquoteString(std::string s);
+  static std::string printTable(std::vector<std::pair<int,std::string> > line);
 
   template <class T>
   T get_var(const std::string& name, const T& def);  // deprecated since 2.4.5
@@ -1111,28 +1112,34 @@ inline std::string Svar::typeName(std::string name) {
 
 inline std::string Svar::help() {
     std::stringstream sst;
-    sst << GetString("Usage","Usage:\n"
+    int width = GetInt("COLUMNS", 80);
+    int namePartWidth = width/5-1;
+    int statusPartWidth = width*2/5-1;
+    int introPartWidth = width*2/5;
+    std::string usage=GetString("Usage","Usage:\n"
                      + GetString("ProgramName", "exe")
                      + " [--help] [-conf configure_file]"
-                       " [-arg_name arg_value]...\n\n");
+                       " [-arg_name arg_value]...\n");
+    sst<<usage<<std::endl;
 
+    std::string desc;
     if (!GetString("Version").empty())
-        sst << "Version: " << GetString("Version") << ", ";
-    sst << "Using Svar supported argument parsing. The following table listed "
-           "several \nargument introductions.\n\n";
+        desc+="Version: " + GetString("Version") + ", ";
+    desc+="Using Svar supported argument parsing. The following table listed "
+          "several argument introductions.\n";
+    sst<<printTable({{width,desc}});
 
     Arg<std::string>("conf", "Default.cfg",
                      "The default configure file going to parse.");
     Arg<bool>("help", false, "Show the help information.");
-    int namePartWidth = GetInt("NamePartWidth", 16);
-    int statusPartWidth = GetInt("StatusPartWidth", 30);
-    int introPartWidth = GetInt("IntroPartWidth", 40);
+
     auto& inst = *(a->args);
-    sst << std::setw(namePartWidth + 1) << std::setiosflags(std::ios::left)
-        << "argument" << std::setw(statusPartWidth + 1) << "type(default->setted)"
-        << std::setiosflags(std::ios::left) << "introduction" << std::endl;
-    sst << "-------------------------------------------------------------------"
-           "-----------\n";
+    sst << printTable({{namePartWidth,"Argument"},
+                       {statusPartWidth,"Type(default->setted)"},
+                       {introPartWidth,"Introduction"}});
+    for(int i=0;i<width;i++) sst<<"-";
+    sst<<std::endl;
+
     for (const auto& it : inst.get_data()) {
         ArgumentInfo info = it.second;
         std::string setted = getvar(it.first);
@@ -1143,17 +1150,33 @@ inline std::string Svar::help() {
         std::string name = "-" + it.first;
         std::string status = typeName(info.type) + "(" + info.def + setted + ")";
         std::string intro = info.introduction;
+        sst<<printTable({{namePartWidth,name},
+                    {statusPartWidth,status},
+                    {introPartWidth,intro}});
+    }
+    return sst.str();
+}
 
-        for (; name.size() || status.size() || intro.size();) {
-            sst << std::setw(namePartWidth) << name.substr(0, namePartWidth) << " "
-                << std::setw(statusPartWidth) << status.substr(0, statusPartWidth)
-                << " " << std::setw(introPartWidth) << intro.substr(0, introPartWidth)
-                << std::endl;
-            name = namePartWidth < name.size() ? name.substr(namePartWidth) : "";
-            status =
-                    statusPartWidth < status.size() ? status.substr(statusPartWidth) : "";
-            intro = introPartWidth < intro.size() ? intro.substr(introPartWidth) : "";
+inline std::string Svar::printTable(std::vector<std::pair<int,std::string> > line){
+    std::stringstream sst;
+    while(true){
+        int emptyCount=0;
+        for(auto& it:line){
+            int width=it.first;
+            std::string& str=it.second;
+            if(str.size()<=width){
+                sst<< std::setw(width)
+                   <<std::setiosflags(std::ios::left)
+                  <<str<<" ";
+                str.clear();
+                emptyCount++;
+            }else{
+                sst<<str.substr(0,width)<<" ";
+                str=str.substr(width);
+            }
         }
+        sst<<std::endl;
+        if(emptyCount==line.size()) break;
     }
     return sst.str();
 }
