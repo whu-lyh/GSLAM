@@ -67,8 +67,8 @@ void SLAMVisualizer::handle(const SPtr<GObject>& obj){
     }
     else if(auto e=std::dynamic_pointer_cast<SetViewPoseEvent>(obj)){
         SE3 pose=e->_pose;
-        const pi::Point3f& t=pose.get_translation();
-        const pi::SO3f& r=pose.get_rotation();
+        const Point3f& t=pose.get_translation();
+        const SO3f& r=pose.get_rotation();
         emit signalSetViewPoint(t.x,t.y,t.z,r.w,r.x,r.y,r.z);
 //        LOG(INFO)<<"signalSetViewPoint";
     }

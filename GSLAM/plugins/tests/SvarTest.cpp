@@ -2,6 +2,9 @@
 #include <GSLAM/core/VecParament.h>
 #include <GSLAM/core/Svar.h>
 
+namespace GSLAM {
+
+
 template <typename T>
 void testSvarType(GSLAM::Svar var,std::string name,T def,T set){
     GSLAM::SvarWithType<T> instance;
@@ -74,7 +77,7 @@ TEST(Svar,Pointer){
 }
 
 template <typename T>
-bool operator==(VecParament<T> l,VecParament<T> r){
+bool operator==(GSLAM::VecParament<T> l,GSLAM::VecParament<T> r){
     if(l.size()!=r.size()) return false;
     for(int i=0;i<r.size();i++) if(l[i]!=r[i]) return false;
     return true;
@@ -118,5 +121,6 @@ TEST(Svar,Parse){
     EXPECT_TRUE(var.GetInt("FunctionCalled"));
     EXPECT_FALSE(var.GetInt("ElseCalled"));
     EXPECT_EQ(var.GetString("Name",""),"ChangedName");
+}
 }
 

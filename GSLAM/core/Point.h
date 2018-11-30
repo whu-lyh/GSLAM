@@ -1,5 +1,5 @@
-#ifndef POINT_H
-#define POINT_H
+#ifndef GSLAM_CORE_POINT_H
+#define GSLAM_CORE_POINT_H
 
 #include <iostream>
 #include <sstream>
@@ -9,7 +9,7 @@
 #include <TooN/TooN.h>
 #endif
 
-namespace pi{
+namespace GSLAM{
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,8 +270,6 @@ typedef Point3_<int>    Point3i;
 }
 
 namespace GSLAM {
-using pi::Point2_;
-using pi::Point3_;
 
 typedef Point2_<int>            Point2i;
 typedef Point2_<float>          Point2f;

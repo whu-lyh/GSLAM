@@ -1,11 +1,13 @@
-#ifndef VECPARAMENT_H
-#define VECPARAMENT_H
+#ifndef GSLAM_CORE_VECPARAMENT_H
+#define GSLAM_CORE_VECPARAMENT_H
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <vector>
+
+namespace GSLAM{
 
 template <typename VarType>
 class VecParament
@@ -95,5 +97,7 @@ public:
 
     std::vector<VarType> data;
 };
+
+}
 
 #endif // VECPARAMENT_H

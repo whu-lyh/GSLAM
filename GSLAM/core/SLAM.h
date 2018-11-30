@@ -1,5 +1,7 @@
 #ifndef GSLAM_CORE_SLAM_H
 #define GSLAM_CORE_SLAM_H
+#include <vector>
+#include <map>
 #include "Map.h"
 
 #define USE_GSLAM_PLUGIN(SLAMCLASS) extern "C"{\
@@ -55,7 +57,7 @@ inline bool SLAM::setSvar(Svar &var)
 }
 
 inline SLAMPtr SLAM::create(const std::string& slamPlugin){
-    SPtr<SharedLibrary> plugin=Registry::get(slamPlugin);
+    SharedLibraryPtr plugin=Registry::get(slamPlugin);
     if(!plugin) return SLAMPtr();
     funcCreateSLAMInstance createFunc=(funcCreateSLAMInstance)plugin->getSymbol("createSLAMInstance");
     if(!createFunc) return SLAMPtr();

@@ -1,3 +1,5 @@
+#ifndef GSLAM_CORE_MEMORYMETRIC_H
+#define GSLAM_CORE_MEMORYMETRIC_H
 #include <unordered_map>
 
 #ifdef __linux
@@ -73,8 +75,8 @@ public:
 
         char name[64];
         int vmrss;
-        const int VMRSS_LINE=17;
-        for (int i=0; i<VMRSS_LINE;i++){
+        const int vmrss_line=17;
+        for (int i=0; i<vmrss_line;i++){
             if(!fgets(line_buff,sizeof(line_buff),fd)) return 0;
         }
 
@@ -94,3 +96,4 @@ private:
 };
 
 }
+#endif

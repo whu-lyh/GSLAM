@@ -85,8 +85,8 @@
 // To use the debug only versions, prepend a D to the normal check macros, e.g.
 // DCHECK_EQ(a, b).
 
-#ifndef GSLAM_MINIGLOG_GLOG_LOGGING_H_
-#define GSLAM_MINIGLOG_GLOG_LOGGING_H_
+#ifndef GSLAM_CORE_GLOG_H_
+#define GSLAM_CORE_GLOG_H_
 
 #ifdef ANDROID
 #  include <android/log.h>

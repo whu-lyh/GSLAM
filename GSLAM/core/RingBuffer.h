@@ -1,5 +1,7 @@
-#ifndef PIL_RINGBUFFER_H
-#define PIL_RINGBUFFER_H
+#ifndef GSLAM_RINGBUFFER_H
+#define GSLAM_RINGBUFFER_H
+
+namespace GSLAM{
 
 template <typename BufType=unsigned char>
 class RingBuffer
@@ -60,4 +62,6 @@ private:
     BufType* data;
     int      dataSize,readIdx,writeIdx;
 };
-#endif // PIL_RINGBUFFER_H
+
+}
+#endif // GSLAM_RINGBUFFER_H

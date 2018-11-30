@@ -5,6 +5,7 @@
 #include <GSLAM/core/Glog.h>
 #include <GSLAM/core/Timer.h>
 #include <GSLAM/core/VecParament.h>
+#include <GSLAM/core/Optimizer.h>
 
 typedef GSLAM::TicToc Tictac;
 using namespace std;
@@ -14,24 +15,24 @@ struct PlyObject
 {
     PlyObject(string file2save="out.ply"):_file2save(file2save){}
     ~PlyObject(){save(_file2save);}
-    typedef pi::Point3f Vertex3f;
-    typedef pi::Point3ub Color3b;
+    typedef Point3f Vertex3f;
+    typedef Point3ub Color3b;
 
     std::string _file2save;
-    std::vector<pi::Point3f>  vertices;
+    std::vector<Point3f>  vertices;
     std::vector<unsigned int> faces;
-    std::vector<pi::Point3f>  normals;
-    std::vector<pi::Point3ub> colors;
+    std::vector<Point3f>  normals;
+    std::vector<Point3ub> colors;
     std::vector<unsigned int> edges;
 
-    void addPoint(Point3d pt,Color3b color=Color3b(255,255,255),pi::Point3f normal=Point3f(0,0,1))
+    void addPoint(Point3d pt,Color3b color=Color3b(255,255,255),Point3f normal=Point3f(0,0,1))
     {
         vertices.push_back(pt);
         colors.push_back(color);
         normals.push_back(normal);
     }
 
-    void addLine(Point3d first,Point3d second,Color3b color=Color3b(255,255,255),pi::Point3f normal=Point3f(0,0,1))
+    void addLine(Point3d first,Point3d second,Color3b color=Color3b(255,255,255),Point3f normal=Point3f(0,0,1))
     {
         edges.push_back((uint32_t)vertices.size());
         edges.push_back((uint32_t)vertices.size()+1);
@@ -124,16 +125,16 @@ TEST(Optimizer,OptimizePoseSimulate)
     {
         // Prepare simulation data
         int N=svar.GetInt("SimulateNumber",200);//number of matches
-        std::vector<std::pair<pi::Point3d, pi::Point3d> > groundMatches,estMatches;
-        std::vector<pi::Point2d>                          groundIdepth,estIDepth;
+        std::vector<std::pair<Point3d, Point3d> > groundMatches,estMatches;
+        std::vector<Point2d>                          groundIdepth,estIDepth;
         GSLAM::SE3                                        groundPose,estPose;
-        groundPose=GSLAM::SE3(pi::SO3d::exp(Point3d(0,0,1)),pi::Point3d(1,0,0));
+        groundPose=GSLAM::SE3(SO3d::exp(Point3d(0,0,1)),Point3d(1,0,0));
         for(int i=0;i<N;i++)
         {
-            pi::Point3d p1(GSLAM::Random::RandomValue(-1.,1.),GSLAM::Random::RandomValue(-1.,1.),1);
-            pi::Point2d idepthSigma(GSLAM::Random::RandomGaussianValue(0.1,0.1),i<(N/2)?0.1:0);
+            Point3d p1(GSLAM::Random::RandomValue(-1.,1.),GSLAM::Random::RandomValue(-1.,1.),1);
+            Point2d idepthSigma(GSLAM::Random::RandomGaussianValue(0.1,0.1),i<(N/2)?0.1:0);
             if(idepthSigma.x<=0) {idepthSigma.x=0.1;}
-            pi::Point3d p2(groundPose.inverse()*(p1*(1./idepthSigma.x)));
+            Point3d p2(groundPose.inverse()*(p1*(1./idepthSigma.x)));
             if(p2.z) p2=p2*(1./p2.z);
             groundMatches.push_back(std::make_pair(p1,p2));
             groundIdepth.push_back(idepthSigma);
@@ -141,14 +142,14 @@ TEST(Optimizer,OptimizePoseSimulate)
             if(i<(N/2))
             {
                 double idepthNoise=GSLAM::Random::RandomGaussianValue(0.1,0.05);
-                pi::Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,i<(N/3)?0.1:0.01),
+                Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,i<(N/3)?0.1:0.01),
                                          GSLAM::Random::RandomGaussianValue(0.,i<(N/3)?0.1:0.01),0);
                 estMatches.push_back(std::make_pair(p1,p2+projectNoise));
-                estIDepth.push_back(idepthSigma+pi::Point2d(idepthNoise,0.1));
+                estIDepth.push_back(idepthSigma+Point2d(idepthNoise,0.1));
             }
             else
             {
-                pi::Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,0.01),
+                Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,0.01),
                                          GSLAM::Random::RandomGaussianValue(0.,0.01),0);
                 estMatches.push_back(std::make_pair(p1,p2+projectNoise));
                 estIDepth.push_back(idepthSigma);
@@ -172,23 +173,23 @@ TEST(Optimizer,OptimizePnPSimulate)
 {
     // Prepare simulation data
     int N=svar.GetInt("SimulateNumber",2000);//number of matches
-    std::vector<std::pair<pi::Point3d, pi::Point3d> > groundMatches,estMatches;
+    std::vector<std::pair<Point3d, Point3d> > groundMatches,estMatches;
     GSLAM::SE3                                        groundPose,estPose;
-    pi::Array_<double,6> array;
-    for(int i=0;i<array.size();i++)
-        array.data[i]=GSLAM::Random::RandomValue<double>();
+    Vector<double,6> array;
+    for(int i=0;i<array.rows();i++)
+        array[i]=GSLAM::Random::RandomValue<double>();
     groundPose=GSLAM::SE3::exp(array);
-    estPose=groundPose*GSLAM::SE3(pi::SO3d::exp(Point3d(0.1,0.1,0.1)),pi::Point3d(1,2,3));
+    estPose=groundPose*GSLAM::SE3(SO3d::exp(Point3d(0.1,0.1,0.1)),Point3d(1,2,3));
     for(int i=0;i<N;i++)
     {
-        pi::Point3d pCamera(GSLAM::Random::RandomValue(-1.,1.),GSLAM::Random::RandomValue(-1.,1.),1);
-        pi::Point3d pWorld(groundPose*(pCamera*GSLAM::Random::RandomGaussianValue(10.,1.)));
+        Point3d pCamera(GSLAM::Random::RandomValue(-1.,1.),GSLAM::Random::RandomValue(-1.,1.),1);
+        Point3d pWorld(groundPose*(pCamera*GSLAM::Random::RandomGaussianValue(10.,1.)));
 
         groundMatches.push_back(std::make_pair(pWorld,pCamera));
         // add noise
         if(true)
         {
-            pi::Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,i<(0.5*N)?0.1:0.01),
+            Point3d projectNoise(GSLAM::Random::RandomGaussianValue(0.,i<(0.5*N)?0.1:0.01),
                                      GSLAM::Random::RandomGaussianValue(0.,i<(0.5*N)?0.1:0.01),0);
             pCamera=pCamera+projectNoise;
             pCamera=pCamera*4;
@@ -218,9 +219,9 @@ TEST(Optimizer,ICPSimulate)
                                                      GSLAM::Random::RandomValue(0.,1.),
                                                      GSLAM::Random::RandomValue(0.,1.)));
 
-    pi::Array_<double,6> array;
-    for(int i=0;i<array.size();i++)
-        array.data[i]=GSLAM::Random::RandomValue<double>();
+    Vector<double,6> array;
+    for(int i=0;i<array.rows();i++)
+        array[i]=GSLAM::Random::RandomValue<double>();
     GSLAM::SIM3 sim3(GSLAM::SE3::exp(array),2.);
 //    sim3.get_translation()=Point3d(0,0,0);
     sim3.get_rotation()=GSLAM::SO3::exp(Point3d(0.3,0.3,0.3));
@@ -453,9 +454,9 @@ TEST(Optimizer,MapPointBundleSimulate)
     double noise=svar.GetDouble("MapPointBundleSimulate.Noise",1e-2);
     double projNoise=svar.GetDouble("MapPointBundleSimulate.ProjectNoise",1e-5);
 
-    pi::Array_<double,6> array;
-    for(int i=0;i<array.size();i++)
-        array.data[i]=GSLAM::Random::RandomValue<double>();
+    Vector<double,6> array;
+    for(int i=0;i<array.rows();i++)
+        array[i]=GSLAM::Random::RandomValue<double>();
 
     GSLAM::SE3 firstPose =GSLAM::SE3::exp(array);
     GSLAM::SE3 secondPose=firstPose*GSLAM::SE3(SO3::exp(Point3d(0.1,0.1,0.1)),Point3d(1.,1.,1.));
@@ -519,9 +520,9 @@ TEST(Optimizer,InvDepthBundleSimulate)
     double noise=svar.GetDouble("InvDepthBundleSimulate.Noise",1e-2);
     double projNoise=svar.GetDouble("InvDepthBundleSimulate.ProjectNoise",1e-5);
 
-    pi::Array_<double,6> array;
-    for(int i=0;i<array.size();i++)
-        array.data[i]=GSLAM::Random::RandomValue<double>();
+    Vector<double,6> array;
+    for(int i=0;i<array.rows();i++)
+        array[i]=GSLAM::Random::RandomValue<double>();
 
     GSLAM::SE3 firstPose =GSLAM::SE3::exp(array);
     GSLAM::SE3 secondPose=firstPose*GSLAM::SE3(SO3::exp(Point3d(0.1,0.1,0.1)),Point3d(1.,1.,1.));

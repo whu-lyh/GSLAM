@@ -1,5 +1,5 @@
 #include "gtest.h"
-#include "GSLAM/core/Mutex.h"
+#include "GSLAM/core/ThreadPool.h"
 #include <GSLAM/core/Svar.h>
 #include <GSLAM/core/Timer.h>
 

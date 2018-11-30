@@ -74,8 +74,8 @@ public:
 
         /// 1. Compute the centre of two point set and translate points to centre
 
-        pi::Point3d centre_Track(0,0,0);
-        pi::Point3d centre_GPS(0,0,0);
+        Point3d centre_Track(0,0,0);
+        Point3d centre_GPS(0,0,0);
         size_t Num=from.size();
         if(to.size()!=Num) return -1;
 
@@ -91,8 +91,8 @@ public:
         cv::Mat Pr2(3,Num,CV_64F); // Relative coordinates to centroid (set 2)
         for(size_t i=0;i<Num;i++)
         {
-            pi::Point3d pt1=from[i];
-            pi::Point3d pt2=to[i];
+            Point3d pt1=from[i];
+            Point3d pt2=to[i];
             pt1=pt1-centre_Track;
             pt2=pt2-centre_GPS;
             cv::Mat(3,1,Pr1.type(),&pt1).copyTo(Pr1.col(i));
@@ -129,14 +129,14 @@ public:
         cv::Mat eval, evec;
 
         cv::eigen(N,eval,evec);
-        pi::SO3d so3(evec.at<double>(0,1),
+        SO3d so3(evec.at<double>(0,1),
                      evec.at<double>(0,2),
                      evec.at<double>(0,3),
                      evec.at<double>(0,0));
         so3=so3.inv();
 
         cv::Mat mR12i(3,3,CV_64F);
-        pi::Point3d vec_p=so3.inv().ln();
+        Point3d vec_p=so3.inv().ln();
         cv::Mat vec(1,3,CV_64F,&vec_p);
         cv::Rodrigues(vec,mR12i);
 
@@ -163,9 +163,9 @@ public:
         /// 5. Compute translation and get SIM3
 
 
-        pi::Point3d translation = centre_GPS - (so3*centre_Track)*scale;
+        Point3d translation = centre_GPS - (so3*centre_Track)*scale;
 
-        S=pi::SIM3d(so3,translation,scale);
+        S=SIM3d(so3,translation,scale);
         return true;
     }
 
@@ -192,8 +192,8 @@ public:
             return false;
         }
         int nRansacs =std::max(100.,points.size()*0.2);
-        pi::Point3d v3BestMean;
-        pi::Point3d v3BestNormal;
+        Point3d v3BestMean;
+        Point3d v3BestNormal;
         double dBestDistSquared = 9999999999999999.9;
 
         for(int i=0; i<nRansacs; i++)
@@ -206,13 +206,13 @@ public:
             while(nC == nA || nC==nB)
                 nC = rand()%nPoints;
 
-            pi::Point3d v3Mean = 0.33333333 * (points[nA] +
+            Point3d v3Mean = 0.33333333 * (points[nA] +
                                                points[nB] +
                                                points[nC]);
 
-            pi::Point3d v3CA = points[nC]  - points[nA];
-            pi::Point3d v3BA = points[nB]  - points[nA];
-            pi::Point3d v3Normal = v3CA ^ v3BA;
+            Point3d v3CA = points[nC]  - points[nA];
+            Point3d v3BA = points[nB]  - points[nA];
+            Point3d v3Normal = v3CA ^ v3BA;
             if(v3Normal * v3Normal  == 0)
                 continue;
             v3Normal=v3Normal.normalize();
@@ -220,7 +220,7 @@ public:
             double dSumError = 0.0;
             for(unsigned int i=0; i<nPoints; i++)
             {
-                pi::Point3d v3Diff = points[i] - v3Mean;
+                Point3d v3Diff = points[i] - v3Mean;
                 double dDistSq = v3Diff * v3Diff;
                 if(dDistSq == 0.0)
                     continue;
@@ -239,7 +239,7 @@ public:
         }
 
         // Done the ransacs, now collect the supposed inlier set
-        vector<pi::Point3d > vv3Inliers;
+        vector<Point3d > vv3Inliers;
         std::vector<int> outliers;
         outliers.clear();
         outliers.reserve(nPoints);
@@ -247,7 +247,7 @@ public:
 
         for(unsigned int i=0; i<nPoints; i++)
         {
-            pi::Point3d v3Diff = points[i] - v3BestMean;
+            Point3d v3Diff = points[i] - v3BestMean;
             double dDistSq = v3Diff * v3Diff;
             if(dDistSq == 0.0)
                 continue;
@@ -261,7 +261,7 @@ public:
         }
 
         // With these inliers, calculate mean and cov
-        pi::Point3d v3MeanOfInliers(0,0,0);
+        Point3d v3MeanOfInliers(0,0,0);
         for(unsigned int i=0; i<vv3Inliers.size(); i++)
             v3MeanOfInliers=v3MeanOfInliers+vv3Inliers[i];
         v3MeanOfInliers =v3MeanOfInliers*(1.0 / vv3Inliers.size());
@@ -270,7 +270,7 @@ public:
         double* a=(double*)A.data;
         for(unsigned int i=0; i<vv3Inliers.size(); i++)
         {
-            pi::Point3d d = vv3Inliers[i] - v3MeanOfInliers;
+            Point3d d = vv3Inliers[i] - v3MeanOfInliers;
             a[0]+=d.x*d.x; a[1]+=d.x*d.y; a[2]+=d.x*d.z;
             a[3]+=d.y*d.x; a[4]+=d.y*d.y; a[5]+=d.y*d.z;
             a[6]+=d.z*d.x; a[7]+=d.z*d.y; a[8]+=d.z*d.z;
@@ -283,15 +283,15 @@ public:
         if(eValuesMat.at<double>(minIdx)>eValuesMat.at<double>(1)) minIdx=1;
         if(eValuesMat.at<double>(minIdx)>eValuesMat.at<double>(2)) minIdx=2;
 
-        v3BestNormal=pi::Point3d(eVectorsMat.at<double>(minIdx,0),
+        v3BestNormal=Point3d(eVectorsMat.at<double>(minIdx,0),
                                  eVectorsMat.at<double>(minIdx,1),
                                  eVectorsMat.at<double>(minIdx,2));
 
-        pi::Point3d vx,vy,vz;
+        Point3d vx,vy,vz;
         if(v3BestNormal.z<0)
         vz=-v3BestNormal;
         else vz=v3BestNormal;
-        vx=(vz^pi::Point3d(0,-1,0)).normalize();
+        vx=(vz^Point3d(0,-1,0)).normalize();
         vy=(vz^vx);
         double r[9];
         r[0]=vx.x;r[1]=vy.x;r[2]=vz.x;
@@ -344,8 +344,8 @@ public:
         cv::solvePnPRansac(objectPointsCV,planePoints,k,
                            distCoeff,R,t,useExtrinsicGuess,iterationsCount,reprojectionError,
                            minInliersCount,inliers?(*inliers):cv::noArray(),flags);
-        world2camera=pi::SE3d(pi::SO3d::exp(pi::Point3d(R.at<double>(0),R.at<double>(1),R.at<double>(2))),
-                      pi::Point3d(t.at<double>(0),t.at<double>(1),t.at<double>(2)));
+        world2camera=SE3d(SO3d::exp(Point3d(R.at<double>(0),R.at<double>(1),R.at<double>(2))),
+                      Point3d(t.at<double>(0),t.at<double>(1),t.at<double>(2)));
 
         return true;
     }

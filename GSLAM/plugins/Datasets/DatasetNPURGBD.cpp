@@ -6,6 +6,8 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+using namespace GSLAM;
+
 /**
  * 1. Download dataset from : http://zhaoyong.adv-ci.com/downloads/npu-dronemap-dataset/
  * 2. Play dataset with gslam Dataset=<dir>/LibraryFloors/.npurgbd

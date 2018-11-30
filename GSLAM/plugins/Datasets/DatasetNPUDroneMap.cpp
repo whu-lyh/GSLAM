@@ -164,7 +164,7 @@ class DroneMapKFDataset : public GSLAM::Dataset
     {
         double      timestamp;
         std::string imagePath;
-        pi::SE3d    pose;
+        SE3d        pose;
     };
 public:
     DroneMapKFDataset():curIdx(0){}
@@ -176,7 +176,7 @@ public:
         string path=Svar::getFolderPath(dataset);
         Svar var;
         var.ParseFile(path+"/config.cfg");
-        plane=var.get_var<pi::SE3d>("Plane",plane);
+        plane=var.get_var<SE3d>("Plane",plane);
         origin=var.get_var("GPS.Origin",origin);
         // Local to ECEF
         local2ECEF.get_translation()=GSLAM::GPS<>::GPS2XYZ(Point3d(origin.y,origin.x,origin.z));

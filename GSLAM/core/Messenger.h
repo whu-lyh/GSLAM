@@ -44,13 +44,14 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cxxabi.h>
 
 #define HAS_GSLAM
 
 #if defined(HAS_GSLAM)
 #include <GSLAM/core/Glog.h>
-#include <GSLAM/core/Mutex.h>
-#include <GSLAM/core/Map.h>
+#include <GSLAM/core/Svar.h>
+#include <GSLAM/core/ThreadPool.h>
 #elif !defined(GSLAM_MUTEX__H)
 #include <atomic>
 #include <condition_variable>
@@ -530,17 +531,16 @@ class Messenger {
           {typeid(double).name(), "double"},
           {typeid(std::string).name(), "string"},
           {typeid(bool).name(), "bool"},
-          {typeid(Publisher).name(), "GSLAM::Publisher"},
-          {typeid(Subscriber).name(), "GSLAM::Subscriber"},
-          {typeid(Map).name(), "GSLAM::Map"},
-          {typeid(GImage).name(), "GSLAM::GImage"},
-          {typeid(MapFrame).name(), "GSLAM::MapFrame"},
       };
       auto it = decode.find(name);
-      if (it == decode.end())
-        return name;
-      else
-        return it->second;
+      if (it != decode.end())
+          return it->second;
+
+      int     status;
+      char*   realname = abi::__cxa_demangle(name.c_str(), 0, 0, &status);
+      std::string result(realname);
+      free(realname);
+      return result;
   }
 
   void join(const Publisher& pub){

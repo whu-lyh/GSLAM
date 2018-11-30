@@ -14,7 +14,7 @@
 namespace GSLAM{
 
 class Application;
-typedef SPtr<Application> ApplicationPtr;
+typedef std::shared_ptr<Application> ApplicationPtr;
 typedef Application* (*funcCreateApplication)();
 
 class Application{

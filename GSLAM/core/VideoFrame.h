@@ -3,6 +3,7 @@
 
 #include "GSLAM.h"
 #include "GPS.h"
+#include "Map.h"
 
 /** The VideoFrame classes are used as the input of different slam systems
 Class name : "Frame"+MainSonsor+OtherSensor

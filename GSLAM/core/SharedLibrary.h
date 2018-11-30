@@ -227,7 +227,7 @@ private:
     std::string _path;
     void*       _handle;
 };
-typedef SPtr<SharedLibrary> SharedLibraryPtr;
+typedef std::shared_ptr<SharedLibrary> SharedLibraryPtr;
 
 
 class Registry
@@ -244,9 +244,9 @@ public:
         return *reg;
     }
 
-    static SPtr<SharedLibrary> get(std::string pluginName)
+    static SharedLibraryPtr get(std::string pluginName)
     {
-        if(pluginName.empty()) return SPtr<SharedLibrary>();
+        if(pluginName.empty()) return SharedLibraryPtr();
         Registry& inst=instance();
         pluginName=inst.getPluginName(pluginName);
 
@@ -258,7 +258,7 @@ public:
         {
             std::string pluginPath=dir+"/"+pluginName;
             if(!fileExists(pluginPath)) continue;
-            SPtr<SharedLibrary> lib(new SharedLibrary(pluginPath));
+            SharedLibraryPtr lib(new SharedLibrary(pluginPath));
             if(lib->isLoaded())
             {
                 inst._registedLibs.insert(pluginName,lib);
@@ -367,7 +367,7 @@ protected:
 
 
     std::set<std::string>               _libraryFilePath;// where to search?
-    SvarWithType<SPtr<SharedLibrary> >  _registedLibs;   // already loaded
+    SvarWithType<SharedLibraryPtr >  _registedLibs;   // already loaded
 };
 
 } // namespace pi

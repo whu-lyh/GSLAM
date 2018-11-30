@@ -1,3 +1,6 @@
+#ifndef GSLAM_CORE_FILERESOURCE_H
+#define GSLAM_CORE_FILERESOURCE_H
+
 #include <fstream>
 #include <istream>
 #include <stdio.h>
@@ -127,3 +130,4 @@ public:
 
 }
 
+#endif

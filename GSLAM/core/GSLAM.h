@@ -1,18 +1,5 @@
-/**
-  This file defines data types shared by all SLAM systems.
-  A SLAM system contains one active map for current tracking and some in-active maps after losted or loaded from history.
-  A Map are generally constructed with the follow things:
-  1. MapFrame : the keyframes (Mono,Stereo,RGBD .etc)
-  2. MapPoint : the keypoints (not used in direct methods)
-  3. BOWs     : for relocalization and loop closure
-  4. Other data structures
- */
-
-#ifndef GSLAM_H
-#define GSLAM_H
-
-#include <vector>
-#include <map>
+#ifndef GSLAM_CORE_H
+#define GSLAM_CORE_H
 
 #define GSLAM_VERSION_MAJOR 2
 #define GSLAM_VERSION_MINOR 4
@@ -23,22 +10,46 @@
 #define GSLAM_VERSION_STR (GSLAM_COMMAND_STR(GSLAM_VERSION_MAJOR) "." \
                            GSLAM_COMMAND_STR(GSLAM_VERSION_MINOR) "." \
                            GSLAM_COMMAND_STR(GSLAM_VERSION_PATCH))
+// System Basic
+#include "Glog.h"
+#include "FileResource.h"
+#include "ThreadPool.h"
+#include "Random.h"
+#include "SharedLibrary.h"
+#include "Timer.h"
+#include "RingBuffer.h"
 
-#include "SIM3.h"
-#include "KeyPoint.h"
+#include "CPUMetric.h"
+#include "MemoryMetric.h"
+
+// Interface
+#include "Svar.h"
+#include "Messenger.h"
+#include "Application.h"
+
+#include "VecParament.h"
 #include "GImage.h"
 #include "Camera.h"
-#include "Mutex.h"
-#include "Svar.h"
-#include "SharedLibrary.h"
-#include "Map.h"
-#include "SLAM.h"
+#include "Undistorter.h"
 
-#include <GSLAM/core/HashMap.h>
-#include <GSLAM/core/Messenger.h>
-#include <GSLAM/core/Application.h>
-#include <GSLAM/core/Event.h>
-#include "Optimizer.h"
+#include "Point.h"
+#include "Matrix.h"
+#include "SO3.h"
+#include "SE3.h"
+#include "SIM3.h"
+#include "KeyPoint.h"
+
+#include "Map.h"
+#include "VideoFrame.h"
+#include "GPS.h"
+
+#include "TileManager.h"
+#include "TileProjection.h"
+#include "MapFusion.h"
+
+#include "Dataset.h"
+
+#include "SLAM.h"
 
 
 #endif

@@ -6,6 +6,7 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
+using namespace GSLAM;
 /**
  * 1. Download dataset from : https://vision.in.tum.de/data/datasets/rgbd-dataset
  * 2. Play dataset with gslam Dataset=<dir>/rgbd_dataset_freiburg1_360/rgbd.tumrgbd

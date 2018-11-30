@@ -28,7 +28,7 @@ public:
         QApplication app(config.GetInt("argc"),
                          (char**)config.GetPointer("argv"));
 
-        SPtr<GSLAM::MainWindow> mainWindow(new GSLAM::MainWindow());
+        std::shared_ptr<GSLAM::MainWindow> mainWindow(new GSLAM::MainWindow());
         mainWindow->pub_gui=pub_gui;
         auto dataset=svar.GetString("Dataset");
         mainWindow->show();
@@ -61,7 +61,7 @@ public:
     GSLAM::Messenger  messenger;
     GSLAM::Publisher  pub_gui;
     GSLAM::Subscriber sub_gui,sub_dataset_status;
-    SPtr<GSLAM::MainWindow> mainWindow;
+    std::shared_ptr<GSLAM::MainWindow> mainWindow;
 };
 
 REGISTER_APPLICATION(QVisualizer);

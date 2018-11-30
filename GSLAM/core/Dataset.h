@@ -9,7 +9,7 @@
 namespace GSLAM{
 
 #define REGISTER_DATASET(D,E) \
-    extern "C" SPtr<GSLAM::Dataset> createDataset##E(){ return SPtr<GSLAM::Dataset>(new D());}\
+    extern "C" GSLAM::Dataset* createDataset##E(){ return new D();}\
     class D##E##_Register{ \
     public: D##E##_Register(){\
     GSLAM::DatasetFactory::instance()._ext2creator.insert(#E,createDataset##E);\
@@ -18,7 +18,7 @@ namespace GSLAM{
 /// create
 class Dataset;
 typedef SPtr<Dataset> DatasetPtr;
-typedef SPtr<Dataset> (*funcCreateDataset)();
+typedef Dataset* (*funcCreateDataset)();
 
 // A dataset configuration file : DatasetName.DatasetType --eg. Sequence1.kitti desk.tumrgbd
 class Dataset : public GSLAM::GObject
@@ -226,14 +226,14 @@ inline DatasetPtr DatasetFactory::create(std::string dataset)
         SharedLibraryPtr plugin=Registry::get("libgslamDB_"+extension);
         if(!plugin.get()) return DatasetPtr();
         funcCreateDataset createFunc=(funcCreateDataset)plugin->getSymbol("createDataset"+extension);
-        if(createFunc) return createFunc();
+        if(createFunc) return DatasetPtr(createFunc());
     }
 
     if(!instance()._ext2creator.exist(extension)) return DatasetPtr();
     funcCreateDataset createFunc=instance()._ext2creator.get_var(extension,NULL);
     if(!createFunc) return DatasetPtr();
 
-    return createFunc();
+    return DatasetPtr(createFunc());
 }
 
 }

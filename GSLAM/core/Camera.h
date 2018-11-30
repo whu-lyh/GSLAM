@@ -13,9 +13,6 @@
 
 namespace GSLAM {
 
-//typedef pi::Camera  Camera;
-typedef pi::Point2d Point2d;
-typedef pi::Point3d Point3d;
 class CameraImpl//No camera
 {
 public:
@@ -396,7 +393,7 @@ inline Point3d CameraOpenCV::UnProject(const Point2d& p2d)const
         x = (x0 - deltaX)*icdist;
         y = (y0 - deltaY)*icdist;
     }
-    return pi::Point3d(x,y,1);
+    return Point3d(x,y,1);
 }
 
 

@@ -1,6 +1,7 @@
 #include "GSLAM/core/Dataset.h"
 #include "GSLAM/core/VideoFrame.h"
 #include "GSLAM/core/VecParament.h"
+#include <GSLAM/core/SE3.h>
 #include "IO.h"
 
 using namespace std;

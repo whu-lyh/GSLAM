@@ -270,15 +270,15 @@ void MapVisualizer::drawRect(GSLAM::SIM3 pose,GSLAM::ColorType color)
     if(!_camera.isValid()) _camera=GSLAM::Camera({640.,480.,500.,500.,320.,240.});
     {
         Point3d t=pose.get_translation();
-        pi::Point3d tl=_camera.UnProject(pi::Point2d(0,0));
-        pi::Point3d tr=_camera.UnProject(pi::Point2d(_camera.width(),0));
-        pi::Point3d bl=_camera.UnProject(pi::Point2d(0,_camera.height()));
-        pi::Point3d br=_camera.UnProject(pi::Point2d(_camera.width(),_camera.height()));
+        Point3d tl=_camera.UnProject(Point2d(0,0));
+        Point3d tr=_camera.UnProject(Point2d(_camera.width(),0));
+        Point3d bl=_camera.UnProject(Point2d(0,_camera.height()));
+        Point3d br=_camera.UnProject(Point2d(_camera.width(),_camera.height()));
 
-        GSLAM::Point3Type  W_tl=pose*(pi::Point3d(tl.x,tl.y,1));
-        GSLAM::Point3Type  W_tr=pose*(pi::Point3d(tr.x,tr.y,1));
-        GSLAM::Point3Type  W_bl=pose*(pi::Point3d(bl.x,bl.y,1));
-        GSLAM::Point3Type  W_br=pose*(pi::Point3d(br.x,br.y,1));
+        GSLAM::Point3Type  W_tl=pose*(Point3d(tl.x,tl.y,1));
+        GSLAM::Point3Type  W_tr=pose*(Point3d(tr.x,tr.y,1));
+        GSLAM::Point3Type  W_bl=pose*(Point3d(bl.x,bl.y,1));
+        GSLAM::Point3Type  W_br=pose*(Point3d(br.x,br.y,1));
 
         glBegin(GL_LINES);
         glLineWidth(2.5);
