@@ -30,7 +30,7 @@ pi_add_target(gslam_tests SHARED GSLAM/plugins/tests REQUIRED System MODULES Ope
 pi_add_target(gslam_evaluate SHARED GSLAM/plugins/evaluate REQUIRED System)
 
 pi_add_target(gslam_optimizer SHARED GSLAM/plugins/optimizer_ceres REQUIRED System Eigen3 Ceres GLOG)
-pi_add_target(gslam_estimator SHARED GSLAM/plugins/estimator_opencv REQUIRED OpenCV)
+#pi_add_target(gslam_estimator SHARED GSLAM/plugins/estimator_opencv REQUIRED OpenCV)
 
 pi_add_target(gslamDB_euroc SHARED GSLAM/plugins/Datasets/DatasetEuroc.cpp REQUIRED OpenCV)
 pi_add_target(gslamDB_kitti SHARED GSLAM/plugins/Datasets/DatasetKITTI.cpp REQUIRED OpenCV)

@@ -3,6 +3,8 @@
 #include <GSLAM/core/Random.h>
 #include <GSLAM/core/Array.h>
 
+using namespace GSLAM;
+
 TEST(Estimator,HomographyRANSAC){
     auto estimator=GSLAM::Estimator::create();
     if(!estimator.get())
@@ -11,9 +13,9 @@ TEST(Estimator,HomographyRANSAC){
         return ;
     }
 
-    double H[9]={1,2,3,
+    Homography2D H({1,2,3,
                  4,5,6,
-                 0,0,1};
+                 0,0,1});
     std::vector<GSLAM::Point2d> src,dst;
     int n=svar.GetInt("HomographyTest.Num",100);
     src.reserve(n);
@@ -22,8 +24,8 @@ TEST(Estimator,HomographyRANSAC){
     for(int i=0;i<n;i++){
         GSLAM::Point2d pt(GSLAM::Random::RandomValue(0.0,100.),
                           GSLAM::Random::RandomValue(0.0,100.));
-        GSLAM::Point2d pt1(H[0]*pt.x+H[1]*pt.y+H[2],
-                           H[3]*pt.x+H[4]*pt.y+H[5]);
+        Vector3d v3=H*Vector3d(pt.x,pt.y,1);
+        GSLAM::Point2d pt1(v3[0]/v3[2],v3[1]/v3[2]);
         GSLAM::Point2d noise(GSLAM::Random::RandomGaussianValue(0.,0.1),
                              GSLAM::Random::RandomGaussianValue(0.,0.1));
         src.push_back(pt);
@@ -31,20 +33,18 @@ TEST(Estimator,HomographyRANSAC){
         noises.push_back(noise.norm());
     }
 
-    double H_est[9];
+    Homography2D H_est;
     std::vector<uchar> mask;
     EXPECT_TRUE(estimator->findHomography(H_est,src,dst,GSLAM::RANSAC,1,&mask));
 
-    std::cout<<"H:";
-    for(int i=0;i<9;i++) std::cout<<","<<H_est[i];
-    std::cout<<"\n";
+    std::cout<<"H:"<<H_est;
 
     // compute average error
     std::vector<double> errors;
     for(int i=0;i<n;i++){
         GSLAM::Point2d pt(src[i]);
-        GSLAM::Point2d pt1(H_est[0]*pt.x+H_est[1]*pt.y+H_est[2],
-                           H_est[3]*pt.x+H_est[4]*pt.y+H_est[5]);
+        Vector3d v3=H*Vector3d(pt.x,pt.y,1);
+        GSLAM::Point2d pt1(v3[0]/v3[2],v3[1]/v3[2]);
         pt=pt1-dst[i];
         errors.push_back(pt.norm());
     }
@@ -81,19 +81,14 @@ TEST(Estimator,FundamentalSevenPoint)
       points2[i] = GSLAM::Point2d(points2_raw[2 * i], points2_raw[2 * i + 1]);
     }
 
-    double F[9];
-    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,GSLAM::FM_7POINT));
+    Fundamental F;
+    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F7_Point&RANSAC));
 
     // Reference values obtained from Matlab.
-    EXPECT_LE(fabs(F[0]-4.81441976), 1e-6);
-    EXPECT_LE(fabs(F[1]+8.16978909), 1e-6);
-    EXPECT_LE(fabs(F[2]-6.73133404), 1e-6);
-    EXPECT_LE(fabs(5.16247992-F[3]), 1e-6);
-    EXPECT_LE(fabs(0.19325606-F[4]), 1e-6);
-    EXPECT_LE(fabs(-2.87239381-F[5]), 1e-6);
-    EXPECT_LE(fabs(-9.92570126-F[6]), 1e-6);
-    EXPECT_LE(fabs(3.64159554-F[7]), 1e-6);
-    EXPECT_LE(fabs(1.-F[8]), 1e-6);
+    Fundamental Ff({4.81441976,-8.16978909,6.73133404,
+                   5.16247992,0.19325606,-2.87239381,
+                   -9.92570126,3.64159554,1.});
+    EXPECT_TRUE(Ff.equal(F,1e-6));
 }
 
 
@@ -126,20 +121,20 @@ TEST(Estimator,FundamentalEightPoint)
       points2[i] = GSLAM::Point2d(points2_raw[2 * i], points2_raw[2 * i + 1]);
     }
 
-    double F[9];
-    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,GSLAM::FM_8POINT));
+    Fundamental F;
+    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F8_Point&RANSAC));
 
     // Reference values obtained from Matlab.
-    for(int i=0;i<9;i++) F[i]*=0.0221019;
-    EXPECT_LE(fabs(-0.217859-F[0]), 2e-2);
-    EXPECT_LE(fabs(0.419282-F[1]), 2e-2);// TODO : why opencv impementation not pass <1-5
-    EXPECT_LE(fabs(-0.0343075-F[2]), 1e-2);
-    EXPECT_LE(fabs(-0.0717941-F[3]), 1e-2);
-    EXPECT_LE(fabs(0.0451643-F[4]), 1e-2);
-    EXPECT_LE(fabs(0.0216073-F[5]), 1e-2);
-    EXPECT_LE(fabs(0.248062-F[6]), 2e-2);
-    EXPECT_LE(fabs(-0.429478-F[7]), 2e-2);
-    EXPECT_LE(fabs(0.0221019-F[8]), 1e-2);
+    F*=0.0221019;
+    EXPECT_LE(fabs(-0.217859-F(0,0)), 2e-2);
+    EXPECT_LE(fabs(0.419282-F(0,1)), 2e-2);// TODO : why opencv impementation not pass <1-5
+    EXPECT_LE(fabs(-0.0343075-F(0,2)), 1e-2);
+    EXPECT_LE(fabs(-0.0717941-F(1,0)), 1e-2);
+    EXPECT_LE(fabs(0.0451643-F(1,1)), 1e-2);
+    EXPECT_LE(fabs(0.0216073-F(1,2)), 1e-2);
+    EXPECT_LE(fabs(0.248062-F(2,0)), 2e-2);
+    EXPECT_LE(fabs(-0.429478-F(2,1)), 2e-2);
+    EXPECT_LE(fabs(0.0221019-F(2,2)), 1e-2);
 }
 
 TEST(Estimator,EssentialFivePoint) {

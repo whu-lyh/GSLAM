@@ -103,10 +103,6 @@ Everything lives in the <code>TooN</code> namespace.
 /// @defgroup gApplication Applications of GSLAM
 /// GSLAM provides some helpful applications for users based on the framework.
 
-/// @ingroup gInterface
-class Zhaoyong{
-int name;
-};
 
 
 
