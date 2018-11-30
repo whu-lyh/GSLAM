@@ -61,6 +61,7 @@ typedef Fundamental Essential;
 typedef Matrix<double,3,4> Affine3D;
 
 enum EstimatorMethod {
+    MODEL_METHOD=0xFF,
     F8_Point,
     F7_Point,
     E5_Stewenius,
@@ -78,9 +79,10 @@ enum EstimatorMethod {
     A4_Point,
     S3_Horn,
     P3_Plane,
-    NOSAMPLE=  0,
-    RANSAC  =  0,      //!< RANSAC algorithm
-    LMEDS   =  1       //!< least-median algorithm
+    SAMPLE_METHOD=0xF00,
+    RANSAC  =  0<<8,      //!< RANSAC algorithm
+    LMEDS   =  1<<8,      //!< least-median algorithm
+    NOSAMPLE=  2<<8
 };
 
 class Estimator : public GObject {
@@ -95,77 +97,73 @@ class Estimator : public GObject {
   virtual bool findHomography(Homography2D& H,  // 3x3 dof=8
                               const std::vector<Point2d>& srcPoints,
                               const std::vector<Point2d>& dstPoints,
-                              int method = H4_Point&RANSAC,
-                              double ransacReprojThreshold = 3,
-                              std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                              int    method = H4_Point&RANSAC,
+                              double threshold = 3,
+                              double confidence = 0.99,
+                              std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool findAffine2D(Affine2D& A,  // 2X3
                             const std::vector<Point2d>& srcPoints,
                             const std::vector<Point2d>& dstPoints,
-                            bool fullAffine = true) const {
-    return false;
-  }
+                            int method = A3_Point&RANSAC,
+                            double threshold = 3,
+                            double confidence = 0.99,
+                            std::vector<uchar>* mask = NULL) const =0;
 
   virtual bool findFundamental(Fundamental& F,  // 3x3
                                const std::vector<Point2d>& points1,
                                const std::vector<Point2d>& points2,
                                int method = F8_Point&RANSAC,
-                               double param1 = 3., double param2 = 0.99,
-                               std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                               double threshold = 3.,
+                               double confidence = 0.99,
+                               std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool findEssentialMatrix(Essential E,  // 3x3 dof=5
                                    const std::vector<Point2d>& points1,
                                    const std::vector<Point2d>& points2,
                                    int method = E5_Nister&RANSAC,
-                                   double param1 = 0.01, double param2 = 0.99,
-                                   std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                                   double threshold = 0.01,
+                                   double confidence = 0.99,
+                                   std::vector<uchar>* mask = NULL) const  = 0;
 
   // 3D corrospondences
-  virtual bool findSIM3(SIM3& S, const std::vector<Point3d>& from,
-                        const std::vector<Point3d>& to, int method = 0,
-                        double ransacThreshold = -1,
-                        std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+  virtual bool findSIM3(SIM3& S,
+                        const std::vector<Point3d>& from,
+                        const std::vector<Point3d>& to,
+                        int    method = S3_Horn&RANSAC,
+                        double threshold = 0.01,
+                        double confidence = 0.99,
+                        std::vector<uchar>* mask = NULL) const = 0;
 
-  virtual bool findAffine3D(Affine3D& A, const std::vector<Point3d>& src,
+  virtual bool findAffine3D(Affine3D& A,
+                            const std::vector<Point3d>& src,
                             const std::vector<Point3d>& dst,
-                            std::vector<int>* inliers = NULL,
-                            double ransacThreshold = 3,
-                            double confidence = 0.99) const {
-    return false;
-  }
+                            int    method = A4_Point&RANSAC,
+                            double threshold =  0.01,
+                            double confidence = 0.99,
+                            std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool findPlane(SE3& plane,
                          const std::vector<Point3d>& points,  // NOLINT
-                         int method = 0, double ransacThreshold = -1.,
-                         std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                         int    method = P3_Plane&RANSAC,
+                         double threshold =  0.01,
+                         double confidence = 0.99,
+                         std::vector<uchar>* mask = NULL) const = 0;
 
   // 2D&3D corrospondences
-  virtual bool findPnPRansac(
-      SE3& world2camera, const std::vector<Point3d>& objectPoints,
-      const std::vector<Point2d>& imagePoints, const GSLAM::Camera& camera,
-      bool useExtrinsicGuess = false, int iterationsCount = 100,
-      float reprojectionError = 8.0, int minInliersCount = 100,
-      std::vector<int>* inliers = NULL, int flags = P3_ITERATIVE) const {
-    return false;
-  }
+  virtual bool findPnP( SE3& world2camera,
+                        const std::vector<Point3d>& objectPoints,
+                        const std::vector<Point2d>& imagePoints,
+                        int    method = P3_ITERATIVE&RANSAC,
+                        double threshold =  0.01,
+                        double confidence = 0.99,
+                        std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool trianglate(
       const SE3& ref2cur,
       const Point3d& refDirection,  // camera.UnProject(ref2d)
       const Point3d& curDirection,  // camera.UnProject(cur2d)
-      Point3d& refPt) const {       // NOLINT
-    return false;
-  }
+      Point3d& refPt) const  = 0;
 
   static EstimatorPtr create(std::string pluginName = "") {
     funcCreateEstimatorInstance createFunc =

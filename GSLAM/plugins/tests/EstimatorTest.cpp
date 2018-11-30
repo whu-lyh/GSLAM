@@ -35,7 +35,7 @@ TEST(Estimator,HomographyRANSAC){
 
     Homography2D H_est;
     std::vector<uchar> mask;
-    EXPECT_TRUE(estimator->findHomography(H_est,src,dst,GSLAM::RANSAC,1,&mask));
+    EXPECT_TRUE(estimator->findHomography(H_est,src,dst,GSLAM::RANSAC,1.,0.99,&mask));
 
     std::cout<<"H:"<<H_est;
 
@@ -82,12 +82,13 @@ TEST(Estimator,FundamentalSevenPoint)
     }
 
     Fundamental F;
-    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F7_Point&RANSAC));
+    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F7_Point|RANSAC));
 
     // Reference values obtained from Matlab.
     Fundamental Ff({4.81441976,-8.16978909,6.73133404,
                    5.16247992,0.19325606,-2.87239381,
                    -9.92570126,3.64159554,1.});
+//    LOG(INFO)<<"F:\n"<<F;
     EXPECT_TRUE(Ff.equal(F,1e-6));
 }
 
@@ -122,7 +123,7 @@ TEST(Estimator,FundamentalEightPoint)
     }
 
     Fundamental F;
-    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F8_Point&RANSAC));
+    EXPECT_TRUE(estimator->findFundamental(F,points1,points2,F8_Point|RANSAC));
 
     // Reference values obtained from Matlab.
     F*=0.0221019;
@@ -202,7 +203,7 @@ TEST(Estimator,SE3PlaneRansac) {
 
     GSLAM::SE3 plane;
     std::vector<uchar> inlier_mask;
-    EXPECT_TRUE(estimator->findPlane(plane,points,GSLAM::RANSAC,0.02,&inlier_mask));
+    EXPECT_TRUE(estimator->findPlane(plane,points,GSLAM::RANSAC,0.02,0.99,&inlier_mask));
 
     EXPECT_FALSE(inlier_mask[8]);
     EXPECT_FALSE(inlier_mask[9]);
