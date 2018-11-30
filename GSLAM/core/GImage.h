@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stddef.h>
 #include <atomic>
 
 #if defined(HAS_OPENCV) || defined(HAS_OPENCV3)
@@ -171,8 +172,12 @@ public:
                 release();
             }
         }
+        cols=rows=flags=0;
+        data=NULL;
+        refCount=NULL;
     }
 
+    // This is not thread safe when GImage not empty!
     GImage& operator=(const GImage& rhs)
     {
         this->~GImage();
@@ -249,7 +254,7 @@ public:
             // construct a UMat that ref to data
             cv::UMatData* u=new cv::UMatData(cv::Mat::getStdAllocator());
             u->data=data;
-#if CV_VERSION_MINOR==3
+#if CV_VERSION_MINOR>=3
             u->origdata=((uchar**)data)[-1];
 #else
             u->origdata=data;
@@ -308,13 +313,13 @@ public:
         if(refCount==((int*)(data+alignBytes))) // OpenCV2 style
         {
             cols=rows=0;
-            refCount=NULL;
             fastFree(data);
+            refCount=NULL;
             data=NULL;
         }
         else// OpenCV3 style
         {
-            GSLAM::UMatData* u=(GSLAM::UMatData*)(((uchar*)refCount)-sizeof(int)-sizeof(void*)*2);
+            UMatData* u=(UMatData*)(((uchar*)refCount)-offsetof(UMatData,refcount));
             if(u->userdata==data+alignBytes)
             {
                 // this is allocated by GImage, we need minus both refcount
@@ -377,20 +382,21 @@ private:
         return (sz + n-1) & -n;
     }
 
-    void deallocate(GSLAM::UMatData* u) const// for OpenCV Version 3
+    void deallocate(UMatData* u) const// for OpenCV Version 3
     {
         if(!u)
             return;
 
         assert(u->urefcount == 0);
         assert(u->refcount == 0);
-        if( !(u->flags & GSLAM::UMatData::USER_ALLOCATED) )
+        if( !(u->flags & UMatData::USER_ALLOCATED) )
         {
-#if CV_VERSION_MINOR==3&&CV_VERSION_MAJOR==3
-            free(u->origdata);
-#else
-            fastFree(u->origdata);
-#endif
+            uchar* udata = ((uchar**)u->origdata)[-1];
+            int n=u->origdata-udata;
+            if((n & (n - 1)) == 0&&n>=0&&n<=32){
+                fastFree(u->origdata);
+            }
+            else free(u->origdata);
             u->origdata = 0;
         }
         delete u;
