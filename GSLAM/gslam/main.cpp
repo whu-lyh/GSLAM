@@ -31,7 +31,7 @@ int main(int argc,char** argv)
         }
 
         GSLAM::Messenger msg=app->init(svar);
-        if(svar.Get<bool>("help")){
+        if(svar.GetInt("help")){
             std::stringstream sst;
             sst<<"Usage:\n gslam "<<appname
               <<" [--help] [-conf configure_file] [-arg_name arg_value]...\n\n"

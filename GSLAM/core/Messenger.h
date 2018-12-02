@@ -98,7 +98,10 @@ class ThreadPool {
       -> std::future<typename std::result_of<F(Args...)>::type>;
 
   size_t taskNumLeft() { return tasks.size(); }
-
+  void   popTask(){
+      std::unique_lock<std::mutex> lock(queue_mutex);
+      tasks.pop();
+  }
  private:
   // Keep track of threads so we can join them
   std::vector<std::thread> workers;
@@ -219,10 +222,11 @@ class Subscriber {
     //        "<<typeinfo.name();
     if (!impl_) return;
     if (impl_->unsubscribed_) return;
-    if (impl_->workthread_ &&
-        impl_->workthread_->taskNumLeft() < impl_->queue_size_) {// FIXME: what to do when queue size large
-      impl_->workthread_->Add([this, message]() { impl_->callback_(message); });
-      return;
+    if (impl_->workthread_ ){
+        if(impl_->workthread_->taskNumLeft() >= impl_->queue_size_)
+            impl_->workthread_->popTask();
+        impl_->workthread_->Add([this, message]() { impl_->callback_(message); });
+        return;
     }
     impl_->callback_(message);
   }
@@ -608,10 +612,11 @@ void Publisher::publish(const std::shared_ptr<M>& message) const {
       return;
   }
 
-  if (impl_->workthread_ &&
-      impl_->workthread_->taskNumLeft() < impl_->queue_size_) {
-      // FIXME: what to do when queue size large
-    impl_->workthread_->Add([this, message]() {
+  if (impl_->workthread_ ) {
+
+      if(impl_->workthread_->taskNumLeft() >= impl_->queue_size_)
+          impl_->workthread_->popTask();
+      impl_->workthread_->Add([this, message]() {
 
       std::set<Subscriber> subscribers;
       {

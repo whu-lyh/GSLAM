@@ -10,6 +10,15 @@
   extern "C" GSLAM::Application* createApplicationInstance() {          \
     return new APP();                      \
 }
+#define REGISTER_BUILDIN_APPLICATION(APP,NAME)                                  \
+  extern "C" GSLAM::Application* createApplication##NAME() {          \
+    return new APP();                      \
+}\
+    class APP##NAME##_Register{ \
+    public: APP##NAME##_Register(){\
+    GSLAM::SvarWithType<GSLAM::funcCreateApplication>::instance()\
+    .insert(#NAME,createApplication##NAME);\
+}} APP##NAME##_instance;
 
 namespace GSLAM{
 
@@ -30,13 +39,17 @@ public:
     virtual Messenger init(Svar configuration)=0;
 
     static ApplicationPtr create(const std::string& path){
+        auto createFunc=GSLAM::SvarWithType<GSLAM::funcCreateApplication>::instance()
+                .get_var(path,NULL);
+        if(createFunc)
+            return ApplicationPtr(createFunc());
         SharedLibraryPtr plugin=Registry::get(path);
         if(!plugin)
             plugin=Registry::get("libgslam_"+path);
         if(!plugin)
             plugin=Registry::get("lib"+path);
         if(!plugin) return ApplicationPtr();
-        auto createFunc = (funcCreateApplication)plugin->getSymbol(
+        createFunc = (funcCreateApplication)plugin->getSymbol(
             "createApplicationInstance");
         if (!createFunc)
           return ApplicationPtr();

@@ -56,6 +56,10 @@ class ThreadPool {
       ->std::future<typename std::result_of<F(Args...)>::type>;
 
   size_t taskNumLeft() { return tasks.size(); }
+  void   popTask(){
+      std::unique_lock<std::mutex> lock(queue_mutex);
+      tasks.pop();
+  }
  private:
   // Keep track of threads so we can join them
   std::vector<std::thread> workers;
