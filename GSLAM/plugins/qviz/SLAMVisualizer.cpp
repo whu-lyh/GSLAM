@@ -25,14 +25,14 @@ void SLAMVisualizer::draw(){
             d.second->_obj->draw();
 }
 
-void SLAMVisualizer::handle(const SPtr<GObject>& obj){
+void SLAMVisualizer::handle(const std::shared_ptr<GObject>& obj){
     if(!obj) return;
     if(auto e=std::dynamic_pointer_cast<Map>(obj))
     {
         if(_map!=e){
             _map=e;
             if(!_vis)
-                _vis=SPtr<MapVisualizer>(new MapVisualizer(_map,_name,dynamic_cast<GObjectHandle*>(this)));
+                _vis=std::shared_ptr<MapVisualizer>(new MapVisualizer(_map,_name,dynamic_cast<GObjectHandle*>(this)));
             else _vis->setMap(_map);
         }
         _vis->update();

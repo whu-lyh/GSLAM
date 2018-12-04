@@ -343,9 +343,9 @@ void MapVisualizer::update()
             gpsError.push_back(ecef);
         }
 
-        std::map<GSLAM::FrameID,SPtr<GSLAM::FrameConnection> > children;
+        std::map<GSLAM::FrameID,std::shared_ptr<GSLAM::FrameConnection> > children;
         if(!fr->getParents(children)) continue;
-        for(std::pair<GSLAM::FrameID,SPtr<GSLAM::FrameConnection> > child:children)
+        for(std::pair<GSLAM::FrameID,std::shared_ptr<GSLAM::FrameConnection> > child:children)
         {
             GSLAM::FramePtr ch=_map->getFrame(child.first);
             if(!ch) continue;
@@ -424,7 +424,7 @@ void MapVisualizer::updateCurframe(const GSLAM::FramePtr& curFrame)
 {
     _curFrame=curFrame;
     Point3d t=_curFrame->getPose().get_translation();
-    std::map<GSLAM::FrameID,SPtr<GSLAM::FrameConnection> > parents;
+    std::map<GSLAM::FrameID,std::shared_ptr<GSLAM::FrameConnection> > parents;
     std::vector<Point3d> curConnection;
     if(curFrame->getParents(parents))
     {

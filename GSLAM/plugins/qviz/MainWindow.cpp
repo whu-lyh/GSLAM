@@ -460,7 +460,7 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
         std::string slamName =topicName.substr(0,idx);
         if(slamName.empty()) return;
         if(!win3d->_objects.exist(slamName)){
-            SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
+            std::shared_ptr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
             win3d->_objects.insert(slamName,vis);
         }
         LOG(INFO)<<"Auto visualize Map "<<topicName;
@@ -472,7 +472,7 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
         std::string slamName =topicName.substr(0,idx);
         if(slamName.empty()) return;
         if(!win3d->_objects.exist(slamName)){
-            SPtr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
+            std::shared_ptr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
             win3d->_objects.insert(slamName,vis);
         }
         LOG(INFO)<<"Auto visualize MapFrame "<<topicName;
@@ -480,7 +480,7 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
     else if(typeid(GSLAM::GImage).name()==typeName){
         std::string topicName=topic.toStdString();
         Subscriber sub=GSLAM::Messenger::instance().
-                subscribe<GImage>(topicName,0,[this,topicName](const SPtr<GImage>& img){
+                subscribe<GImage>(topicName,0,[this,topicName](const std::shared_ptr<GImage>& img){
             gimageVis->imshow(topicName,*img);
         });
         LOG(INFO)<<"Auto visualize GImage "<<topicName;
@@ -580,7 +580,7 @@ void SCommandAction::triggerdSlot()
 }
 
 
-void MainWindow::handle(const SPtr<GObject>& obj)
+void MainWindow::handle(const std::shared_ptr<GObject>& obj)
 {
     if(auto e=dynamic_pointer_cast<DebugImageEvent>(obj)){
         gimageVis->imshow(e->_name,e->_img);

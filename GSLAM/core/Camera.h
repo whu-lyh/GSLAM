@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <sstream>
-#include "SE3.h"
 #include "Point.h"
 #include "SPtr.h"
 
@@ -144,7 +143,7 @@ private:
 class Camera
 {
 public:
-    Camera(const SPtr<CameraImpl>& Impl=SPtr<CameraImpl>(new CameraImpl()));
+    Camera(const std::shared_ptr<CameraImpl>& Impl=std::shared_ptr<CameraImpl>(new CameraImpl()));
     Camera(const std::vector<double>& paras);
 
     std::string CameraType()const{return impl->CameraType();}
@@ -165,7 +164,7 @@ public:
     Camera      estimatePinHoleCamera(void)const;
 
 private:
-    SPtr<CameraImpl> impl;
+    std::shared_ptr<CameraImpl> impl;
 };
 
 inline std::string CameraImpl::info()const{
@@ -397,7 +396,7 @@ inline Point3d CameraOpenCV::UnProject(const Point2d& p2d)const
 }
 
 
-inline Camera::Camera(const SPtr<CameraImpl>& Impl):impl(Impl)
+inline Camera::Camera(const std::shared_ptr<CameraImpl>& Impl):impl(Impl)
 {
 }
 
@@ -409,7 +408,7 @@ inline Camera::Camera(const std::vector<double> &p)
     else if(p.size()==7) cam=new CameraATAN((int)p[0],(int)p[1],p[2],p[3],p[4],p[5],p[6]);
     else if(p.size()==11) cam=new CameraOpenCV((int)p[0],(int)p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10]);
     else cam=new CameraImpl();
-    impl=SPtr<CameraImpl>(cam);
+    impl=std::shared_ptr<CameraImpl>(cam);
 }
 
 inline Camera Camera::estimatePinHoleCamera()const
@@ -465,7 +464,7 @@ inline Camera Camera::estimatePinHoleCamera()const
     else            _fy = _fx;
 
     CameraPinhole* camera = new CameraPinhole(iw, ih, _fx, _fy, _cx, _cy);
-    SPtr<CameraImpl> impl_result = SPtr<CameraImpl>(camera);
+    std::shared_ptr<CameraImpl> impl_result = std::shared_ptr<CameraImpl>(camera);
 
     return Camera(impl_result);
 }

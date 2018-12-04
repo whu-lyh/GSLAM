@@ -35,7 +35,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include "GSLAM.h"
+#include "Map.h"
 
 namespace GSLAM {
 

@@ -20,7 +20,7 @@ public:
     void releaseSLAM(){_slam=SLAMPtr();}
 
     virtual void draw();
-    virtual void handle(const SPtr<GObject>& obj);
+    virtual void handle(const std::shared_ptr<GObject>& obj);
 
 signals:
     void signalUpdate();
@@ -35,11 +35,11 @@ protected:
     GObjectHandle*                    _handle;
     std::string                       _name;
 
-    std::map<std::string,SPtr<DrawableEvent> > _objects;
+    std::map<std::string,std::shared_ptr<DrawableEvent> > _objects;
     MapPtr                            _map;
-    SPtr<MapVisualizer>               _vis;
+    std::shared_ptr<MapVisualizer>               _vis;
 };
 
-typedef SPtr<SLAMVisualizer> SLAMVisualizerPtr;
+typedef std::shared_ptr<SLAMVisualizer> SLAMVisualizerPtr;
 }
 #endif

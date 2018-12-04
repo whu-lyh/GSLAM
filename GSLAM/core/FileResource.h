@@ -5,8 +5,7 @@
 #include <istream>
 #include <stdio.h>
 #include <vector>
-#include <GSLAM/core/Svar.h>
-#include <GSLAM/core/SPtr.h>
+#include "Svar.h"
 
 #define GSLAM_REGISTER_RESOURCE(R) \
     class ResourceRegister##R{\

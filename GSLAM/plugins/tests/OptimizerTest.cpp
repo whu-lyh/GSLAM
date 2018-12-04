@@ -156,7 +156,7 @@ TEST(Optimizer,OptimizePoseSimulate)
             }
         }
 
-        SPtr<Optimizer> opt=Optimizer::create();
+        std::shared_ptr<Optimizer> opt=Optimizer::create();
         if(!opt)
         {
             LOG(ERROR)<<"No valid optimizer plugin!";
@@ -198,7 +198,7 @@ TEST(Optimizer,OptimizePnPSimulate)
     }
 
 
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";
@@ -236,7 +236,7 @@ TEST(Optimizer,ICPSimulate)
     }
 
     GSLAM::SIM3 estSim3;
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";
@@ -296,7 +296,7 @@ TEST(Optimizer,SE3GraphSimulate)
      }
      PlyObject ply("SE3GraphSimulate.ply");
      for(KeyFrameEstimzation& kf:graph.keyframes) ply.addPoint(kf.estimation.get_translation(),GSLAM::ColorType(255,0,0));
-     SPtr<Optimizer> opt=Optimizer::create();
+     std::shared_ptr<Optimizer> opt=Optimizer::create();
      if(!opt)
      {
          LOG(ERROR)<<"No valid optimizer plugin!";
@@ -352,7 +352,7 @@ TEST(Optimizer,SIM3GraphSimulate)
     }
     PlyObject ply("SIM3GraphSimulate.ply");
     for(KeyFrameEstimzation& kf:graph.keyframes) ply.addPoint(kf.estimation.get_translation(),GSLAM::ColorType(255,0,0));
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";
@@ -431,7 +431,7 @@ TEST(Optimizer,GPSGraphSimulate)
     }
     PlyObject ply("GPSGraphSimulate.ply");
     for(KeyFrameEstimzation& kf:graph.keyframes) ply.addPoint(kf.estimation.get_translation(),GSLAM::ColorType(255,0,0));
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";
@@ -498,7 +498,7 @@ TEST(Optimizer,MapPointBundleSimulate)
         ply.addPoint(pWorld+pWorldNoise,ColorType(255,0,0));
     }
 
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";
@@ -563,7 +563,7 @@ TEST(Optimizer,InvDepthBundleSimulate)
         ply.addPoint(firstPose*(pCamera*(pDepth.x+depthNoise)),ColorType(255,0,0));
     }
 
-    SPtr<Optimizer> opt=Optimizer::create();
+    std::shared_ptr<Optimizer> opt=Optimizer::create();
     if(!opt)
     {
         LOG(ERROR)<<"No valid optimizer plugin!";

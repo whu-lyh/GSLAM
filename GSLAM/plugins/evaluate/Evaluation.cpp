@@ -1,4 +1,5 @@
 #include <GSLAM/core/GSLAM.h>
+#include <GSLAM/core/MemoryMetric.h>
 
 namespace GSLAM{
 

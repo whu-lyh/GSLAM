@@ -31,7 +31,7 @@ public:
     template <typename T>
     static void write(std::ostream& ost,T& obj){ost.write((char*)&obj,sizeof(obj));}
 };
-typedef SPtr<TileBase> TilePtr;
+typedef std::shared_ptr<TileBase> TilePtr;
 
 class ImageTile : public TileBase
 {
@@ -65,7 +65,7 @@ public:
 
     GImage  _image;
 };
-typedef SPtr<ImageTile> ImageTilePtr;
+typedef std::shared_ptr<ImageTile> ImageTilePtr;
 
 class TerrainTile : public ImageTile
 {
@@ -102,7 +102,7 @@ public:
 
     GImage  _dem;
 };
-typedef SPtr<TerrainTile> TerrainTilePtr;
+typedef std::shared_ptr<TerrainTile> TerrainTilePtr;
 
 class TerrainTileWithInfo: public TerrainTile
 {
@@ -139,7 +139,7 @@ class TerrainTileWithInfo: public TerrainTile
     Point3i _location;
     double  _timestamp;
 };
-typedef SPtr<TerrainTileWithInfo> TerrainTileWithInfoPtr;
+typedef std::shared_ptr<TerrainTileWithInfo> TerrainTileWithInfoPtr;
 
 class TileManager: public GObject
 {
@@ -179,7 +179,7 @@ protected:
     TileArea _area;
     TileProjectionPtr _projection;
 };
-typedef SPtr<TileManager> TileManagerPtr;
+typedef std::shared_ptr<TileManager> TileManagerPtr;
 
 }
 

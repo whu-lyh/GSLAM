@@ -69,8 +69,6 @@
 
 #endif
 
-#include "Mutex.h"
-#include "SPtr.h"
 #include "Svar.h"
 #include "Glog.h"
 
@@ -86,6 +84,8 @@ class SharedLibrary
         SHLIB_LOCAL_IMPL  = 2
     };
 public:
+    typedef std::mutex MutexRW;
+    typedef std::unique_lock<std::mutex> WriteMutex;
     SharedLibrary():_handle(NULL){}
         /// Creates a SharedLibrary object.
 

@@ -58,7 +58,7 @@ public:
     }
 
     virtual int setupLayout(void);
-    virtual void handle(const SPtr<GObject>& obj);
+    virtual void handle(const std::shared_ptr<GObject>& obj);
 
     void call(QString cmd);
 

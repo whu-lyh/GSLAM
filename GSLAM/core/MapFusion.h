@@ -45,7 +45,7 @@
 namespace GSLAM {
 
 class MapFusion;
-typedef SPtr<MapFusion> MapFusionPtr;
+typedef std::shared_ptr<MapFusion> MapFusionPtr;
 typedef GSLAM::MapFusionPtr (*funcCreateMapFusionInstance)();
 
 class MapFusion : public GObject {
@@ -66,7 +66,7 @@ class MapFusion : public GObject {
   }
 
   static MapFusionPtr create(const std::string& pluginName) {
-    SPtr<SharedLibrary> plugin = Registry::get(pluginName);
+    std::shared_ptr<SharedLibrary> plugin = Registry::get(pluginName);
     if (!plugin) return MapFusionPtr();
     funcCreateMapFusionInstance createFunc =
         (funcCreateMapFusionInstance)plugin->getSymbol(

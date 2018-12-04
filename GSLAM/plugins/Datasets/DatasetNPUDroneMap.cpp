@@ -223,7 +223,7 @@ public:
         int frameId=curIdx++;
         if(frameId>=frames.size()) return FramePtr();
         DroneMapFrame& df=frames[frameId];
-        SPtr<RTMapperFrame> fr(new RTMapperFrame(frameId,df.timestamp));
+        std::shared_ptr<RTMapperFrame> fr(new RTMapperFrame(frameId,df.timestamp));
 
         fr->_imagePath=df.imagePath;
         fr->_image=imread(df.imagePath);
@@ -321,7 +321,7 @@ public:
 
         string imgFile=_seqTop+"/"+_nextImage[1];
         GImage img=imread(imgFile);
-        SPtr<GSLAM::MapFrame> frame(new GSLAM::FrameMono(_frameId++,imageTime,img,_camera,IMAGE_BGRA));
+        std::shared_ptr<GSLAM::MapFrame> frame(new GSLAM::FrameMono(_frameId++,imageTime,img,_camera,IMAGE_BGRA));
         prepareImageFrame();
         return frame;
     }

@@ -1,4 +1,5 @@
 #include "GSLAM/core/Application.h"
+#include <GSLAM/core/Dataset.h>
 #include <QApplication>
 #include "MainWindow.h"
 
@@ -14,10 +15,12 @@ public:
     virtual GSLAM::Messenger init(GSLAM::Svar configuration){
         config=configuration;
 
-        pub_gui=messenger.advertise<std::string>("gui",0);
+        pub_gui=messenger.advertise<std::string>("dataset/control",0);
         sub_gui=messenger.subscribe("visualize",0,&QVisualizer::process,this);
         sub_dataset_status=messenger.subscribe("dataset/status",0,
                            &QVisualizer::datasetStatusUpdated,this);
+        auto dataset=configuration.Arg<std::string>("dataset","","The dataset going to play.");
+        _player=std::make_shared<GSLAM::DatasetPlayer>(GSLAM::Dataset(dataset),messenger,configuration);;
 
         if(!configuration.Get<bool>("help"))
             work_thread=std::thread(&QVisualizer::gui_thread,this);
@@ -62,6 +65,7 @@ public:
     GSLAM::Publisher  pub_gui;
     GSLAM::Subscriber sub_gui,sub_dataset_status;
     std::shared_ptr<GSLAM::MainWindow> mainWindow;
+    std::shared_ptr<GSLAM::DatasetPlayer> _player;
 };
 
 REGISTER_APPLICATION(QVisualizer);

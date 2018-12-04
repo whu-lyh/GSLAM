@@ -259,7 +259,7 @@ public:
             gpsInfo.fromString(paras);
             if(gpsInfo.size()<1) continue;
 
-            SPtr<RTMapperFrame> frame(new RTMapperFrame(_frames.size(),gpsInfo[0]));
+            std::shared_ptr<RTMapperFrame> frame(new RTMapperFrame(_frames.size(),gpsInfo[0]));
             frame->_cameraName=cameraName;
             frame->_camera=camera;
             gpsInfo.data.erase(gpsInfo.data.begin());
@@ -328,7 +328,7 @@ public:
         while(child)
         {
             double timestamp=child->DoubleAttribute("timestamp");
-            SPtr<RTMapperFrame> frame(new RTMapperFrame(_frames.size(),timestamp));
+            std::shared_ptr<RTMapperFrame> frame(new RTMapperFrame(_frames.size(),timestamp));
 
             // FIXME: Get image path (convert from UTF-8 to local)
             string imgFile = child->Attribute("image");
@@ -460,9 +460,9 @@ public:
     {
         if( _frameId < _frames.size() )
         {
-            SPtr<RTMapperFrame> frame = _frames[_frameId++];
+            std::shared_ptr<RTMapperFrame> frame = _frames[_frameId++];
 
-            SPtr<RTMapperFrame> nf(new RTMapperFrame(frame->id(), frame->timestamp()));
+            std::shared_ptr<RTMapperFrame> nf(new RTMapperFrame(frame->id(), frame->timestamp()));
             *nf = *frame;
             nf->_image = imread(nf->_imagePath.c_str());
 
@@ -477,7 +477,7 @@ public:
     GSLAM::Camera    _camera;
     string           _name, _cameraName;
 
-    std::vector<SPtr<RTMapperFrame> >   _frames;
+    std::vector<std::shared_ptr<RTMapperFrame> >   _frames;
 
     std::thread      _prepareThread;
     bool             _shouldStop;

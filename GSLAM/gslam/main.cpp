@@ -5,6 +5,23 @@
 #include <sstream>
 
 using namespace std;
+using namespace GSLAM;
+
+class ApplicationDataset:public Application{
+public:
+    ApplicationDataset():Application("play"){}
+
+    Messenger init(Svar configuration){
+        auto dataset=configuration.Arg<std::string>("dataset","","The dataset going to play.");
+        _player=std::make_shared<DatasetPlayer>(Dataset(dataset),_messenger,configuration);
+        return _messenger;
+    }
+
+    std::shared_ptr<DatasetPlayer> _player;
+    Messenger                      _messenger;
+};
+
+REGISTER_BUILDIN_APPLICATION(ApplicationDataset,play);
 
 int main(int argc,char** argv)
 {
@@ -13,7 +30,6 @@ int main(int argc,char** argv)
     auto unParsed=svar.ParseMain(argc,argv);
     auto datasetPath=svar.Arg<std::string>("Dataset","","The Dataset location with extesion.");
     bool qviz=svar.Arg<bool>("qviz",true,"Use buildin Qt visualizer or not.");
-    svar.Arg<double>("PlaySpeed",1.,"The Dataset play speed factor, 1 means the original speed.");
 
     if(datasetPath.size()&&qviz&&unParsed.empty()){
         unParsed.push_back("qviz");
@@ -56,11 +72,8 @@ int main(int argc,char** argv)
         std::cerr<<svar.help();
         return 0;
     }
-    int& shouldStop=svar.GetInt("ShouldStop",0);
 
-    GSLAM::DatasetPlayer player;
-    auto subGUI=messenger.subscribe("gui",0,
-           &GSLAM::DatasetPlayer::playControl,&player);
+    int& shouldStop=svar.GetInt("ShouldStop",0);
 
     while(!apps.empty()&&!shouldStop){
         for(auto it=apps.begin();it!=apps.end();it++){

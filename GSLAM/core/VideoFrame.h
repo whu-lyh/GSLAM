@@ -1,7 +1,6 @@
-#ifndef VIDEOFRAME_H
-#define VIDEOFRAME_H
+#ifndef GSLAM_CORE_VIDEOFRAME_H
+#define GSLAM_CORE_VIDEOFRAME_H
 
-#include "GSLAM.h"
 #include "GPS.h"
 #include "Map.h"
 

@@ -17,7 +17,7 @@ namespace GSLAM{
 
 /// create
 class Dataset;
-typedef SPtr<Dataset> DatasetPtr;
+typedef std::shared_ptr<Dataset> DatasetPtr;
 typedef Dataset* (*funcCreateDataset)();
 
 // A dataset configuration file : DatasetName.DatasetType --eg. Sequence1.kitti desk.tumrgbd
@@ -47,16 +47,30 @@ protected:
 
 class DatasetPlayer{
 public:
-    virtual ~DatasetPlayer(){stop();}
     enum Status{
         READY,PLAYING,PAUSING,PAUSED,FINISHING,FINISHED
     };
-    DatasetPlayer(Dataset dataset=Dataset())
-        :_dataset(dataset),_status(READY){
-        Messenger msg=Messenger::instance();
-        _pub_dataset_status=msg.advertise<int>("dataset/status",100);
-        _pub_images=msg.advertise<MapFrame>("images",0);
-        _pub_imu=msg.advertise<MapFrame>("imu",0);
+    DatasetPlayer(Dataset dataset=Dataset(),
+                  Messenger messenger=Messenger::instance(),
+                  Svar    config=Svar::instance())
+        :_dataset(dataset),_status(READY),_svar(config){
+
+        _sub_control=messenger.subscribe("dataset/control",0,
+               &GSLAM::DatasetPlayer::playControl,this);
+        _pub_dataset_status=messenger.advertise<int>("dataset/status",100);
+        _pub_images=messenger.advertise<MapFrame>("images",0);
+        _pub_imu=messenger.advertise<MapFrame>("imu",0);
+        config.Arg<int>("autostart",0,"Should the dataset start play after opened.");
+        config.Arg<double>("playspeed",1.,"How fast the offline dataset be played.");
+        config.Arg<double>("playspeed_warning",5,"Seconds to check if the playspeed is slower then setted.");
+    }
+
+    ~DatasetPlayer(){
+        stop();
+        _sub_control.shutdown();
+        _pub_dataset_status.shutdown();
+        _pub_images.shutdown();
+        _pub_imu.shutdown();
     }
 
     virtual void        start(){
@@ -72,6 +86,15 @@ public:
         }
     }
 
+    virtual void play(){
+        if(!_dataset.isOpened()) return;
+        if(_dataset.isLive()) return ;
+        if(_status==READY){
+            _status=PLAYING;
+            playthread();
+        }
+    }
+
     virtual void        pause(){
         _status=PAUSING;
     }
@@ -79,7 +102,8 @@ public:
     virtual void        stop(){
         if(_status==READY||_status==FINISHED) return;
         _status=FINISHING;
-        _playThread.join();
+        if(_playThread.joinable())
+            _playThread.join();
         _status=FINISHED;
         _dataset=Dataset();
         _pub_dataset_status.publish<int>(FINISHED);
@@ -119,13 +143,13 @@ public:
         if(!_dataset.isOpened()) return false;
         _status=READY;
         _pub_dataset_status.publish<int>(READY);
-        if(svar.GetInt("AutoStart")) start();
+        if(_svar.GetInt("autostart")) start();
     }
 
     virtual void playthread(){
-        double speed=svar.GetDouble("PlaySpeed",1.);
+        double speed=_svar.GetDouble("playspeed",1.);
         double startTime=-1;
-        double& playSpeedWarningTime=svar.GetDouble("PlaySpeedWarning",5);
+        double& playSpeedWarningTime=_svar.GetDouble("playspeed_warning",5);
         GSLAM::TicToc tictoc,tictocWarning;
         GSLAM::FramePtr frame;
         _pub_dataset_status.publish<int>(_status);
@@ -183,6 +207,8 @@ public:
         }
     }
 
+    Svar        _svar;
+    Subscriber  _sub_control;
     Publisher   _pub_dataset_status,_pub_images,_pub_imu;
     Dataset     _dataset;
     std::thread _playThread;
@@ -192,10 +218,10 @@ public:
 class DatasetFactory
 {
 public:
-    typedef SPtr<Dataset> DatasetPtr;
+    typedef std::shared_ptr<Dataset> DatasetPtr;
 
     static DatasetFactory& instance(){
-        static SPtr<DatasetFactory> inst(new DatasetFactory());
+        static std::shared_ptr<DatasetFactory> inst(new DatasetFactory());
         return *inst;
     }
 

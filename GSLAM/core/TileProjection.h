@@ -386,7 +386,7 @@ protected:
     static double mlfn(const double &e0,const double &e1,const double &e2,const double &e3,const double &phi);
     static int64_t getUTMzone(const double &lon);
 };
-typedef SPtr<PureProjection> TileProjectionPtr;
+typedef std::shared_ptr<PureProjection> TileProjectionPtr;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,7 +418,7 @@ private:
 
     Size _tileSize;
 };
-typedef SPtr<MercatorProjection> MecatorProjectionPtr;
+typedef std::shared_ptr<MercatorProjection> MecatorProjectionPtr;
 
 class GCJ02Projection: public MercatorProjection
 {
@@ -435,7 +435,7 @@ public:
         return GPSConverter::gcj_To_Gps84(gcj.lat(),gcj.lng());
     }
 };
-typedef SPtr<GCJ02Projection> GCJ02ProjectionPtr;
+typedef std::shared_ptr<GCJ02Projection> GCJ02ProjectionPtr;
 
 class BaiduProjection : public MercatorProjection
 {
@@ -451,7 +451,7 @@ class BaiduProjection : public MercatorProjection
         return GPSConverter::bd09_To_Gps84(bd.lat(),bd.lng());
     }
 };
-typedef SPtr<BaiduProjection> BaiduProjectionPtr;
+typedef std::shared_ptr<BaiduProjection> BaiduProjectionPtr;
 
 inline Size PureProjection::getTileMatrixSizeXY(int zoom)
 {

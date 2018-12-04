@@ -57,7 +57,7 @@ public:
         double timestamp=GSLAM::TicToc::timestamp();
         video>>img;
         GSLAM::GImage gimg(img.rows,img.cols,img.type(),img.data,true);
-        return SPtr<GSLAM::FrameMono>(new GSLAM::FrameMono(frameId++,timestamp,gimg,camera,IMAGE_BGRA));
+        return std::shared_ptr<GSLAM::FrameMono>(new GSLAM::FrameMono(frameId++,timestamp,gimg,camera,IMAGE_BGRA));
     }
 
     GSLAM::FrameID   frameId;

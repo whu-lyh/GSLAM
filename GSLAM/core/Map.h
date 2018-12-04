@@ -27,12 +27,12 @@ typedef Point3d    Point3Type;
 typedef Point3ub       ColorType;
 typedef size_t         PointID;
 typedef size_t         FrameID;
-typedef SPtr<GObject>  GObjectPtr;
-typedef SPtr<MapFrame> FramePtr;
-typedef SPtr<MapPoint> PointPtr;
-typedef SPtr<FrameConnection> FrameConnectionPtr;
-typedef SPtr<Map>      MapPtr;
-typedef SPtr<SLAM>     SLAMPtr;
+typedef std::shared_ptr<GObject>  GObjectPtr;
+typedef std::shared_ptr<MapFrame> FramePtr;
+typedef std::shared_ptr<MapPoint> PointPtr;
+typedef std::shared_ptr<FrameConnection> FrameConnectionPtr;
+typedef std::shared_ptr<Map>      MapPtr;
+typedef std::shared_ptr<SLAM>     SLAMPtr;
 typedef std::vector<FramePtr> FrameArray;
 typedef std::vector<PointPtr> PointArray;
 typedef std::map<GSLAM::FrameID, FrameConnectionPtr > FrameConnectionMap;
@@ -225,14 +225,14 @@ public:
     virtual bool    eraseObservation(const GSLAM::PointPtr& pt,bool erasePoint=false){return false;}
     virtual bool    clearObservations(){return false;}
 
-    virtual SPtr<FrameConnection> getParent(GSLAM::FrameID parentId)const{return SPtr<FrameConnection>();}
-    virtual SPtr<FrameConnection> getChild(GSLAM::FrameID childId)const{return SPtr<FrameConnection>();}
+    virtual std::shared_ptr<FrameConnection> getParent(GSLAM::FrameID parentId)const{return std::shared_ptr<FrameConnection>();}
+    virtual std::shared_ptr<FrameConnection> getChild(GSLAM::FrameID childId)const{return std::shared_ptr<FrameConnection>();}
     virtual bool    getParents(FrameConnectionMap& parents)const{return false;}
     virtual bool    getChildren(FrameConnectionMap& children)const{return false;}
     FrameConnectionMap getParents()const{FrameConnectionMap r;getParents(r);return r;}
     FrameConnectionMap getChildren()const{FrameConnectionMap r;getChildren(r);return r;}
-    virtual bool    addParent(GSLAM::FrameID parentId, const SPtr<FrameConnection>& parent){return false;}
-    virtual bool    addChildren(GSLAM::FrameID childId, const SPtr<FrameConnection>& child){return false;}
+    virtual bool    addParent(GSLAM::FrameID parentId, const std::shared_ptr<FrameConnection>& parent){return false;}
+    virtual bool    addChildren(GSLAM::FrameID childId, const std::shared_ptr<FrameConnection>& child){return false;}
     virtual bool    eraseParent(GSLAM::FrameID parentId){return false;}
     virtual bool    eraseChild(GSLAM::FrameID  childId){return false;}
     virtual bool    clearParents(){return false;}
@@ -283,7 +283,7 @@ public:
         return c;
     }
 };
-typedef SPtr<LoopDetector> LoopDetectorPtr;
+typedef std::shared_ptr<LoopDetector> LoopDetectorPtr;
 
 class Map : public GObject
 {
@@ -331,7 +331,7 @@ protected:
     FrameID _frId;
 };
 
-typedef SPtr<Map> MapPtr;
+typedef std::shared_ptr<Map> MapPtr;
 
 
 inline MapPoint::MapPoint(const PointID& id,const Point3Type& position)

@@ -13,11 +13,11 @@ typedef unsigned char uchar;
 #endif
 
 #ifndef CV_XADD
-  #include "Mutex.h"
+  #include <mutex>
   static inline int CV_XADD(int* addr, int delta)
   {
-      static GSLAM::MutexRW mutex;
-      GSLAM::WriteMutex lock(mutex);
+      static std::mutex mutex;
+      std::unique_lock<std::mutex> lock(mutex);
       int tmp = *addr; *addr += delta; return tmp;
   }
 #endif
