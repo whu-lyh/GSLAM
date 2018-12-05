@@ -149,6 +149,9 @@ class Subscriber {
   typedef std::function<void(const std::shared_ptr<void>&)> CallBackFunc;
 
   Subscriber() {}
+  Subscriber(const std::string& topic, const std::string& type,
+             const CallBackFunc& callback, size_t queue_size = 0)
+      : impl_(new Impl(topic,type,callback,queue_size)) {}
   ~Subscriber() {}
 
   /**
@@ -213,9 +216,7 @@ class Subscriber {
   };
 
   Subscriber(std::shared_ptr<Subscriber::Impl> impl) : impl_(impl) {}
-  Subscriber(const std::string& topic, const std::string& type,
-             const CallBackFunc& callback, size_t queue_size = 0)
-      : impl_(new Impl(topic,type,callback,queue_size)) {}
+
   virtual void publish(const std::type_info& typeinfo,
                        const std::shared_ptr<int>& message) const {
     //        LOG(INFO)<<"Node "<<impl_->topic_<<" publishing message
@@ -247,6 +248,9 @@ class Subscriber {
 class Publisher {
  public:
   Publisher() {}
+  Publisher(const std::string& topic, const std::string& type,
+            size_t queue_size = 0)
+      :impl_(new Impl(topic,type,queue_size)){}
 
   virtual ~Publisher() { }
 
@@ -343,9 +347,6 @@ class Publisher {
     std::mutex mutex_;
   };
   Publisher(Impl* implement) : impl_(implement) {}
-  Publisher(const std::string& topic, const std::string& type,
-            size_t queue_size = 0)
-      :impl_(new Impl(topic,type,queue_size)){}
   std::string key()const{return getTopic()+"#"+getTypeName();}
   void addSubscriber(const Subscriber& sub)const{
       std::unique_lock<std::mutex> lock(impl_->mutex_);

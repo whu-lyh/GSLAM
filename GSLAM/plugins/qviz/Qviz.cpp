@@ -14,13 +14,15 @@ public:
 
     virtual GSLAM::Messenger init(GSLAM::Svar configuration){
         config=configuration;
+        messenger=GSLAM::Messenger::instance();
 
         pub_gui=messenger.advertise<std::string>("dataset/control",0);
         sub_gui=messenger.subscribe("visualize",0,&QVisualizer::process,this);
         sub_dataset_status=messenger.subscribe("dataset/status",0,
                            &QVisualizer::datasetStatusUpdated,this);
         auto dataset=configuration.Arg<std::string>("dataset","","The dataset going to play.");
-        _player=std::make_shared<GSLAM::DatasetPlayer>(GSLAM::Dataset(dataset),messenger,configuration);;
+        _player=std::make_shared<GSLAM::DatasetPlayer>(GSLAM::Dataset(dataset),
+                                                       messenger,configuration);;
 
         if(!configuration.Get<bool>("help"))
             work_thread=std::thread(&QVisualizer::gui_thread,this);
@@ -33,7 +35,7 @@ public:
 
         std::shared_ptr<GSLAM::MainWindow> mainWindow(new GSLAM::MainWindow());
         mainWindow->pub_gui=pub_gui;
-        auto dataset=svar.GetString("Dataset");
+        auto dataset=config.GetString("Dataset");
         mainWindow->show();
         this->mainWindow=mainWindow;
 
@@ -48,7 +50,7 @@ public:
         app.exec();
         mainWindow.reset();
         running_=false;
-        svar.GetInt("ShouldStop")=1;
+        config.GetInt("ShouldStop")=1;
     }
 
     void datasetStatusUpdated(const int& status){
