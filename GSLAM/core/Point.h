@@ -1,15 +1,16 @@
-#ifndef POINT_H
-#define POINT_H
+#ifndef GSLAM_CORE_POINT_H
+#define GSLAM_CORE_POINT_H
 
 #include <iostream>
 #include <sstream>
 #include <math.h>
+#include "Matrix.h"
 
 #ifdef HAS_TOON
 #include <TooN/TooN.h>
 #endif
 
-namespace pi{
+namespace GSLAM{
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,6 +26,16 @@ struct Point2_
     {
         return Point2_<Scalar>(x,y);
     }
+
+    template <typename Scalar>
+    operator Vector2<Scalar>()
+    {
+        return Vector2<Scalar>(x,y);
+    }
+
+    template <typename Scalar>
+    Point2_(const Vector2<Scalar>& v)
+        :x(v[0]),y(v[1]){}
 
 #ifdef EIGEN_MATRIX_H
     template <typename Scalar>
@@ -134,6 +145,16 @@ struct Point3_
     Point3_():x(0),y(0),z(0){}
 
     Point3_(Precision x_,Precision y_,Precision z_):x(x_),y(y_),z(z_){}
+
+    template <typename Scalar>
+    operator Vector3<Scalar>()
+    {
+        return Vector3<Scalar>(x,y,z);
+    }
+
+    template <typename Scalar>
+    Point3_(const Vector3<Scalar>& v)
+        :x(v[0]),y(v[1]),z(v[2]){}
 
     inline Precision& operator[](int index)const
     {
@@ -270,8 +291,6 @@ typedef Point3_<int>    Point3i;
 }
 
 namespace GSLAM {
-using pi::Point2_;
-using pi::Point3_;
 
 typedef Point2_<int>            Point2i;
 typedef Point2_<float>          Point2f;

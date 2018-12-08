@@ -1,8 +1,8 @@
-#ifndef VIDEOFRAME_H
-#define VIDEOFRAME_H
+#ifndef GSLAM_CORE_VIDEOFRAME_H
+#define GSLAM_CORE_VIDEOFRAME_H
 
-#include "GSLAM.h"
 #include "GPS.h"
+#include "Map.h"
 
 /** The VideoFrame classes are used as the input of different slam systems
 Class name : "Frame"+MainSonsor+OtherSensor
@@ -176,7 +176,7 @@ inline Camera FrameMono::getCamera(int idx)
     GSLAM::ReadMutex lock(_mutexPose);
     if(idx==0)
         return _camera;
-    else if(idx==1)
+    else
         return _recCamera;
 }
 

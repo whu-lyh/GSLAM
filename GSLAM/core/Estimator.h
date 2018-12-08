@@ -38,8 +38,8 @@
 #include "GSLAM.h"
 
 #define USE_ESTIMATOR_PLUGIN(EST_CLASS)                                  \
-  extern "C" SPtr<GSLAM::Estimator> createEstimatorInstance() {          \
-    return SPtr<GSLAM::Estimator>(new EST_CLASS());                      \
+  extern "C" GSLAM::Estimator* createEstimatorInstance() {          \
+    return new EST_CLASS();                      \
   }                                                                      \
   class EST_CLASS##_Register {                                           \
    public:                                                               \
@@ -52,14 +52,37 @@
 namespace GSLAM {
 
 class Estimator;
-typedef SPtr<Estimator> (*funcCreateEstimatorInstance)();
+typedef std::shared_ptr<Estimator> EstimatorPtr;
+typedef Estimator* (*funcCreateEstimatorInstance)();
+typedef Matrix3d Homography2D;
+typedef Matrix<double,2,3> Affine2D;
+typedef Matrix3d Fundamental;
+typedef Fundamental Essential;
+typedef Matrix<double,3,4> Affine3D;
 
 enum EstimatorMethod {
-  ITERATIVE = 0,
-  FM_7POINT = 1,  //!< 7-point algorithm
-  FM_8POINT = 2,  //!< 8-point algorithm
-  LMEDS = 4,      //!< least-median algorithm
-  RANSAC = 8      //!< RANSAC algorithm
+    MODEL_METHOD=0xFF,
+    F8_Point,
+    F7_Point,
+    E5_Stewenius,
+    E5_Nister,
+    E5_Kneip,
+    H4_Point,
+    A3_Point,
+    P4_EPnP,
+    P3_Gao,
+    P3_Kneip,
+    P3_GPnP,
+    P3_ITERATIVE,
+    P2_Kneip,
+    T2_Triangulate,
+    A4_Point,
+    S3_Horn,
+    P3_Plane,
+    SAMPLE_METHOD=0xF00,
+    RANSAC  =  0<<8,      //!< RANSAC algorithm
+    LMEDS   =  1<<8,      //!< least-median algorithm
+    NOSAMPLE=  2<<8
 };
 
 class Estimator : public GObject {
@@ -71,96 +94,93 @@ class Estimator : public GObject {
   virtual std::string type() const { return "Estimator"; }
 
   // 2D corrospondences
-  virtual bool findHomography(double* H,  // 3x3 dof=8
+  virtual bool findHomography(Homography2D& H,  // 3x3 dof=8
                               const std::vector<Point2d>& srcPoints,
                               const std::vector<Point2d>& dstPoints,
-                              int method = 0, double ransacReprojThreshold = 3,
-                              std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                              int    method = H4_Point&RANSAC,
+                              double threshold = 3,
+                              double confidence = 0.99,
+                              std::vector<uchar>* mask = NULL) const = 0;
 
-  virtual bool findAffine2D(double* A,  // 2X3
+  virtual bool findAffine2D(Affine2D& A,  // 2X3
                             const std::vector<Point2d>& srcPoints,
                             const std::vector<Point2d>& dstPoints,
-                            bool fullAffine = true) const {
-    return false;
-  }
+                            int method = A3_Point&RANSAC,
+                            double threshold = 3,
+                            double confidence = 0.99,
+                            std::vector<uchar>* mask = NULL) const =0;
 
-  virtual bool findFundamental(double* F,  // 3x3
+  virtual bool findFundamental(Fundamental& F,  // 3x3
                                const std::vector<Point2d>& points1,
                                const std::vector<Point2d>& points2,
-                               int method = 0, double param1 = 3.,
-                               double param2 = 0.99,
-                               std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                               int method = F8_Point&RANSAC,
+                               double threshold = 3.,
+                               double confidence = 0.99,
+                               std::vector<uchar>* mask = NULL) const = 0;
 
-  virtual bool findEssentialMatrix(double* E,  // 3x3 dof=5
+  virtual bool findEssentialMatrix(Essential E,  // 3x3 dof=5
                                    const std::vector<Point2d>& points1,
                                    const std::vector<Point2d>& points2,
-                                   int method = 0, double param1 = 0.01,
-                                   double param2 = 0.99,
-                                   std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                                   int method = E5_Nister&RANSAC,
+                                   double threshold = 0.01,
+                                   double confidence = 0.99,
+                                   std::vector<uchar>* mask = NULL) const  = 0;
 
   // 3D corrospondences
-  virtual bool findSIM3(const SIM3& S, const std::vector<Point3d>& from,
-                        const std::vector<Point3d>& to, int method = 0,
-                        double ransacThreshold = -1,
-                        std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+  virtual bool findSIM3(SIM3& S,
+                        const std::vector<Point3d>& from,
+                        const std::vector<Point3d>& to,
+                        int    method = S3_Horn&RANSAC,
+                        double threshold = 0.01,
+                        double confidence = 0.99,
+                        std::vector<uchar>* mask = NULL) const = 0;
 
-  virtual bool findAffine3D(double* A, const std::vector<Point3d>& src,
+  virtual bool findAffine3D(Affine3D& A,
+                            const std::vector<Point3d>& src,
                             const std::vector<Point3d>& dst,
-                            std::vector<int>* inliers = NULL,
-                            double ransacThreshold = 3,
-                            double confidence = 0.99) const {
-    return false;
-  }
+                            int    method = A4_Point&RANSAC,
+                            double threshold =  0.01,
+                            double confidence = 0.99,
+                            std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool findPlane(SE3& plane,
                          const std::vector<Point3d>& points,  // NOLINT
-                         int method = 0, double ransacThreshold = -1.,
-                         std::vector<uchar>* mask = NULL) const {
-    return false;
-  }
+                         int    method = P3_Plane&RANSAC,
+                         double threshold =  0.01,
+                         double confidence = 0.99,
+                         std::vector<uchar>* mask = NULL) const = 0;
 
   // 2D&3D corrospondences
-  virtual bool findPnPRansac(
-      const SE3& world2camera, const std::vector<Point3d>& objectPoints,
-      const std::vector<Point2d>& imagePoints, const GSLAM::Camera& camera,
-      bool useExtrinsicGuess = false, int iterationsCount = 100,
-      float reprojectionError = 8.0, int minInliersCount = 100,
-      std::vector<int>* inliers = NULL, int flags = ITERATIVE) const {
-    return false;
-  }
+  virtual bool findPnP( SE3& world2camera,
+                        const std::vector<Point3d>& objectPoints,
+                        const std::vector<Point2d>& imagePoints,
+                        int    method = P3_ITERATIVE&RANSAC,
+                        double threshold =  0.01,
+                        double confidence = 0.99,
+                        std::vector<uchar>* mask = NULL) const = 0;
 
   virtual bool trianglate(
       const SE3& ref2cur,
       const Point3d& refDirection,  // camera.UnProject(ref2d)
       const Point3d& curDirection,  // camera.UnProject(cur2d)
-      Point3d& refPt) const {       // NOLINT
-    return false;
-  }
+      Point3d& refPt) const  = 0;
 
-  static SPtr<Estimator> create(std::string pluginName = "") {
+  static EstimatorPtr create(std::string pluginName = "") {
     funcCreateEstimatorInstance createFunc =
         SvarWithType<funcCreateEstimatorInstance>::instance()["Default"];
-    if (createFunc) return createFunc();
+    if (createFunc) return EstimatorPtr(createFunc());
 
     if (pluginName.empty()) {
       pluginName = svar.GetString("EstimatorPlugin", "libgslam_estimator");
     }
-    SPtr<SharedLibrary> plugin = Registry::get(pluginName);
-    if (!plugin) return SPtr<Estimator>();
+    SharedLibraryPtr plugin = Registry::get(pluginName);
+    if (!plugin) return EstimatorPtr();
     createFunc = (funcCreateEstimatorInstance)plugin->getSymbol(
         "createEstimatorInstance");
     if (!createFunc)
-      return SPtr<Estimator>();
+      return EstimatorPtr();
     else
-      return createFunc();
+      return EstimatorPtr(createFunc());
   }
 };
 }  // namespace GSLAM

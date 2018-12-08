@@ -1,11 +1,13 @@
-#ifndef VECPARAMENT_H
-#define VECPARAMENT_H
+#ifndef GSLAM_CORE_VECPARAMENT_H
+#define GSLAM_CORE_VECPARAMENT_H
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <vector>
+
+namespace GSLAM{
 
 template <typename VarType>
 class VecParament
@@ -73,9 +75,9 @@ public:
     {
         std::ostringstream ost;
         ost<<"[";
-        for(size_t i=0;i<data.size()-1;i++)
-            ost<<data.at(i)<<" ";
-        ost<<data.at(size()-1)<<"]";
+        for(size_t i=0;i<data.size();i++)
+            ost<<data.at(i)<<(i+1==data.size()?"":",");
+        ost<<"]";
         return ost.str();
     }
 
@@ -95,5 +97,7 @@ public:
 
     std::vector<VarType> data;
 };
+
+}
 
 #endif // VECPARAMENT_H

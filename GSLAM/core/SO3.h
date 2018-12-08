@@ -1,21 +1,18 @@
-#ifndef GSLAM_SO3_H
-#define GSLAM_SO3_H
+#ifndef GSLAM_CORE_SO3_H
+#define GSLAM_CORE_SO3_H
 
 #include <iostream>
 #include "Point.h"
-#include "Array.h"
+//#include "Array.h"
+#include "Matrix.h"
 
-#ifdef HAS_TOON
-#include <TooN/se3.h>
-#else
 #include <math.h>
-#endif
 
 #ifndef M_PI
 # define M_PI		3.14159265358979323846	/* pi */
 #endif
 
-namespace pi {
+namespace GSLAM {
 
 #define NEAR_ZERO 1e-10
 
@@ -52,31 +49,31 @@ namespace pi {
 
  */
 template <class Precision=double>
-class SO3
+class SO3_
 {
 public:
-    SO3():x(0),y(0),z(0),w(1){}
+    SO3_():x(0),y(0),z(0),w(1){}
 
-    SO3(const Precision& X,const Precision& Y,const Precision& Z,const Precision& W)
+    SO3_(const Precision& X,const Precision& Y,const Precision& Z,const Precision& W)
         :x(X),y(Y),z(Z),w(W) { }
 
     /// Construct from a direction and angle in radius.
-    SO3(const Point3_<Precision>& direction,Precision angle)
+    SO3_(const Point3_<Precision>& direction,Precision angle)
     {
         FromAxis(direction,angle);
     }
 
     /// Construct from a rotation matrix.
-    SO3(const Precision* M)
+    SO3_(const Precision* M)
     {
         fromMatrix(M);
     }
 
     /// Coversion from different precision
     template<typename Scalar>
-    operator SO3<Scalar>()const
+    operator SO3_<Scalar>()const
     {
-        return SO3<Scalar>(x,y,z,w);
+        return SO3_<Scalar>(x,y,z,w);
     }
 
     Point3_<Precision> ln()const{return log();}// TODO: Remove
@@ -120,7 +117,7 @@ public:
     }
 
     template<typename Scalar>
-    static SO3<Precision> exp(const Point3_<Scalar>& r)
+    static SO3_<Precision> exp(const Point3_<Scalar>& r)
     {
         const Scalar theta_sq=r.x*r.x+r.y*r.y+r.z*r.z;
         const Scalar theta = sqrt(theta_sq);
@@ -139,7 +136,7 @@ public:
           sin_half_theta = sin_half_theta/theta;
         }
 
-        return SO3<Precision>(sin_half_theta*r.x,
+        return SO3_<Precision>(sin_half_theta*r.x,
                               sin_half_theta*r.y,
                               sin_half_theta*r.z,W);
     }
@@ -176,7 +173,7 @@ public:
     }
 
     template<typename Scalar>
-    static SO3<Scalar> expFast(const Point3_<Scalar>& l)
+    static SO3_<Scalar> expFast(const Point3_<Scalar>& l)
     {
         Scalar theta_sq = l.dot(l);
         Scalar theta    = sqrt(theta_sq);
@@ -199,7 +196,7 @@ public:
           real_factor = cosine(half_theta);
         }
 
-        return SO3<Scalar>( imag_factor * l.x, imag_factor * l.y,
+        return SO3_<Scalar>( imag_factor * l.x, imag_factor * l.y,
             imag_factor * l.z,real_factor);
     }
 
@@ -432,10 +429,10 @@ public:
     }
 
     ///
-    SO3 operator* (const SO3& rq) const
+    SO3_ operator* (const SO3_& rq) const
     {
         // the constructor takes its arguments as (x, y, z, w)
-        return SO3( w * rq.x + x * rq.w + y * rq.z - z * rq.y,
+        return SO3_( w * rq.x + x * rq.w + y * rq.z - z * rq.y,
                     w * rq.y + y * rq.w + z * rq.x - x * rq.z,
                     w * rq.z + z * rq.w + x * rq.y - y * rq.x,
                     w * rq.w - x * rq.x - y * rq.y - z * rq.z);
@@ -444,22 +441,27 @@ public:
     // Multiplying a quaternion q with a vector v applies the q-rotation to v
     Point3_<Precision> operator* (const Point3_<Precision>& p) const
     {
-        SO3 so3_p(p.x,p.y,p.z,0);
-        so3_p=(*this)*so3_p*inv();
-        return Point3_<Precision>(so3_p.x,so3_p.y,so3_p.z);
+        // Note that this algorithm comes from the optimization by hand
+        // of the conversion to a Matrix followed by a Matrix/Vector product.
+        // It appears to be much faster than the common algorithm found
+        // in the literature (30 versus 39 flops). It also requires two
+        // Vector3 as temporaries.
+        Point3_<Precision> uv = Point3_<Precision>(x,y,z).cross(p);
+        uv = uv + uv;
+        return p + w * uv + Point3_<Precision>(x,y,z).cross(uv);
     }
 
     // Convert from Axis Angle
-    static SO3 FromAxis(const Point3_<Precision>& p,Precision angle)
+    static SO3_ FromAxis(const Point3_<Precision>& p,Precision angle)
     {
         Precision det=sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
         if(det<0.00001)
         {
-            return SO3();
+            return SO3_();
         }
         angle *= 0.5;
         Precision p2v=sin(angle)/det;
-        return SO3(p.x*p2v,p.y*p2v,p.z*p2v,cos(angle));
+        return SO3_(p.x*p2v,p.y*p2v,p.z*p2v,cos(angle));
     }
 
     void normalise()
@@ -478,9 +480,9 @@ public:
 
     // We need to get the inverse of a quaternion to properly apply a quaternion-rotation to a vector
     // The conjugate of a quaternion is the same as the inverse, as long as the quaternion is unit-length
-    SO3 inv() const
+    SO3_ inv() const
     {
-        return SO3(-x, -y, -z, w);
+        return SO3_(-x, -y, -z, w);
     }
 
     void getValue(Precision& X,Precision& Y,Precision& Z,Precision& W) const
@@ -502,7 +504,7 @@ public:
     void setY(Precision Y){y=Y;}
     void setZ(Precision Z){z=Z;}
     void setW(Precision W){w=W;}
-    SO3  mul (const SO3& rq) const{return (*this)*rq;}
+    SO3_  mul (const SO3_& rq) const{return (*this)*rq;}
     Point3_<Precision> trans(const Point3_<Precision>& p) const{return (*this)*p;}
 
     std::string toString()const{std::stringstream sst;sst<<*this;return sst.str();}
@@ -511,13 +513,14 @@ public:
     Precision x,y,z,w;
 };
 
-typedef SO3<double> SO3d;
-typedef SO3<float> SO3f;
+typedef SO3_<double> SO3d;
+typedef SO3_<float> SO3f;
+typedef SO3d SO3;
 
 /// Write an SO3 to a stream
 /// @relates SO3
 template <typename Precision>
-inline std::ostream& operator << (std::ostream& os,const SO3<Precision>& so3)
+inline std::ostream& operator << (std::ostream& os,const SO3_<Precision>& so3)
 {
 #if 0//HAS_TOON
     os<<so3.getMatrix();
@@ -533,7 +536,7 @@ inline std::ostream& operator << (std::ostream& os,const SO3<Precision>& so3)
 /// Write an SO3 from a stream
 /// @relates SO3
 template <typename Precision>
-inline std::istream& operator >> (std::istream& is,SO3<Precision>& so3)
+inline std::istream& operator >> (std::istream& is,SO3_<Precision>& so3)
 {
     is>>so3.x>>so3.y>>so3.z>>so3.w;
     return is;
@@ -542,4 +545,4 @@ inline std::istream& operator >> (std::istream& is,SO3<Precision>& so3)
 
 } //end of namespace
 
-#endif // ZY_SO3_H
+#endif // GSLAM_CORE_SO3_H

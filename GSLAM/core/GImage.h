@@ -1,8 +1,9 @@
-#ifndef GIMAGE
-#define GIMAGE
+#ifndef GSLAM_CORE_GIMAGE_H
+#define GSLAM_CORE_GIMAGE_H
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stddef.h>
 #include <atomic>
 
 #if defined(HAS_OPENCV) || defined(HAS_OPENCV3)
@@ -12,11 +13,11 @@ typedef unsigned char uchar;
 #endif
 
 #ifndef CV_XADD
-  #include "Mutex.h"
+  #include <mutex>
   static inline int CV_XADD(int* addr, int delta)
   {
-      static GSLAM::MutexRW mutex;
-      GSLAM::WriteMutex lock(mutex);
+      static std::mutex mutex;
+      std::unique_lock<std::mutex> lock(mutex);
       int tmp = *addr; *addr += delta; return tmp;
   }
 #endif
@@ -131,7 +132,7 @@ public:
 
     }
 
-    GImage(int rows_,int cols_,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false)
+    GImage(int rows_,int cols_,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false,int imageAlign=16)
         :cols(cols_),rows(rows_),flags(type),data(NULL),refCount(NULL)
     {
         if(src&&!copy)
@@ -143,7 +144,7 @@ public:
         int byteNum=total()*elemSize();
         if(byteNum<=0) return;
         int alignBytes=alignSize(byteNum, (int)sizeof(*refCount));
-        data=(uchar*)fastMalloc(alignBytes+sizeof(int*));
+        data=(uchar*)fastMalloc(alignBytes+sizeof(int*),imageAlign);
         if(!data)
         {
             cols=0;rows=0;return ;
@@ -171,8 +172,12 @@ public:
                 release();
             }
         }
+        cols=rows=flags=0;
+        data=NULL;
+        refCount=NULL;
     }
 
+    // This is not thread safe when GImage not empty!
     GImage& operator=(const GImage& rhs)
     {
         this->~GImage();
@@ -185,14 +190,14 @@ public:
         return *this;
     }
 
-    static GImage create(int rows,int cols,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false)
+    static GImage create(int rows,int cols,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false,int imageAlign=16)
     {
         return GImage(rows,cols,type,src,copy);
     }
 
-    static GImage zeros(int rows,int cols,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false)
+    static GImage zeros(int rows,int cols,int type=GImageType<>::Type,uchar* src=NULL,bool copy=false,int imageAlign=16)
     {
-        GImage result(rows,cols,type,src,copy);
+        GImage result(rows,cols,type,src,copy,imageAlign);
         memset(result.data,0,result.total()*result.elemSize());
         return result;
     }
@@ -241,17 +246,26 @@ public:
     {
         if(!data) return cv::Mat();
         cv::Mat result(rows,cols,type(),data);
-        if(((uchar*)refCount)==data+total()*elemSize())// OpenCV2 style => OpenCV3 style
+        int byteNum=total()*elemSize();
+        int alignBytes=alignSize(byteNum, (int)sizeof(*refCount));
+        if(((uchar*)refCount)==data+alignBytes)// OpenCV2 style => OpenCV3 style
         {
             // WARNING: MAKE SURE THERE ARE NO OTHER HOLDERS
             // construct a UMat that ref to data
-            cv::UMatData* u=new cv::UMatData(nullptr);
-            u->origdata=u->data=data;
+            cv::UMatData* u=new cv::UMatData(cv::Mat::getStdAllocator());
+            u->data=data;
+#if CV_VERSION_MINOR>=3
+            u->origdata=((uchar**)data)[-1];
+#else
+            u->origdata=data;
+#endif
             u->userdata=refCount;
-            CV_XADD(refCount,1);
+            CV_XADD(refCount,1); // Now we have both refcount and both added 1
             u->refcount=2;
+//            u->flags|=cv::UMatData::USER_ALLOCATED;
             refCount=&u->refcount;
             result.u=u;
+//            result.allocator=nullptr;
             return result;
         }
         else // OpenCV3 style => OpenCV3 style
@@ -268,7 +282,7 @@ public:
         : cols(mat.cols),rows(mat.rows),flags(mat.type()),
           data(mat.data),refCount(NULL)
     {
-        if(mat.u&&!mat.allocator)
+        if(mat.u&&mat.u->currAllocator==cv::Mat::getStdAllocator())
             // try to maintain the refcount things, but this need the mat is allocated by default StdAllocator
         {
             refCount=(&mat.u->refcount);
@@ -299,28 +313,28 @@ public:
         if(refCount==((int*)(data+alignBytes))) // OpenCV2 style
         {
             cols=rows=0;
-            refCount=NULL;
             fastFree(data);
+            refCount=NULL;
             data=NULL;
         }
         else// OpenCV3 style
         {
-#if false// use opencv's default deallocate
-            cv::UMatData* u=(cv::UMatData*)(((uchar*)refCount)-sizeof(int)-sizeof(void*)*2);
-            u->refcount--;
-            if(u)
-                (u->currAllocator ? u->currAllocator : cv::Mat::getDefaultAllocator())->unmap(u);
-#else // use buildin deallocate
-            GSLAM::UMatData* u=(GSLAM::UMatData*)(((uchar*)refCount)-sizeof(int)-sizeof(void*)*2);
-            if((*refCount)==1&&u->userdata==data+totalBytes)// this is allocated by GImage
+            UMatData* u=(UMatData*)(((uchar*)refCount)-offsetof(UMatData,refcount));
+            if(u->userdata==data+alignBytes)
             {
-                (*((int*)u->userdata))--;
+                // this is allocated by GImage, we need minus both refcount
+                refCount=(int*)u->userdata;
+                if(CV_XADD(refCount,-1)==1)
+                {
+                    return release();
+                }
             }
-            assert(u->size==totalBytes);
-            assert(u->currAllocator==NULL);
-            u->refcount--;
-            deallocate(u);
-#endif
+            else{
+                // allocated by OpenCV
+                assert(u->size==totalBytes);
+                //assert(u->currAllocator==NULL);// should be the default allocator
+                deallocate(u);
+            }
             cols=rows=0;
             refCount=NULL;
             data=NULL;
@@ -343,12 +357,12 @@ private:
         return (_Tp*)(((size_t)ptr + n-1) & -n);
     }
 
-    void* fastMalloc( size_t size ) const
+    void* fastMalloc( size_t size ,int imageAlign=16) const
     {
-        uchar* udata = (uchar*)malloc(size + sizeof(void*) + 16);
+        uchar* udata = (uchar*)malloc(size + sizeof(void*) + imageAlign);
         if(!udata)
             return NULL;
-        uchar** adata = alignPtr((uchar**)udata + 1, 16);
+        uchar** adata = alignPtr((uchar**)udata + 1, imageAlign);
         adata[-1] = udata;
         return adata;
     }
@@ -368,16 +382,21 @@ private:
         return (sz + n-1) & -n;
     }
 
-    void deallocate(GSLAM::UMatData* u) const// for OpenCV Version 3
+    void deallocate(UMatData* u) const// for OpenCV Version 3
     {
         if(!u)
             return;
 
         assert(u->urefcount == 0);
         assert(u->refcount == 0);
-        if( !(u->flags & GSLAM::UMatData::USER_ALLOCATED) )
+        if( !(u->flags & UMatData::USER_ALLOCATED) )
         {
-            fastFree(u->origdata);
+            uchar* udata = ((uchar**)u->origdata)[-1];
+            int n=u->origdata-udata;
+            if((n & (n - 1)) == 0&&n>=0&&n<=32){
+                fastFree(u->origdata);
+            }
+            else free(u->origdata);
             u->origdata = 0;
         }
         delete u;

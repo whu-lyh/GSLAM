@@ -38,8 +38,8 @@
 #include <vector>
 #include "GSLAM.h"
 #define USE_OPTIMIZER_PLUGIN(OPT_CLASS)                                \
-  extern "C" SPtr<GSLAM::Optimizer> createOptimizerInstance() {        \
-    return SPtr<GSLAM::Optimizer>(new OPT_CLASS());                    \
+  extern "C" std::shared_ptr<GSLAM::Optimizer> createOptimizerInstance() {        \
+    return std::shared_ptr<GSLAM::Optimizer>(new OPT_CLASS());                    \
   }                                                                    \
   class OPT_CLASS##_Register {                                         \
    public:                                                             \
@@ -53,7 +53,7 @@
 namespace GSLAM {
 
 class Optimizer;
-typedef SPtr<Optimizer> (*funcCreateOptimizerInstance)();
+typedef std::shared_ptr<Optimizer> (*funcCreateOptimizerInstance)();
 
 enum CameraProjectionType {
   PROJECTION_PINHOLE,  // z = 1
@@ -231,20 +231,20 @@ class Optimizer {
     return false;
   }  // Convert bundle graph to pose graph
 
-  static SPtr<Optimizer> create(std::string pluginName = "") {
+  static std::shared_ptr<Optimizer> create(std::string pluginName = "") {
     if (pluginName.empty()) {
       funcCreateOptimizerInstance createFunc =
           SvarWithType<funcCreateOptimizerInstance>::instance()["Default"];
       if (createFunc) return createFunc();
       pluginName = svar.GetString("OptimizerPlugin", "libgslam_optimizer");
     }
-    SPtr<SharedLibrary> plugin = Registry::get(pluginName);
-    if (!plugin) return SPtr<Optimizer>();
+    std::shared_ptr<SharedLibrary> plugin = Registry::get(pluginName);
+    if (!plugin) return std::shared_ptr<Optimizer>();
     funcCreateOptimizerInstance createFunc =
         (funcCreateOptimizerInstance)plugin->getSymbol(
             "createOptimizerInstance");
     if (!createFunc)
-      return SPtr<Optimizer>();
+      return std::shared_ptr<Optimizer>();
     else
       return createFunc();
   }
@@ -252,7 +252,7 @@ class Optimizer {
   OptimzeConfig _config;
 };
 
-typedef SPtr<Optimizer> OptimizerPtr;
+typedef std::shared_ptr<Optimizer> OptimizerPtr;
 
 }  // namespace GSLAM
 #endif  // GSLAM_CORE_OPTIMIZER_H_

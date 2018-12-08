@@ -2,6 +2,7 @@
 #define GSLAM_TILEMANAGER_H
 
 #include <GSLAM/core/GSLAM.h>
+#include <GSLAM/core/TileProjection.h>
 
 namespace GSLAM {
 
@@ -30,7 +31,7 @@ public:
     template <typename T>
     static void write(std::ostream& ost,T& obj){ost.write((char*)&obj,sizeof(obj));}
 };
-typedef SPtr<TileBase> TilePtr;
+typedef std::shared_ptr<TileBase> TilePtr;
 
 class ImageTile : public TileBase
 {
@@ -64,7 +65,7 @@ public:
 
     GImage  _image;
 };
-typedef SPtr<ImageTile> ImageTilePtr;
+typedef std::shared_ptr<ImageTile> ImageTilePtr;
 
 class TerrainTile : public ImageTile
 {
@@ -101,7 +102,7 @@ public:
 
     GImage  _dem;
 };
-typedef SPtr<TerrainTile> TerrainTilePtr;
+typedef std::shared_ptr<TerrainTile> TerrainTilePtr;
 
 class TerrainTileWithInfo: public TerrainTile
 {
@@ -138,21 +139,47 @@ class TerrainTileWithInfo: public TerrainTile
     Point3i _location;
     double  _timestamp;
 };
-typedef SPtr<TerrainTileWithInfo> TerrainTileWithInfoPtr;
+typedef std::shared_ptr<TerrainTileWithInfo> TerrainTileWithInfoPtr;
 
 class TileManager: public GObject
 {
 public:
+    struct TileArea{
+    public:
+        TileArea():level(0),min(0,0),max(0,0){}
+
+        Point2i getSize()const{return max-min;}
+        int     getLevel()const{return level;}
+        Point2i getMin()const{return min;}
+        Point2i getMax()const{return max;}
+
+        void    setLevel(int level_){level=level_;}
+        void    setMin(const Point2i& min_){min=min_;}
+        void    setMax(const Point2i& max_){max=max_;}
+
+        int     level;
+        Point2i min,max;
+    };
+
     virtual ~TileManager(){}
     virtual std::string type()const{return "TileManager";}
 
     virtual TilePtr getTile(int x,int y,int z){return TilePtr();}
     virtual bool    setTile(int x,int y,int z, const TilePtr& tile){return false;}
-    virtual int     maxZoomLevel()const{return -1;}
+    virtual int     maxZoomLevel()const{return _area.level;}
     virtual int     minZoomLevel()const{return -1;}
     virtual bool    save(const std::string& file){return false;}
+
+    TileArea          getTileArea()const{return   _area;}
+    TileProjectionPtr getProjection()const{return _projection;}
+
+    void setTileArea(TileArea area){_area=area;}
+    void setProjection(TileProjectionPtr projection){_projection=projection;}
+protected:
+    TileArea _area;
+    TileProjectionPtr _projection;
 };
-typedef SPtr<TileManager> TileManagerPtr;
+typedef std::shared_ptr<TileManager> TileManagerPtr;
 
 }
 

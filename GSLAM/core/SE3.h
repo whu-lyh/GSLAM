@@ -1,9 +1,9 @@
-#ifndef GSLAM_SE3_H
-#define GSLAM_SE3_H
+#ifndef GSLAM_CORE_SE3_H
+#define GSLAM_CORE_SE3_H
 
 #include "SO3.h"
 
-namespace pi
+namespace GSLAM
 {
 /**
     Represent a three-dimensional Euclidean transformation (a rotation and a translation).
@@ -36,83 +36,83 @@ the function <code>get_translation()</code> does not acqually return the transla
 
  */
 template <class Precision = double>
-class SE3
+class SE3_
 {
 public:
     typedef Point3_<Precision> Vec3;
 
 public:
-    SE3():my_rotation(0,0,0,1),my_translation(0,0,0){}
+    SE3_():my_rotation(0,0,0,1),my_translation(0,0,0){}
 
-    SE3(const Precision& x,const Precision& y,const Precision& z,
+    SE3_(const Precision& x,const Precision& y,const Precision& z,
         const Precision& wx,const Precision& wy,const Precision& wz,const Precision& w)
         :my_rotation(wx,wy,wz,w),my_translation(x,y,z){}
 
-    SE3(const SO3<Precision>& r,const Vec3& t)
+    SE3_(const SO3_<Precision>& r,const Vec3& t)
         :my_rotation(r),my_translation(t){}
 
     template <typename Scalar>
-    operator SE3<Scalar>()
+    operator SE3_<Scalar>()
     {
-        return SE3<Scalar>(my_rotation,my_translation);
+        return SE3_<Scalar>(my_rotation,my_translation);
     }
 
     /// Returns the rotation part of the transformation as a SO3
-    inline SO3<Precision>& get_rotation(){return my_rotation;}
+    inline SO3_<Precision>& get_rotation(){return my_rotation;}
     /// @overload
-    inline const SO3<Precision>& get_rotation() const {return my_rotation;}
+    inline const SO3_<Precision>& get_rotation() const {return my_rotation;}
 
     /// Returns the translation part of the transformation as a Vector
     inline Vec3& get_translation() {return my_translation;}
     /// @overload
     inline const Vec3& get_translation() const {return my_translation;}
 
-    inline SE3 inverse() const {
-        const SO3<Precision> rinv(my_rotation.inv());
-        return SE3(rinv, -(rinv*my_translation));
+    inline SE3_ inverse() const {
+        const SO3_<Precision> rinv(my_rotation.inv());
+        return SE3_(rinv, -(rinv*my_translation));
     }
 
     /// Right-multiply by another SE3 (concatenate the two transformations)
     /// @param rhs The multipier
     template<typename P>
-    inline SE3& operator *=(const SE3<P> & rhs) {
+    inline SE3_& operator *=(const SE3_<P> & rhs) {
         my_translation = my_translation + my_rotation * rhs.get_translation();
         my_rotation = my_rotation*rhs.get_rotation();
         return *this;
     }
 
     template<typename P>
-    inline SE3 operator *(const SE3<P>& rhs) const
+    inline SE3_ operator *(const SE3_<P>& rhs) const
     {
-        return SE3(my_rotation*rhs.get_rotation(),
+        return SE3_(my_rotation*rhs.get_rotation(),
                     my_translation + my_rotation*rhs.get_translation());
     }
 
     template<typename P>
-    inline bool operator <(const SE3<P>& rhs) const
+    inline bool operator <(const SE3_<P>& rhs) const
     {
         return false;
     }
 
     /// Right-multiply by a Vector
     /// @relates SE3
-    friend Vec3 operator*(const SE3<Precision>& lhs, const Vec3& rhs){
+    friend Vec3 operator*(const SE3_<Precision>& lhs, const Vec3& rhs){
         return lhs.get_translation() + lhs.get_rotation() * rhs;
     }
 
     /// Write an SE3 to a stream
     /// @relates SE3
-    friend inline std::ostream& operator <<(std::ostream& os, const SE3& rhs){
+    friend inline std::ostream& operator <<(std::ostream& os, const SE3_& rhs){
         os<<rhs.get_translation();
         os<<" "<<rhs.get_rotation();
         return os;
     }
     /// Write an SE3 from a stream
     /// @relates SE3
-    friend inline std::istream& operator >>(std::istream& is, SE3& rhs){
+    friend inline std::istream& operator >>(std::istream& is, SE3_& rhs){
         Precision x,y,z,rx,ry,rz,w;
         is>>x>>y>>z>>rx>>ry>>rz>>w;
-        rhs=SE3(x,y,z,rx,ry,rz,w);
+        rhs=SE3_(x,y,z,rx,ry,rz,w);
         return is;
     }
 
@@ -186,9 +186,9 @@ public:
     }
 #endif
 
-    inline Array_<Precision,6> log()const
+    inline Vector<Precision,6> log()const
     {
-        Array_<Precision,6> result;
+        Vector<Precision,6> result;
         const auto& l=my_rotation;
         const auto& t=my_translation;
         const Precision squared_w = l.w*l.w;
@@ -202,14 +202,14 @@ public:
         // Representation through Encapsulation of Manifolds"
         // Information Fusion, 2011
 
-        if (n < NEAR_ZERO||true)
+        if (n < NEAR_ZERO)
         {
             //If n is too small
             A_inv = 2./l.w - 2.*(1.0-squared_w)/(l.w*squared_w);
             Point3_<Precision> r(l.x*A_inv,l.y*A_inv,l.z*A_inv);
             Point3_<Precision> p=t-0.5*r.cross(t)+static_cast<Precision>(1. / 12.)*r.cross(r.cross(t));
-            *(Point3_<Precision>*)&result.data=p;
-            *(Point3_<Precision>*)&result.data[3]=r;
+            result.set(Vector3<Precision>(p.x,p.y,p.z),0,0);
+            result.set(Vector3<Precision>(r.x,r.y,r.z),3,0);
         }
         else
         {
@@ -232,17 +232,17 @@ public:
             Point3_<Precision> r(l.x*A_inv,l.y*A_inv,l.z*A_inv);
             Point3_<Precision> a=r/theta;
             Point3_<Precision> p=t-0.5*r.cross(t)+(1-theta/(2*tan(0.5*theta)))*a.cross(a.cross(t));
-            *(Point3_<Precision>*)&result.data=p;
-            *(Point3_<Precision>*)&result.data[3]=r;
+            result.set(Vector3<Precision>(p.x,p.y,p.z),0,0);
+            result.set(Vector3<Precision>(r.x,r.y,r.z),3,0);
         }
         return result;
     }
 
     template <typename Scalar>
-    static inline SE3<Scalar> exp(const Array_<Scalar,6>& l)
+    static inline SE3_<Scalar> exp(const Vector<Scalar,6>& l)
     {
-        Point3_<Scalar> p(l.data[0],l.data[1],l.data[2]);
-        Point3_<Scalar> r(l.data[3],l.data[4],l.data[5]);
+        Point3_<Scalar> p(l[0],l[1],l[2]);
+        Point3_<Scalar> r(l[3],l[4],l[5]);
         Scalar theta_sq = r.dot(r);
         Scalar theta    = sqrt(theta_sq);
         Scalar half_theta = static_cast<Scalar>(0.5) * theta;
@@ -264,17 +264,17 @@ public:
           real_factor = cos(half_theta);
         }
 
-        SO3<Scalar> R( imag_factor * r.x, imag_factor * r.y,imag_factor * r.z,real_factor);
+        SO3_<Scalar> R( imag_factor * r.x, imag_factor * r.y,imag_factor * r.z,real_factor);
         auto t= p+(1-cos(theta))/theta_sq*r.cross(p)+
                 (theta-sin(theta))/(theta_sq*theta)*r.cross(r.cross(p));
-        return SE3<Scalar>(R,t);
+        return SE3_<Scalar>(R,t);
     }
 
     template <typename Scalar>
-    static inline SE3<Scalar> expFast(const Array_<Scalar,6>& l)
+    static inline SE3_<Scalar> expFast(const Vector<Scalar,6>& l)
     {
-        Point3_<Scalar> p(l.data[0],l.data[1],l.data[2]);
-        Point3_<Scalar> r(l.data[3],l.data[4],l.data[5]);
+        Point3_<Scalar> p(l[0],l[1],l[2]);
+        Point3_<Scalar> r(l[3],l[4],l[5]);
         Scalar theta_sq = r.dot(r);
         Scalar theta    = sqrt(theta_sq);
         Scalar half_theta = static_cast<Scalar>(0.5) * theta;
@@ -291,40 +291,41 @@ public:
                         static_cast<Scalar>(0.5) * theta_sq +
                         static_cast<Scalar>(1.0 / 384.0) * theta_po4;
         } else {
-          Scalar sin_half_theta = SO3<Scalar>::sine(half_theta);
+          Scalar sin_half_theta = SO3_<Scalar>::sine(half_theta);
           imag_factor = sin_half_theta / theta;
-          real_factor = SO3<Scalar>::cosine(half_theta);
+          real_factor = SO3_<Scalar>::cosine(half_theta);
         }
 
-        SO3<Scalar> R( imag_factor * r.x, imag_factor * r.y,imag_factor * r.z,real_factor);
-        auto t= p+(1-SO3<Scalar>::cosine(theta))/theta_sq*r.cross(p)+
-                (theta-SO3<Scalar>::sine(theta))/(theta_sq*theta)*r.cross(r.cross(p));
-        return SE3<Scalar>(R,t);
+        SO3_<Scalar> R( imag_factor * r.x, imag_factor * r.y,imag_factor * r.z,real_factor);
+        auto t= p+(1-SO3_<Scalar>::cosine(theta))/theta_sq*r.cross(p)+
+                (theta-SO3_<Scalar>::sine(theta))/(theta_sq*theta)*r.cross(r.cross(p));
+        return SE3_<Scalar>(R,t);
     }
 
-    Array_<Precision,6> ln()const
+    Vector<Precision,6> ln()const
     {
         return log();
     }
 
-    SO3<Precision> getRotation()const{return get_rotation();}
+    SO3_<Precision> getRotation()const{return get_rotation();}
     Point3_<Precision> getTranslation()const{return get_translation();}
 
-    void setRotation(SO3<Precision> R){my_rotation=R;}
+    void setRotation(SO3_<Precision> R){my_rotation=R;}
     void setTranslation(Point3_<Precision> t){my_translation=t;}
 
-    SE3  mul (const SE3& rq) const{return (*this)*rq;}
+    SE3_  mul (const SE3_& rq) const{return (*this)*rq;}
     Point3_<Precision> trans(const Point3_<Precision>& p) const{return (*this)*p;}
 
     std::string toString()const{std::stringstream sst;sst<<*this;return sst.str();}
 
 protected:
-    SO3<Precision> my_rotation;
+    SO3_<Precision> my_rotation;
     Vec3 my_translation;
 };
 
-typedef SE3<double> SE3d;
-typedef SE3<float > SE3f;
+typedef SE3_<double> SE3d;
+typedef SE3_<float > SE3f;
+typedef SE3d SE3;
 
 }
-#endif // SE3_H
+#endif // GSLAM_CORE_SE3_H

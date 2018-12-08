@@ -9,8 +9,6 @@
 
 namespace GSLAM{
 
-typedef pi::Point3d Point3d;
-
 // WGS84 Ellipsoid
 static const double WGS84_A = 6378137.0;      // major axis
 static const double WGS84_B = 6356752.314245; // minor axis
@@ -52,7 +50,7 @@ public:
      **
      ** http://fr.mathworks.com/matlabcentral/newsreader/view_thread/142629
      **/
-    static pi::Point3d GPS2XYZ(double lat,double lon,double alt)
+    static Point3d GPS2XYZ(double lat,double lon,double alt)
     {
       const double clat = cos( D2R(lat) );
       const double slat = sin( D2R(lat) );
@@ -67,10 +65,10 @@ public:
       const double y = (a2 * L + alt) * clat * slon;
       const double z = (b2 * L + alt) * slat;
 
-      return pi::Point3d(x, y, z);
+      return Point3d(x, y, z);
     }
 
-    static pi::Point3d XYZ2GPS(double x,double y,double z)
+    static Point3d XYZ2GPS(double x,double y,double z)
     {
       const double b = sqrt(WGS84_A*WGS84_A*(1-WGS84_E*WGS84_E));
       const double ep = sqrt((WGS84_A*WGS84_A-b*b)/(b*b));
@@ -81,11 +79,11 @@ public:
       const double N = WGS84_A/sqrt(1-WGS84_E*WGS84_E*sin(lat)*sin(lat));
       const double alt = p/cos(lat)-N;
 
-      return pi::Point3d(R2D(lat), R2D(lon), alt);
+      return Point3d(R2D(lat), R2D(lon), alt);
     }
 
-    static pi::Point3d GPS2XYZ(pi::Point3d gps){return GPS2XYZ(gps.x,gps.y,gps.z);}
-    static pi::Point3d XYZ2GPS(pi::Point3d xyz){return XYZ2GPS(xyz.x,xyz.y,xyz.z);}
+    static Point3d GPS2XYZ(Point3d gps){return GPS2XYZ(gps.x,gps.y,gps.z);}
+    static Point3d XYZ2GPS(Point3d xyz){return XYZ2GPS(xyz.x,xyz.y,xyz.z);}
 
     std::string  name;
 };

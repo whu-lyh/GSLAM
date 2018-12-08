@@ -1,4 +1,4 @@
-#define GSLAM_MINIGLOG_GLOG_LOGGING_H_
+#define GSLAM_CORE_GLOG_H_
 #undef __STRICT_ANSI__
 #include <math.h>
 #include "AutoDiffFactor.hpp"
@@ -227,9 +227,9 @@ bool OptimizerAutoDiffCeres::optimizeICP(const std::vector<std::pair<Point3d, Po
                                  SIM3 &pose, KeyFrameEstimzationDOF dof, double *information)
 {
     if(matches.size()<3) return false;
-    auto se3=pose.get_se3().ln();
+    Vector<double,6> se3=pose.get_se3().ln();
     Eigen::Matrix<double,7,1> sim3;
-    for(int i=0;i<6;i++) sim3(i)=se3.data[i];
+    for(int i=0;i<6;i++) sim3(i)=se3[i];
     sim3(6)=pose.get_scale();
     ceres::Problem problem;
 
@@ -257,7 +257,7 @@ bool OptimizerAutoDiffCeres::optimizeICP(const std::vector<std::pair<Point3d, Po
     if (ceres_config_options.minimizer_progress_to_stdout)
         std::cout << summary.FullReport() << std::endl;
 
-    for(int i=0;i<6;i++) se3.data[i]=sim3(i);
+    for(int i=0;i<6;i++) se3[i]=sim3(i);
     pose.get_se3()=GSLAM::SE3::exp(se3);
     pose.get_scale()=sim3(6);
     return true;
@@ -293,7 +293,7 @@ bool OptimizerAutoDiffCeres::optimize(BundleGraph &graph)
     {
         KeyFrameEstimzation& keyframe=graph.keyframes[i];
         double *para=&kfParas[i*7];
-        *(pi::Array_<double,6>*)para=keyframe.estimation.get_se3().ln();
+        *(GSLAM::Vector<double,6>*)para=keyframe.estimation.get_se3().ln();
         para[6]=keyframe.estimation.get_scale();
         switch (keyframe.dof) {
         case UPDATE_KF_NONE:// fixed
@@ -386,7 +386,7 @@ bool OptimizerAutoDiffCeres::optimize(BundleGraph &graph)
     {
         KeyFrameEstimzation& keyframe=graph.keyframes[i];
         double *para=&kfParas[i*7];
-        keyframe.estimation.get_se3()=SE3::exp(*(pi::Array_<double,6>*)para);
+        keyframe.estimation.get_se3()=SE3::exp(*(Vector<double,6>*)para);
         keyframe.estimation.get_scale()=para[6];
     }
     return true;

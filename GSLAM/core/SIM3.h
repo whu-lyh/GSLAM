@@ -3,7 +3,7 @@
 
 #include "SE3.h"
 
-namespace pi {
+namespace GSLAM {
 
 /**
 Represent a three-dimensional similarity transformation,7 degrees of freedom
@@ -24,23 +24,23 @@ It is the equivalent of a 4*4 Matrix:
 **/
 
 template <typename Precision =double>
-class SIM3
+class SIM3_
 {
 public:
     /// Default constructor. Initialises the the rotation to zero (the identity),
     /// the scale to one and the translation to zero
-    inline SIM3():my_scale(1){}
+    inline SIM3_():my_scale(1){}
 
-    SIM3(const SO3<Precision> &R,const Point3_<Precision> &T,const Precision& S=1.0)
+    SIM3_(const SO3_<Precision> &R,const Point3_<Precision> &T,const Precision& S=1.0)
         :my_se3(R,T),my_scale(S){}
 
-    SIM3(const SE3<Precision> &T,const Precision& S=1.0)
+    SIM3_(const SE3_<Precision> &T,const Precision& S=1.0)
         :my_se3(T),my_scale(S){}
 
     template<typename Scalar>
-    inline operator SIM3<Scalar>()
+    inline operator SIM3_<Scalar>()
     {
-        return SIM3<Scalar>(my_se3,my_scale);
+        return SIM3_<Scalar>(my_se3,my_scale);
     }
 
     inline Point3_<Precision> get_translation()const
@@ -53,20 +53,20 @@ public:
         return my_se3.get_translation();
     }
 
-    inline pi::SO3<Precision> get_rotation()const
+    inline SO3_<Precision> get_rotation()const
     {
         return my_se3.get_rotation();
     }
-    inline pi::SO3<Precision>& get_rotation()
+    inline SO3_<Precision>& get_rotation()
     {
         return my_se3.get_rotation();
     }
 
-    inline pi::SE3<Precision> get_se3()const
+    inline SE3_<Precision> get_se3()const
     {
         return my_se3;
     }
-    inline pi::SE3<Precision>& get_se3()
+    inline SE3_<Precision>& get_se3()
     {
         return my_se3;
     }
@@ -81,9 +81,9 @@ public:
         return my_scale;
     }
 
-    inline SIM3<Precision> operator *(const SIM3<Precision>& rhs) const
+    inline SIM3_<Precision> operator *(const SIM3_<Precision>& rhs) const
     {
-        return SIM3<Precision>(my_se3.get_rotation()*rhs.get_rotation(),
+        return SIM3_<Precision>(my_se3.get_rotation()*rhs.get_rotation(),
                       get_translation() + get_rotation()*(get_scale()*rhs.get_translation()),
                       get_scale()*rhs.get_scale());
     }
@@ -93,18 +93,18 @@ public:
         return get_rotation()*(P*my_scale)+my_se3.get_translation();
     }
 
-    inline SIM3<Precision> inv()const
+    inline SIM3_<Precision> inv()const
     {
-        const SO3<Precision> rinv= get_rotation().inv();
+        const SO3_<Precision> rinv= get_rotation().inv();
         const Precision inv_scale= 1./my_scale;
-        return SIM3(rinv,(-inv_scale)*(rinv*get_translation()),inv_scale);
+        return SIM3_(rinv,(-inv_scale)*(rinv*get_translation()),inv_scale);
     }
 
     // WARNNING: The exp and ln are not the same with the standard Lie Algebra!
     // TODO:     Implement the correct exp and log
-    inline SIM3<Precision> exp(const Array_<Precision,7>& v);
+    inline SIM3_<Precision> exp(const Vector<Precision,7>& v);
 
-    inline Array_<Precision,7> ln()const;
+    inline Vector<Precision,7> ln()const;
 
 #ifdef SOPHUS_SIM3_HPP
     SIM3(const Sophus::Sim3Group<Precision>& sim3)
@@ -124,7 +124,7 @@ public:
     }
 #endif
 protected:
-    SE3<Precision> my_se3;
+    SE3_<Precision> my_se3;
     Precision my_scale;
 };
 
@@ -171,11 +171,11 @@ inline Point3_<Precision> compute_rodrigues_coefficients_sim3( const Precision &
 }
 
 template <typename Precision>
-inline SIM3<Precision> SIM3<Precision>::exp(const Array_<Precision,7>& mu)
+inline SIM3_<Precision> SIM3_<Precision>::exp(const Vector<Precision,7>& mu)
 {
-    SIM3<Precision> result;
-    result.get_rotation()=SO3<Precision>::exp(*(Point3d*)&mu);
-    result.get_translation()=*(Point3d*)&mu.data[3];
+    SIM3_<Precision> result;
+    result.get_rotation()=SO3_<Precision>::exp(*(Point3d*)&mu);
+    result.get_translation()=*(Point3d*)&mu[3];
     result.get_scale()=mu.data[6];
 //#ifdef HAS_TOON
 //    // scale
@@ -196,18 +196,20 @@ inline SIM3<Precision> SIM3<Precision>::exp(const Array_<Precision,7>& mu)
 }
 
 template <typename Precision>
-inline Array_<Precision,7> SIM3<Precision>::ln()const
+inline Vector<Precision,7> SIM3_<Precision>::ln()const
 {
-    Array_<Precision,7> result;
+    Vector<Precision,7> result;
     *(Point3d*)&result=get_rotation().ln();
     *(Point3d*)&result.data[3]=get_translation();
     result.data[6]=get_scale();
     return result;
 }
 
-typedef SIM3<double> SIM3d;
-typedef SIM3<float>  SIM3f;
+typedef SIM3_<double> SIM3d;
+typedef SIM3_<float>  SIM3f;
+typedef SIM3d SIM3;
 
-} // end of namespace pi
+} // end of namespace GSLAM
+
 
 #endif // SIM3_H

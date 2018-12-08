@@ -70,7 +70,7 @@ public:
     bool prepareReMap();
     bool valid();
 private:
-    SPtr<UndistorterImpl> impl;
+    std::shared_ptr<UndistorterImpl> impl;
 };
 
 

@@ -1,9 +1,11 @@
+#ifndef GSLAM_CORE_FILERESOURCE_H
+#define GSLAM_CORE_FILERESOURCE_H
+
 #include <fstream>
 #include <istream>
 #include <stdio.h>
 #include <vector>
-#include <GSLAM/core/Svar.h>
-#include <GSLAM/core/SPtr.h>
+#include "Svar.h"
 
 #define GSLAM_REGISTER_RESOURCE(R) \
     class ResourceRegister##R{\
@@ -127,3 +129,4 @@ public:
 
 }
 
+#endif

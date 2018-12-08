@@ -85,8 +85,8 @@
 // To use the debug only versions, prepend a D to the normal check macros, e.g.
 // DCHECK_EQ(a, b).
 
-#ifndef GSLAM_MINIGLOG_GLOG_LOGGING_H_
-#define GSLAM_MINIGLOG_GLOG_LOGGING_H_
+#ifndef GSLAM_CORE_GLOG_H_
+#define GSLAM_CORE_GLOG_H_
 
 #ifdef ANDROID
 #  include <android/log.h>
@@ -372,10 +372,6 @@ inline void SetLogDestination(LogSeverity severity,
     }
 }
 
-
-
-}  // namespace google
-
 // ---------------------------- Logger Class --------------------------------
 
 // Class created for each use of the logging macros.
@@ -495,10 +491,43 @@ class GSLAM_EXPORT LoggerVoidify {
   void operator&(const std::ostream &s) { }
 };
 
+// Log a message and terminate.
+template<class T>
+void LogMessageFatal(const char *file, int line, const T &message) {
+  MessageLogger((char *)__FILE__, __LINE__, "native", FATAL).stream()
+      << message;
+}
+
+
+// ---------------------------CHECK_NOTNULL macros ---------------------------
+
+// Helpers for CHECK_NOTNULL(). Two are necessary to support both raw pointers
+// and smart pointers.
+template <typename T>
+T& CheckNotNullCommon(const char *file, int line, const char *names, T& t) {
+  if (t == NULL) {
+    LogMessageFatal(file, line, std::string(names));
+  }
+  return t;
+}
+
+template <typename T>
+T* CheckNotNull(const char *file, int line, const char *names, T* t) {
+  return CheckNotNullCommon(file, line, names, t);
+}
+
+template <typename T>
+T& CheckNotNull(const char *file, int line, const char *names, T& t) {
+  return CheckNotNullCommon(file, line, names, t);
+}
+
+}  // namespace GSLAM
+
+
 // Log only if condition is met.  Otherwise evaluates to void.
 #define LOG_IF(severity, condition) \
-    !(condition) ? (void) 0 : LoggerVoidify() & \
-      MessageLogger((char *)__FILE__, __LINE__, "native", severity).stream()
+    !(condition) ? (void) 0 : GSLAM::LoggerVoidify() & \
+      GSLAM::MessageLogger((char *)__FILE__, __LINE__, "native", severity).stream()
 
 // Log only if condition is NOT met.  Otherwise evaluates to void.
 #define LOG_IF_FALSE(severity, condition) LOG_IF(severity, !(condition))
@@ -512,9 +541,9 @@ class GSLAM_EXPORT LoggerVoidify {
 #  define LG      LOG_IF(INFO, INFO <= MAX_LOG_LEVEL)
 #  define VLOG_IF(n, condition) LOG_IF(n, (n <= MAX_LOG_LEVEL) && condition)
 #else
-#  define LOG(n)  MessageLogger((char *)__FILE__, __LINE__, "native", n).stream()    // NOLINT
-#  define VLOG(n) MessageLogger((char *)__FILE__, __LINE__, "native", n).stream()    // NOLINT
-#  define LG      MessageLogger((char *)__FILE__, __LINE__, "native", INFO).stream() // NOLINT
+#  define LOG(n)  GSLAM::MessageLogger((char *)__FILE__, __LINE__, "native", n).stream()    // NOLINT
+#  define VLOG(n) GSLAM::MessageLogger((char *)__FILE__, __LINE__, "native", n).stream()    // NOLINT
+#  define LG      GSLAM::MessageLogger((char *)__FILE__, __LINE__, "native", INFO).stream() // NOLINT
 #  define VLOG_IF(n, condition) LOG_IF(n, condition)
 #endif
 
@@ -528,17 +557,10 @@ class GSLAM_EXPORT LoggerVoidify {
 #ifndef NDEBUG
 #  define DLOG LOG
 #else
-#  define DLOG(severity) true ? (void) 0 : LoggerVoidify() & \
-      MessageLogger((char *)__FILE__, __LINE__, "native", severity).stream()
+#  define DLOG(severity) true ? (void) 0 : GSLAM::LoggerVoidify() & \
+      GSLAM::MessageLogger((char *)__FILE__, __LINE__, "native", severity).stream()
 #endif
 
-
-// Log a message and terminate.
-template<class T>
-void LogMessageFatal(const char *file, int line, const T &message) {
-  MessageLogger((char *)__FILE__, __LINE__, "native", FATAL).stream()
-      << message;
-}
 
 // ---------------------------- CHECK macros ---------------------------------
 
@@ -589,40 +611,18 @@ void LogMessageFatal(const char *file, int line, const T &message) {
 #  define DCHECK_GT(val1, val2) if (false) CHECK_OP(val1, val2, >)
 #endif  // NDEBUG
 
-// ---------------------------CHECK_NOTNULL macros ---------------------------
-
-// Helpers for CHECK_NOTNULL(). Two are necessary to support both raw pointers
-// and smart pointers.
-template <typename T>
-T& CheckNotNullCommon(const char *file, int line, const char *names, T& t) {
-  if (t == NULL) {
-    LogMessageFatal(file, line, std::string(names));
-  }
-  return t;
-}
-
-template <typename T>
-T* CheckNotNull(const char *file, int line, const char *names, T* t) {
-  return CheckNotNullCommon(file, line, names, t);
-}
-
-template <typename T>
-T& CheckNotNull(const char *file, int line, const char *names, T& t) {
-  return CheckNotNullCommon(file, line, names, t);
-}
-
 // Check that a pointer is not null.
 #define CHECK_NOTNULL(val) \
-  CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
+  GSLAM::CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
 
 #ifndef NDEBUG
 // Debug only version of CHECK_NOTNULL
 #define DCHECK_NOTNULL(val) \
-  CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
+  GSLAM::CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
 #else
 // Optimized version - generates no code.
 #define DCHECK_NOTNULL(val) if (false)\
-  CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
+  GSLAM::CheckNotNull(__FILE__, __LINE__, "'" #val "' Must be non NULL", (val))
 #endif  // NDEBUG
 
-#endif  // GSLAM_MINIGLOG_GLOG_LOGGING_H_
+#endif  // GSLAM_CORE_GLOG_H_
