@@ -94,7 +94,7 @@ public:
     MapPoint(const PointID& id,const Point3Type& position=Point3Type(0,0,0));
     virtual ~MapPoint(){}
     virtual std::string type()const{return "InvalidPoint";}
-    const PointID id(){return _id;}
+    const PointID& 	id()const{return _id;}
 
     Point3Type    getPose()const;
     void          setPose(const Point3Type& pt);
@@ -160,7 +160,7 @@ public:
     virtual std::string type()const{return "InvalidFrame";}
 
     // Basic things, ID, Timestamp, Image, CameraModel, IMU, GPS informations
-    const PointID   id()const{return _id;}
+    const PointID&  id()const{return _id;}
     const double&   timestamp()const{return _timestamp;}
 
     // Frame transform from local to world, this is essential
@@ -396,7 +396,7 @@ inline std::string MapFrame::channelTypeString(const int channels)
     }
     else
     {
-        for(int i=0; i<sizeof(channels)*8;i++)
+        for(uint i=0; i<sizeof(channels)*8;i++)
         {
             int j = channels & (0x00000001<<i);
             if(j !=0)

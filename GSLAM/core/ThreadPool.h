@@ -16,7 +16,7 @@ namespace GSLAM{
 class ThreadPool {
  public:
   // All the threads are created upon construction.
-  explicit ThreadPool(const int num_threads): stop(false) {
+  explicit ThreadPool(const size_t num_threads): stop(false) {
         CHECK_GE(num_threads, 1)
             << "The number of threads specified to the ThreadPool is insufficient.";
         for (size_t i = 0; i < num_threads; ++i) {

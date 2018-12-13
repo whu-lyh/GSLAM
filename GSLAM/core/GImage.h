@@ -308,7 +308,7 @@ public:
 
     void release()
     {
-        int totalBytes=total()*elemSize();
+        size_t totalBytes=total()*elemSize();
         int alignBytes=alignSize(totalBytes, (int)sizeof(*refCount));
         if(refCount==((int*)(data+alignBytes))) // OpenCV2 style
         {

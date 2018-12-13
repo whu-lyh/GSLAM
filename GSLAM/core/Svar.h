@@ -1042,7 +1042,7 @@ inline std::vector<std::string> Svar::ParseMain(int argc, char** argv,
   for (int i = beginIdx; i < argc; i++) {
     string str = argv[i];
     bool foundPrefix = false;
-    int j = 0;
+    size_t j = 0;
     for (; j < 2 && j < str.size() && str.at(j) == '-'; j++) foundPrefix = true;
 
     if (!foundPrefix) {
@@ -1086,7 +1086,7 @@ inline std::vector<std::string> Svar::ParseMain(int argc, char** argv,
 
   cfg_File = GetString("conf", cfg_File);
   // cout << "Parsing file: " << cfg_File << " ...." << endl;
-  bool ret = ParseFile(cfg_File);
+  ParseFile(cfg_File);
 
   return unParsed;
 }
@@ -1160,9 +1160,9 @@ inline std::string Svar::help() {
 inline std::string Svar::printTable(std::vector<std::pair<int,std::string> > line){
     std::stringstream sst;
     while(true){
-        int emptyCount=0;
+        size_t emptyCount=0;
         for(auto& it:line){
-            int width=it.first;
+            size_t width=it.first;
             std::string& str=it.second;
             if(str.size()<=width){
                 sst<< std::setw(width)

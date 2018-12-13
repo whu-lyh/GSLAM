@@ -35,7 +35,7 @@ public:
         std::vector<u_char>      data;
 
         // load
-        for(int i=0;i<lut.size();i++){
+        for(size_t i=0;i<lut.size();i++){
             std::pair<std::string,std::string> corr=lut[i];
             FILE *in=fopen(corr.first.c_str(),"r");
             if(!in) {
@@ -61,21 +61,21 @@ public:
         fileOut<<"#include \"GSLAM/core/FileResource.h\"\n\n\n\n";
 
         fileOut<<"static const std::string resource_names[]={\n";
-        for(int i=0;i<names.size();i++)
+        for(size_t i=0;i<names.size();i++)
         {
             fileOut<<"\""<<names[i]<<"\",\n";
         }
         fileOut<<"\"\"};\n\n";
 
         fileOut<<"static const int resource_index[]={";
-        for(int i=0;i<idxes.size();i++){
+        for(size_t i=0;i<idxes.size();i++){
             fileOut<<idxes[i];
             if(i+1!=names.size()) fileOut<<",\n";
             else fileOut<<"};\n\n";
         }
 
         fileOut<<"static const unsigned char resource_data[]= {\n";
-        for(int i=0;i<data.size();i+=16){
+        for(size_t i=0;i<data.size();i+=16){
             if(i+16<=data.size()) fileOut<<toHex(&data[i],16)<<"\n";
             else fileOut<<toHex(&data[i],data.size()-i)<<"\n";
         }
