@@ -218,7 +218,7 @@ class Subscriber {
   Subscriber(std::shared_ptr<Subscriber::Impl> impl) : impl_(impl) {}
 
   virtual void publish(const std::type_info& typeinfo,
-                       const std::shared_ptr<int>& message) const {
+                       const std::shared_ptr<void>& message) const {
     //        LOG(INFO)<<"Node "<<impl_->topic_<<" publishing message
     //        "<<typeinfo.name();
     if (!impl_) return;
@@ -460,6 +460,7 @@ class Messenger {
         pub.addSubscriber(sub);
       }
     }
+    return true;
   }
 
   const std::map<std::string, std::set<Publisher> >& getPublishers()const{
@@ -503,9 +504,9 @@ class Messenger {
   static std::string printTable(std::vector<std::pair<int,std::string> > line){
       std::stringstream sst;
       while(true){
-          int emptyCount=0;
+          size_t emptyCount=0;
           for(auto& it:line){
-              int width=it.first;
+              size_t width=it.first;
               std::string& str=it.second;
               if(str.size()<=width){
                   sst<< std::setw(width)
@@ -625,8 +626,10 @@ void Publisher::publish(const std::shared_ptr<M>& message) const {
         subscribers = impl_->subscribers;
       }
 
-      for (const auto& s : subscribers) {
-        s.publish(typeid(M), *(const std::shared_ptr<int>*)&message);
+      for (const Subscriber& s : subscribers) {
+//          std::shared_ptr<void> msg=*(const std::shared_ptr<void>*)&message;
+
+        s.publish(typeid(M), message);
       }
     });
     return;

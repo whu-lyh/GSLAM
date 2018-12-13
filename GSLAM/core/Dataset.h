@@ -207,12 +207,12 @@ public:
         }
     }
 
+    Dataset     _dataset;
+    int         _status;
     Svar        _svar;
     Subscriber  _sub_control;
     Publisher   _pub_dataset_status,_pub_images,_pub_imu;
-    Dataset     _dataset;
     std::thread _playThread;
-    int         _status;
 };
 
 class DatasetFactory
