@@ -11,12 +11,13 @@ using namespace std;
 using nbind::class_;
 
 NBIND_MODULE{
-
     addMessengerSupport<int>("Int");
-    addMessengerSupport<bool>("bool");
+    addMessengerSupport<long>("Long");
+    addMessengerSupport<int>("int");
     addMessengerSupport<long>("long");
-    addMessengerSupport<double>("double");
-    addMessengerSupport<std::string>("string");
+    addMessengerSupport<bool>("Boolean");
+    addMessengerSupport<double>("Number");
+    addMessengerSupport<std::string>("String");
     addMessengerSupportPtr<Point2i>("Point2i");
     addMessengerSupportPtr<GImage>("GImage");
     addMessengerSupportPtr<Publisher>("Publisher");
@@ -207,23 +208,36 @@ NBIND_MODULE{
             .def("getSubscribers",&Messenger::getSubscribers)
             .def("introduction",&Messenger::introduction)
             .def("accept",(void (Messenger::*)(Messenger))&Messenger::join)
-            .def("advertise",[](Messenger& messenger, std::string py_class,
+            .def("advertise",[](Messenger& messenger, nbind::WireType py_class,
                  const std::string& topic, uint32_t queue_size = 0,
                  bool latch = false){
-        auto info=SvarWithType<const std::type_info*>::instance().get_var(py_class,nullptr);
+
+        std::string class_name=getV8Type(py_class);
+        if(class_name.empty()){
+            LOG(ERROR)<<"Unable to subscribe .";
+        }
+        auto info=SvarWithType<const std::type_info*>::instance().get_var(class_name,nullptr);
         if(!info) {
-            LOG(INFO)<<"Unable to advertise "<<py_class;
+            LOG(INFO)<<"Unable to advertise "<<class_name;
             return Publisher();
         }
         Publisher pub(topic,info->name(),queue_size);
         messenger.join(pub);
         return pub;
     })
-    .def("subscribe",[](Messenger& messenger, std::string py_class,
+    .def("subscribe",[](Messenger& messenger, nbind::WireType py_class,
          const std::string& topic, nbind::cbFunction callback){
 
-        auto info=SvarWithType<const std::type_info*>::instance().get_var(py_class,nullptr);
-        if(!info) return Subscriber();
+        std::string class_name=getV8Type(py_class);
+        if(class_name.empty()){
+            LOG(ERROR)<<"Unable to subscribe .";
+            return Subscriber();
+        }
+        auto info=SvarWithType<const std::type_info*>::instance().get_var(class_name,nullptr);
+        if(!info) {
+            LOG(INFO)<<"Unable to subscribe "<<class_name;
+            return Subscriber();
+        }
         auto transFunc=SvarWithType<std::function<void(std::shared_ptr<nbind::cbFunction>,const std::shared_ptr<void>&)> >::instance()
                 .get_var(info->name(),nullptr);
         std::shared_ptr<nbind::cbFunction> cbk(new nbind::cbFunction(callback));
