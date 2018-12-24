@@ -26,6 +26,7 @@ public:
     size_t size(){return data.size();}
 
     VarType& operator [](size_t idx){return data[idx];}
+    const VarType& operator [](size_t idx)const{return data[idx];}
 
     bool fromString(std::string str)
     {
@@ -71,7 +72,7 @@ public:
         return true;
     }
 
-    std::string toString()
+    std::string toString()const
     {
         std::ostringstream ost;
         ost<<"[";
@@ -89,7 +90,7 @@ public:
         return is;
     }
 
-    friend inline std::ostream& operator <<(std::ostream& os,VecParament & p)
+    friend inline std::ostream& operator <<(std::ostream& os,const VecParament & p)
     {
         os<<p.toString();
         return os;

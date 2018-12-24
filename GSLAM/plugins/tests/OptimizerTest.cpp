@@ -376,7 +376,7 @@ TEST(Optimizer,GPSGraphSimulate)
     double radius=svar.GetInt("GPSGraphSimulate.Radius",100);
     int    gpsStep=svar.GetInt("GPSGraphSimulate.GPSStep",50);
     VecParament<double> gps_info(std::vector<double>({1,1,0.5,0.1,0.1,0.1}));
-    gps_info=svar.get_var("GPSGraphSimulate.GPSInfo",gps_info);
+    gps_info=svar.Get("GPSGraphSimulate.GPSInfo",gps_info);
     GSLAM::BundleGraph graph;
     GSLAM::KeyFrameEstimzation currentFrame={GSLAM::SIM3(GSLAM::SO3(),Point3d(radius,0,0),radius),UPDATE_KF_SIM3};
     GSLAM::SIM3 odometer,curGPS=currentFrame.estimation;

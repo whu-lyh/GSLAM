@@ -152,7 +152,7 @@ void GuiHandle(void *ptr,string cmd,string para)
 ////////////////////////////////////////////////////////////////////////////////
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),frameVis(NULL),status(READY),historyFile("history.txt"),
-      defaultSLAMs(svar.get_var<VecParament<std::string> >("SLAM",VecParament<std::string>())),
+      defaultSLAMs(svar.Get<VecParament<std::string> >("SLAM",VecParament<std::string>())),
       defaultDataset(svar.GetString("Dataset",""))
 {
     // set window minimum size

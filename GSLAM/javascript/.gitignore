@@ -2,4 +2,4 @@ build
 node_modules
 auto.gypi
 auto-top.gypi
-
+*.pro

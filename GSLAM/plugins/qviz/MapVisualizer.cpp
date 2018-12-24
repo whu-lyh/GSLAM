@@ -54,11 +54,11 @@ void MapVisualizer::draw()
     double& connectionWidth=svar.GetDouble("MainWindow.ConnectionWidth",1.);
     double& pointCloudSize =svar.GetDouble("MainWindow.PointCloudSize",2.5);
 
-    GSLAM::Point3ub trajectoryColor=svar.get_var("MainWindow.TrajectoryColor",Point3ub(255,255,0));
-    GSLAM::Point3ub gpsTrajectoryColor=svar.get_var("MainWindow.GPSTrajectoryColor",Point3ub(255,0,0));
-    GSLAM::Point3ub connectionColor=svar.get_var("MainWindow.ConnectionColor",Point3ub(0,255,255));
-    GSLAM::Point3ub frameColor  =svar.get_var("MainWindow.FrameColor",Point3ub(0,0,255));
-    GSLAM::Point3ub curFrameColor  =svar.get_var("MainWindow.CurrentFrameColor",Point3ub(255,0,0));
+    GSLAM::Point3ub trajectoryColor=svar.Get("MainWindow.TrajectoryColor",Point3ub(255,255,0));
+    GSLAM::Point3ub gpsTrajectoryColor=svar.Get("MainWindow.GPSTrajectoryColor",Point3ub(255,0,0));
+    GSLAM::Point3ub connectionColor=svar.Get("MainWindow.ConnectionColor",Point3ub(0,255,255));
+    GSLAM::Point3ub frameColor  =svar.Get("MainWindow.FrameColor",Point3ub(0,0,255));
+    GSLAM::Point3ub curFrameColor  =svar.Get("MainWindow.CurrentFrameColor",Point3ub(255,0,0));
 #if defined(HAS_GLEW)
     if(!_vetexTrajBuffer)
     {

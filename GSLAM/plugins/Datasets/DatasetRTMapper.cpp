@@ -18,7 +18,7 @@ using namespace GSLAM;
 inline GSLAM::Camera camFromName(string name,Svar& var)
 {
     VecParament<double> paras;
-    paras=var.get_var(name+".Paraments",paras);
+    paras=var.Get(name+".Paraments",paras);
     return GSLAM::Camera(paras.data);
 }
 
@@ -226,7 +226,7 @@ public:
             cameraName=var.GetString("Dataset.Camera","");
         if(cameraName.empty()) return false;
 
-        VecParament<double> camParas=var.get_var(cameraName+".Paraments",VecParament<double>());
+        VecParament<double> camParas=var.Get(cameraName+".Paraments",VecParament<double>());
         GSLAM::Camera camera(camParas.data);
         if(!camera.isValid()) return false;
         _cameraName = cameraName;
@@ -314,7 +314,7 @@ public:
         string cameraName = var.GetString("Dataset.Camera","");
         if( cameraName.empty() ) return false;
 
-        VecParament<double> camParas=var.get_var(cameraName+".Paraments",VecParament<double>());
+        VecParament<double> camParas=var.Get(cameraName+".Paraments",VecParament<double>());
         GSLAM::Camera camera(camParas.data);
         if( !camera.isValid() ) return false;
         _cameraName = cameraName;

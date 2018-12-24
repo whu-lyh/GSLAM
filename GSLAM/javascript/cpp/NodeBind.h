@@ -10,6 +10,7 @@
 #include "nbind/noconflict.h"
 #include "nbind/v8/BindWrapper.h"
 #include "LambdaMethodSignature.h"
+#include "NodeJson.h"
 
 #define NBIND_MODULE class JSRegister{\
 public:\

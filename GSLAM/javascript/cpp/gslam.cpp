@@ -3,6 +3,7 @@
 #endif
 
 #include <GSLAM/core/GSLAM.h>
+#include <GSLAM/core/JSON.h>
 #include "NodeBind.h"
 #include "MessengerHelper.h"
 
@@ -22,6 +23,8 @@ NBIND_MODULE{
     addMessengerSupportPtr<GImage>("GImage");
     addMessengerSupportPtr<Publisher>("Publisher");
     addMessengerSupportPtr<MapFrame>("MapFrame");
+    addMessengerSupport<Json>("Object");
+    addMessengerSupport<std::map<std::string,std::string> >("StrMap");
 
     NBIND_FUNCTION(processAll);
 

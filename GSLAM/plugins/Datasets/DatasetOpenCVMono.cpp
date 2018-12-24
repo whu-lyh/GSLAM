@@ -14,7 +14,7 @@ using namespace GSLAM;
 inline GSLAM::Camera camFromName(string name,Svar& var)
 {
     VecParament<double> paras;
-    paras=var.get_var(name+".Paraments",paras);
+    paras=var.Get(name+".Paraments",paras);
     return GSLAM::Camera(paras.data);
 }
 

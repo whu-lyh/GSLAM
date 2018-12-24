@@ -6,6 +6,7 @@
 #include "GSLAM/core/VecParament.h"
 #include "GSLAM/core/Undistorter.h"
 #include "IO.h"
+#include "GSLAM/core/JSON.h"
 
 #ifdef HAS_OPENCV
 #include <opencv2/highgui/highgui.hpp>

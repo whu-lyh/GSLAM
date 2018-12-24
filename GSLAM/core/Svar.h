@@ -43,21 +43,19 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <sstream>
 #include <typeinfo>
 #include <vector>
+#include <thread>
+#include <cxxabi.h>
+#include <assert.h>
 
 #define svar GSLAM::Svar::instance()
 #define scommand GSLAM::Scommand::instance()
-#define GSLAM_API
-#define CallBack(FUNCNAME)                                          \
-  static void FUNCNAME##CB(void* t, std::string a, std::string b) { \
-    C(t).FUNCNAME(a, b);                                            \
-  }                                                                 \
-  void FUNCNAME(std::string name, std::string args)
 
 namespace GSLAM {
 
@@ -71,7 +69,6 @@ class SvarLanguage;
  files and stream.
  */
 
-///
 /**@ingroup gInterface
  @brief The class Svar will be shared in the same process, it help users to
  transform paraments use a name id,
@@ -80,13 +77,13 @@ class SvarLanguage;
  files and stream.
  */
 template <typename VarType = void*, typename KeyType = std::string>
-class SvarWithType {
+class SvarWithType{
   friend class Svar;
 
  public:
-  typedef std::map<KeyType, VarType> DataMap;
+  typedef std::map<KeyType, VarType>  DataMap;
   typedef typename DataMap::iterator DataIter;
-  typedef std::pair<DataIter, bool> InsertRet;
+  typedef std::pair<DataIter, bool>  InsertRet;
 
  public:
   SvarWithType() {}
@@ -108,10 +105,9 @@ class SvarWithType {
     return true;
   }
 
-  inline bool clear() {
+  inline void clear() {
     std::unique_lock<std::mutex> lock(mMutex);
     data.clear();
-    return true;
   }
 
   /** This insert a named var to the map,you can overwrite or not if the var has
@@ -202,27 +198,17 @@ class SvarWithType {
     }
   }
 
-  std::string getStatsAsText() {
+  std::string getStatsAsText(const size_t column_width = 80) {
     std::unique_lock<std::mutex> lock(mMutex);
     std::ostringstream ost;
-
     for (DataIter it = data.begin(); it != data.end(); it++)
-      ost << std::setw(39) << std::setiosflags(std::ios::left) << it->first
-          << "  " << std::setw(39) << std::setiosflags(std::ios::left)
+      ost << std::setw(column_width/2-1) << std::setiosflags(std::ios::left) << it->first
+          << "  " << std::setw(column_width/2) << std::setiosflags(std::ios::left)
           << it->second << std::endl;
-    std::string a;
     return ost.str();
   }
-
-  /** this print all the names with var to the screen,\sa enter.
- */
-  void dumpAllVars(const size_t column_width = 80) {
-    std::cout << std::endl << getStatsAsText(column_width);
-  }
-
  protected:
-  std::map<KeyType, VarType> data;
-
+  DataMap    data;
   std::mutex mMutex;
 };  // end of class SvarWithType
 
@@ -230,19 +216,10 @@ typedef SvarWithType<int> SInt;
 typedef SvarWithType<double> SDouble;
 typedef SvarWithType<std::string> SString;
 
-class GSLAM_API Svar {
+class Svar {
  public:
   typedef std::map<std::string, std::string> SvarMap;
   typedef std::map<std::string, std::string>::iterator SvarIter;
-
-  enum SVARMODE {
-    SILENT = 0x00,
-    UPDATE = 0x01,
-    VERBOSE = 0x02,
-    OVERWRITE = 0x04
-  };
-
-  enum PARSEMODE { DEFAULT_CMD1 = 0, DEFAULT_CMD2 = 1, CMD1 = 2, CMD_2 = 3 };
 
   struct ArgumentInfo {
     std::string type, def, introduction;
@@ -255,54 +232,48 @@ class GSLAM_API Svar {
   /** This gives us singletons instance. \sa enter */
   static Svar& instance();
 
+  const SvarMap& get_data();
   /** \brief update svar
  */
   bool insert(std::string name, std::string var, bool overwrite = true);
-  std::string getvar(std::string name);
-
-  bool ParseLine(std::string s, bool bSilentFailure = false);
-  bool ParseStream(std::istream& is);
-  bool ParseFile(std::string sFileName);
-
-  template <typename T>
-  T& Arg(const std::string& name, T def, const std::string& info);
-  std::vector<std::string> ParseMain(int argc, char** argv,
-                                     PARSEMODE mode = DEFAULT_CMD1);
-  std::string help();
-  void setUsage(const std::string& usage){
-      GetString("Usage")=usage;
-  }
 
   /** \brief
  */
   bool exist(const std::string& name);
 
-  template <class T>
-  T& Get(const std::string& name, T def = T());
-
-  int& GetInt(const std::string& name, int defaut = 0, SVARMODE mode = SILENT);
-  double& GetDouble(const std::string& name, double defaut = 0,
-                    SVARMODE mode = SILENT);
-  std::string& GetString(const std::string& name,
-                         const std::string& defaut = "",
-                         SVARMODE mode = SILENT);
-  void*& GetPointer(const std::string& name, const void* p = NULL,
-                    SVARMODE mode = SILENT);
-  Svar GetChild(const std::string& name);
-
-  std::shared_ptr<SvarWithType<Svar> >& Children() { return a->c; }
-  Scommand& command();
-
+  std::string getvar(std::string name);
   bool erase(const std::string& name);
-  void update();
-  const SvarMap& get_data();
 
   /** \brief clear Svar data
 */
   void clear();
 
-  /** \brief clear all data including SvarWithType<int>, SvarWithType<double>,
- * SvarWithType<string>
+  Scommand& command();
+
+  bool ParseLine(std::string s, bool bSilentFailure = false);
+  bool ParseStream(std::istream& is);
+  bool ParseFile(std::string sFileName);
+
+  std::vector<std::string> ParseMain(int argc, char** argv);
+  std::string help();
+  void setUsage(const std::string& usage){
+      GetString("Usage")=usage;
+  }
+
+  Svar GetChild(const std::string& name);
+  void AddChild(const std::string& name,const Svar& child);
+  std::list<std::pair<std::string,Svar>> Children();
+
+  int& GetInt(const std::string& name, int defaut = 0);
+  double& GetDouble(const std::string& name, double defaut = 0);
+  std::string& GetString(const std::string& name, const std::string& defaut = "");
+  void*& GetPointer(const std::string& name, const void* p = NULL);
+
+
+  void update();
+
+
+  /** \brief clear all holders
 */
   void clearAll();
 
@@ -313,19 +284,33 @@ class GSLAM_API Svar {
 
   bool save2file(std::string filename = "");
 
-  static std::string dtos(const double& i, int precision);
+  template <typename T>
+  T& Arg(const std::string& name, T def, const std::string& info);
+
+  template <class T>
+  T& Get(const std::string& name, T def = T());
+
+  template <typename T>
+  void Set(const std::string& name, const T& def);
+
+  template <class T>
+  std::shared_ptr<SvarWithType<T> >& holder();
+
+  template <typename T>
+  static std::string toString(const T& v);
+
+  template <typename T>
+  static T fromString(const std::string& str);
+
   static std::string getFolderPath(const std::string& path);
   static std::string getBaseName(const std::string& path);
   static std::string getFileName(const std::string& path);
-  static std::vector<std::string> ChopAndUnquoteString(std::string s);
-  static std::string printTable(std::vector<std::pair<int,std::string> > line);
 
-  template <class T>
-  T get_var(const std::string& name, const T& def);  // deprecated since 2.4.5
  private:
   bool setvar(std::string s);  // eg. setvar("var=val");
   std::string expandVal(std::string val, char flag = '{');
 
+  static bool        fileExists(const std::string& filename);
   static std::string UncommentString(std::string s);
   static const char* FirstOpenBrace(const char* str, char flag = '{');
   static const char* MatchingEndBrace(const char* str, char flag = '{');
@@ -336,17 +321,18 @@ class GSLAM_API Svar {
                                                char op, char cl);
 
   static std::string typeName(std::string name);
+  static std::string printTable(std::vector<std::pair<int,std::string> > line);
 
  protected:
-  std::shared_ptr<SvarWithType<std::string> > data;
+  friend class SvarLanguage;
+  static std::vector<std::string> ChopAndUnquoteString(std::string s);
+
   struct Data {
-    std::shared_ptr<SvarWithType<int> > i;
-    std::shared_ptr<SvarWithType<double> > d;
-    std::shared_ptr<SvarWithType<std::string> > s;
-    std::shared_ptr<SvarWithType<Svar> > c;
-    std::shared_ptr<SvarWithType<void*> > p;
-    std::shared_ptr<Scommand> parser;
-    std::shared_ptr<SvarWithType<ArgumentInfo> > args;
+    SvarWithType<std::string>                 data;
+    SvarWithType<std::shared_ptr<void> >      holders;
+    std::shared_ptr<Scommand>                 parser;
+    std::list<std::pair<std::string,Svar> >   children;
+    std::mutex                                childMutex;
   };
   std::shared_ptr<Data> a;
 };  // end of class Svar
@@ -373,7 +359,7 @@ struct CallbackInfoStruct {
 
 typedef std::vector<CallbackInfoStruct> CallbackVector;
 
-class GSLAM_API Scommand {
+class Scommand {
  public:
   Scommand(Svar& var = Svar::instance());
   static Scommand& instance();
@@ -415,12 +401,18 @@ class SvarLanguage {
 
   static SvarLanguage& C(void* v) { return *static_cast<SvarLanguage*>(v); }
 
-  CallBack(collect_line) {
+  static void collect_lineCB(void* t, std::string a, std::string b) {
+    C(t).collect_line(a, b);
+  }
+  void collect_line(std::string name, std::string args){
     (void)name;
     collection.push_back(args);
   }
 
-  CallBack(function) {
+  static void functionCB(void* t, std::string a, std::string b) {
+    C(t).function(a, b);
+  }
+  void function(std::string name, std::string args){
     using namespace std;
 
     svar_.GetInt("Svar.Collecting", 0)++;
@@ -434,7 +426,10 @@ class SvarLanguage {
     collection.clear();
   }
 
-  CallBack(endfunction) {
+  static void endfunctionCB(void* t, std::string a, std::string b) {
+    C(t).endfunction(a, b);
+  }
+  void endfunction(std::string name, std::string args){
     using namespace std;
     svar_.GetInt("Svar.Collecting", 0)--;
     if (current_function == "") {
@@ -453,14 +448,21 @@ class SvarLanguage {
     collection.clear();
   }
 
-  CallBack(runfunction) {
+
+  static void runfunctionCB(void* t, std::string a, std::string b) {
+    C(t).runfunction(a, b);
+  }
+  void runfunction(std::string name, std::string args){
     (void)args;
     using namespace std;
     vector<string>& v = *functions.get_ptr(name, vector<string>());
     for (unsigned int i = 0; i < v.size(); i++) svar_.ParseLine(v[i]);
   }
 
-  CallBack(gui_if_equal) {
+  static void gui_if_equalCB(void* t, std::string a, std::string b) {
+    C(t).gui_if_equal(a, b);
+  }
+  void gui_if_equal(std::string name, std::string args){
     (void)name;
     using namespace std;
     string& s = args;
@@ -517,7 +519,10 @@ class SvarLanguage {
     if_string = "";
   }
 
-  CallBack(gui_if_else) {
+  static void gui_if_elseCB(void* t, std::string a, std::string b) {
+    C(t).gui_if_else(a, b);
+  }
+  void gui_if_else(std::string name, std::string args){
     (void)name;
     (void)args;
     using namespace std;
@@ -526,7 +531,10 @@ class SvarLanguage {
     collection.clear();
   }
 
-  CallBack(gui_endif) {
+  static void gui_endifCB(void* t, std::string a, std::string b) {
+    C(t).gui_endif(a, b);
+  }
+  void gui_endif(std::string name, std::string args){
     (void)name;
     (void)args;
     using namespace std;
@@ -690,11 +698,12 @@ inline std::string Svar::UncommentString(std::string s) {
 
   return s;
 }
-inline std::string Svar::dtos(const double& i, int precision) {
-  using namespace std;
-  ostringstream ost;
-  ost << setiosflags(ios::fixed) << setprecision(precision) << i;
-  return ost.str();
+
+
+inline bool Svar::fileExists(const std::string& filename)
+{
+    std::ifstream f(filename.c_str());
+    return f.good();
 }
 
 inline std::string Svar::getFolderPath(const std::string& path) {
@@ -728,10 +737,59 @@ inline std::string Svar::getFileName(const std::string& path) {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-inline Svar::Svar() : data(new SvarWithType<std::string>()), a(new Data()) {}
+template <typename T>
+inline std::string Svar::toString(const T& def){
+    std::ostringstream sst;
+    sst << def;
+    return sst.str();
+}
+
+template <>
+inline std::string Svar::toString(const std::string& def){
+    return def;
+}
+
+template <>
+inline std::string Svar::toString(const double& def){
+    using namespace std;
+    ostringstream ost;
+    ost << setiosflags(ios::fixed) << setprecision(12) << def;
+    return ost.str();
+}
+
+template <>
+inline std::string Svar::toString(const bool& def){
+    return def?"true":"false";
+}
+
+template <typename T>
+inline T Svar::fromString(const std::string& str){
+    std::istringstream sst(str);
+    T def;
+    try {
+      sst >> def;
+    } catch (std::exception e) {
+      std::cerr << "Failed to read value from " << str << std::endl;
+    }
+    return def;
+}
+
+template <>
+inline std::string Svar::fromString(const std::string& str){
+    return str;
+}
+
+template <>
+inline bool Svar::fromString<bool>(const std::string& str){
+    if(str.empty()) return false;
+    if(str=="0") return false;
+    if(str=="false") return false;
+    return true;
+}
+
+inline Svar::Svar() : a(new Data()) {}
 
 inline Svar::~Svar() {
-  if (GetInt("Svar.DumpAllVars")) dumpAllVars();
 }
 
 inline Svar& Svar::instance() {
@@ -739,28 +797,59 @@ inline Svar& Svar::instance() {
   return *global_svar;
 }
 
-inline void Svar::clear() { data->clear(); }
-
-inline void Svar::clearAll() { data->clear(); }
-
-inline bool Svar::erase(const std::string& name) {
-  data->erase(name);
-  return true;
+inline void Svar::clear() {
+    a->data.clear();
+    for(auto c:Children()){
+        c.second.clear();
+    }
 }
 
-inline bool Svar::exist(const std::string& name) { return data->exist(name); }
+inline void Svar::clearAll() {
+    a->data.clear();
+    a->holders.clear();
+    a->children.clear();
+}
 
-inline const Svar::SvarMap& Svar::get_data() { return data->get_data(); }
+inline bool Svar::erase(const std::string& name) {
+    auto idx=name.find_last_of(".");
+    if(idx!=std::string::npos){
+        return GetChild(name.substr(0,idx)).erase(name.substr(idx+1));
+    }
+    a->data.erase(name);
+    return true;
+}
+
+inline bool Svar::exist(const std::string& name) {
+    auto idx=name.find_last_of(".");
+    if(idx!=std::string::npos){
+        return GetChild(name.substr(0,idx)).exist(name.substr(idx+1));
+    }
+    return a->data.exist(name);
+}
+
+inline const Svar::SvarMap& Svar::get_data() {
+    return a->data.get_data();
+}
 
 inline bool Svar::insert(std::string name, std::string var,
                          bool overwrite)  // default overwrite
 {
-  data->insert(name, var, overwrite);
+  auto idx=name.find_last_of(".");
+  if(idx!=std::string::npos){
+      return GetChild(name.substr(0,idx)).insert(name.substr(idx+1),var,overwrite);
+  }
+  a->data.insert(name, var, overwrite);
   return true;
 }
 
 inline std::string Svar::getvar(std::string name) {
-  if (data->exist(name)) return data->get_var(name, "");
+  auto idx=name.find_last_of(".");
+  if(idx != std::string::npos){
+      return GetChild(name.substr(0,idx)).getvar(name.substr(idx+1));
+  }
+
+  if (a->data.exist(name))
+      return a->data.get_var(name, "");
   return "";
 }
 
@@ -849,55 +938,48 @@ inline bool Svar::setvar(std::string s) {
 }
 
 template <class T>
+std::shared_ptr<SvarWithType<T> >& Svar::holder()
+{
+    auto& hd=a->holders[typeid(T).name()];
+    if(!hd) hd=std::shared_ptr<SvarWithType<T> >(new SvarWithType<T>());
+    return *(std::shared_ptr<SvarWithType<T> >*)&hd;
+}
+
+template <class T>
 T& Svar::Get(const std::string& name, T def) {
+  auto idx=name.find(".");
+  if(idx!=std::string::npos){
+      return GetChild(name.substr(0,idx)).Get(name.substr(idx+1),def);
+  }
   // First: Use the var from SvarWithType, this is a fast operation
-  SvarWithType<T>& typed_map = SvarWithType<T>::instance();
+  SvarWithType<T>& typed_map = *holder<T>();
 
   T* ptr = typed_map.get_ptr(name);
   if (ptr) return *ptr;
 
   std::string envStr;
-  if (data->exist(name))
-    envStr = (*data)[name];
+  if (a->data.exist(name))
+    envStr = a->data[name];
   else if (char* envcstr = getenv(name.c_str()))
     envStr = envcstr;
   if (!envStr.empty())  // Second: Use the var from Svar
   {
-    std::istringstream istr_var(envStr);
-    try {
-      istr_var >> def;
-    } catch (std::exception e) {
-      std::cerr << "Failed to read value from " << envStr << std::endl;
-    }
+    def=fromString<T>(envStr);
   }
 
   ptr = typed_map.get_ptr(name, def);
   return *ptr;
 }
 
-template <>
-inline int& Svar::Get(const std::string& name, int def) {
-  return GetInt(name, def);
-}
-
-template <>
-inline double& Svar::Get(const std::string& name, double def) {
-  return GetDouble(name, def);
-}
-
-template <>
-inline std::string& Svar::Get(const std::string& name, std::string def) {
-  return GetString(name, def);
+template <typename T>
+void Svar::Set(const std::string& name, const T& def)
+{
+    Get<T>(name,def)=def;
 }
 
 template <>
 inline void*& Svar::Get(const std::string& name, void* def) {
   return GetPointer(name, def);
-}
-
-template <class T>
-T Svar::get_var(const std::string& name, const T& def) {
-  return Get<T>(name, def);
 }
 
 inline Scommand& Svar::command() {
@@ -980,15 +1062,17 @@ inline bool Svar::ParseStream(std::istream& is) {
 
 inline bool Svar::ParseFile(std::string sFileName) {
   using namespace std;
-  static deque<string> fileQueue;
-
   ifstream ifs(sFileName.c_str());
 
   if (!ifs.is_open()) {
-    //    cerr << "!Svar::ParseFile: Failed to load script file \"" << sFileName
-    //         << "\"." << endl;
     return false;
   }
+
+  std::string  current_tid=toString(std::this_thread::get_id());
+  std::string& parsing_tid=GetString("Svar.ParsingThreadId");
+  assert(current_tid==parsing_tid||parsing_tid.empty());
+  SvarWithType<deque<string> >& parseStackMap=*holder<deque<string> >();;
+  deque<string>& fileQueue=parseStackMap[toString(current_tid)];
 
   fileQueue.push_back(sFileName);
   GetString("Svar.ParsingFile", sFileName) = sFileName;
@@ -1009,27 +1093,25 @@ inline bool Svar::ParseFile(std::string sFileName) {
     erase("Svar.ParsingName");
     erase("Svar.ParsingPath");
     erase("Svar.ParsingFile");
+    parsing_tid.clear();
   }
   return ret;
 }
 
+
 template <typename T>
 T& Svar::Arg(const std::string& name, T def, const std::string& help) {
-  std::stringstream sst;
-  sst << def;
-  if (!sst.str().empty()) insert(name, sst.str(), false);
-  if (!a->args)
-    a->args = std::shared_ptr<SvarWithType<ArgumentInfo> >(
-        new SvarWithType<ArgumentInfo>());
-  ArgumentInfo& argInfo = (*a->args)[name];
+  std::string str=toString<T>(def);
+  if(!str.empty()) insert(name, str, false);
+  auto& args=*holder<ArgumentInfo>();
+  ArgumentInfo& argInfo = args[name];
   argInfo.introduction = help;
   argInfo.type = typeid(T).name();
-  argInfo.def = sst.str();
+  argInfo.def = str;
   return Get<T>(name,def);
 }
 
-inline std::vector<std::string> Svar::ParseMain(int argc, char** argv,
-                                                PARSEMODE mode) {
+inline std::vector<std::string> Svar::ParseMain(int argc, char** argv) {
   using namespace std;
   // save main cmd things
   GetInt("argc") = argc;
@@ -1038,7 +1120,7 @@ inline std::vector<std::string> Svar::ParseMain(int argc, char** argv,
 
   // parse main cmd
   std::vector<std::string> unParsed;
-  int beginIdx = (mode == DEFAULT_CMD1 ? 1 : 2);
+  int beginIdx = 1;
   for (int i = beginIdx; i < argc; i++) {
     string str = argv[i];
     bool foundPrefix = false;
@@ -1072,42 +1154,43 @@ inline std::vector<std::string> Svar::ParseMain(int argc, char** argv,
   }
 
   // parse default config file
-  string cfg_File = argv[0];
-  insert("argv0", cfg_File);
-  insert("ProgramPath", getFolderPath(cfg_File));
-  insert("ProgramName", getFileName(cfg_File));
-  cfg_File += ".cfg";
-  ifstream ifs(cfg_File.c_str());
+  string argv0 = argv[0];
+  insert("argv0", argv0);
+  insert("ProgramPath", getFolderPath(argv0));
+  insert("ProgramName", getFileName(argv0));
 
-  if (!ifs.is_open()) {
-    cfg_File = "./Default.cfg";
-  } else
-    ifs.close();
+  if(fileExists(argv0+".cfg"))
+      ParseFile(argv0+".cfg");
 
-  cfg_File = GetString("conf", cfg_File);
-  // cout << "Parsing file: " << cfg_File << " ...." << endl;
-  ParseFile(cfg_File);
+  argv0= GetString("conf", "./Default.cfg");
+  if(fileExists(argv0))
+      ParseFile(argv0);
 
   return unParsed;
 }
 
 inline std::string Svar::typeName(std::string name) {
-  static std::map<std::string, std::string> decode = {
-      {typeid(int32_t).name(), "int32_t"},
-      {typeid(int64_t).name(), "int64_t"},
-      {typeid(uint32_t).name(), "uint32_t"},
-      {typeid(uint64_t).name(), "uint64_t"},
-      {typeid(u_char).name(), "u_char"},
-      {typeid(char).name(), "char"},
-      {typeid(float).name(), "float"},
-      {typeid(double).name(), "double"},
-      {typeid(std::string).name(), "string"},
-      {typeid(bool).name(), "bool"}};
-  auto it = decode.find(name);
-  if (it == decode.end())
-    return name;
-  else
-    return it->second;
+    static std::map<std::string, std::string> decode = {
+        {typeid(int32_t).name(), "int32_t"},
+        {typeid(int64_t).name(), "int64_t"},
+        {typeid(uint32_t).name(), "uint32_t"},
+        {typeid(uint64_t).name(), "uint64_t"},
+        {typeid(u_char).name(), "u_char"},
+        {typeid(char).name(), "char"},
+        {typeid(float).name(), "float"},
+        {typeid(double).name(), "double"},
+        {typeid(std::string).name(), "string"},
+        {typeid(bool).name(), "bool"},
+    };
+    auto it = decode.find(name);
+    if (it != decode.end())
+        return it->second;
+
+    int     status;
+    char*   realname = abi::__cxa_demangle(name.c_str(), 0, 0, &status);
+    std::string result(realname);
+    free(realname);
+    return result;
 }
 
 inline std::string Svar::help() {
@@ -1116,10 +1199,13 @@ inline std::string Svar::help() {
     int namePartWidth = width/5-1;
     int statusPartWidth = width*2/5-1;
     int introPartWidth = width*2/5;
-    std::string usage=GetString("Usage","Usage:\n"
-                     + GetString("ProgramName", "exe")
-                     + " [--help] [-conf configure_file]"
-                       " [-arg_name arg_value]...\n");
+    std::string usage=GetString("Usage","");
+    if(usage.empty()){
+        usage="Usage:\n"
+                + GetString("ProgramName", "exe")
+                + " [--help] [-conf configure_file]"
+                  " [-arg_name arg_value]...\n";
+    }
     sst<<usage<<std::endl;
 
     std::string desc;
@@ -1133,7 +1219,7 @@ inline std::string Svar::help() {
                      "The default configure file going to parse.");
     Arg<bool>("help", false, "Show the help information.");
 
-    auto& inst = *(a->args);
+    auto& inst = *holder<ArgumentInfo>();
     sst << printTable({{namePartWidth,"Argument"},
                        {statusPartWidth,"Type(default->setted)"},
                        {introPartWidth,"Introduction"}});
@@ -1181,166 +1267,77 @@ inline std::string Svar::printTable(std::vector<std::pair<int,std::string> > lin
     return sst.str();
 }
 
-inline int& Svar::GetInt(const std::string& name, int def, SVARMODE mode) {
-  using namespace std;
-  if (!a->i)
-    a->i = std::shared_ptr<SvarWithType<int> >(new SvarWithType<int>());
-  // First: Use the var from SvarWithType, this is a fast operation
-  SvarWithType<int>& typed_map = *(a->i);
-
-  int* ptr = typed_map.get_ptr(name);
-  if (ptr) return *ptr;
-
-  bool exist = data->exist(name);
-  char* envStr = NULL;
-  if (!exist) envStr = getenv(name.c_str());
-  if (exist || envStr)  // Second: Use the var from Svar
-  {
-    string str_var = envStr ? envStr : data->get_var(name, "");
-    istringstream istr_var(str_var);
-    try {
-      istr_var >> def;
-    } catch (std::exception e) {
-      cerr << "Failed to read value from " << str_var << endl;
+inline Svar Svar::GetChild(const std::string& name)
+{
+    auto idx=name.find('.');
+    if(idx!=std::string::npos){
+        return GetChild(name.substr(0,idx)).GetChild(name.substr(idx+1));
     }
-    while (!ptr) {
-      ptr = (typed_map.get_ptr(name, def));
-      if (ptr) break;
+    for(auto child:a->children){
+        if(child.first==name) return child.second;
     }
-    return *ptr;
-  } else  // Third:Both did not get the var need,insert defaut var to
-          // SvarWithType
-  {
-    while (!ptr) {
-      ptr = (typed_map.get_ptr(name, def));
-      if (ptr) break;
-    }
-    if (mode & UPDATE) insert(name, std::to_string(def));
-    return *ptr;
-  }
+    Svar var;
+    a->children.push_front(std::make_pair(name,var));
+    return var;
 }
 
-inline double& Svar::GetDouble(const std::string& name, double def,
-                               SVARMODE mode) {
-  using namespace std;
+inline void Svar::AddChild(const std::string& name,const Svar& child)
+{
+    std::unique_lock<std::mutex> lock(a->childMutex);
+    a->children.push_back(std::make_pair(name,child));
+}
 
-  if (!a->d)
-    a->d = std::shared_ptr<SvarWithType<double> >(new SvarWithType<double>());
+inline std::list<std::pair<std::string,Svar> > Svar::Children() {
+    std::unique_lock<std::mutex> lock(a->childMutex);
+    return a->children;
+}
 
-  // First: Use the var from SvarWithType, this is a fast operation
-  SvarWithType<double>& typed_map = *(a->d);
+inline int& Svar::GetInt(const std::string& name, int def) {
+    return Get<int>(name,def);
+}
 
-  double* ptr = typed_map.get_ptr(name);
-  if (ptr) return *ptr;
-
-  bool exist = data->exist(name);
-  char* envStr = NULL;
-  if (!exist) envStr = getenv(name.c_str());
-  if (exist || envStr)  // Second: Use the var from Svar
-  {
-    string str_var = envStr ? envStr : data->get_var(name, "");
-    istringstream istr_var(str_var);
-    try {
-      istr_var >> def;
-    } catch (std::exception e) {
-      cerr << "Failed to read value from " << str_var << endl;
-    }
-    while (!ptr) {
-      ptr = (typed_map.get_ptr(name, def));
-      if (ptr) break;
-    }
-    return *ptr;
-  } else  // Third:Both did not get the var need,insert defaut var to
-          // SvarWithType
-  {
-    while (!ptr) {
-      ptr = typed_map.get_ptr(name, def);
-      if (ptr) break;
-    }
-
-    if (mode & UPDATE) insert(name, dtos(def, 12));
-
-    return *ptr;
-  }
+inline double& Svar::GetDouble(const std::string& name, double def) {
+    return Get<double>(name,def);
 }
 
 inline std::string& Svar::GetString(const std::string& name,
-                                    const std::string& def, SVARMODE mode) {
-  using namespace std;
-
-  if (!a->s)
-    a->s = std::shared_ptr<SvarWithType<string> >(new SvarWithType<string>());
-  // First: Use the var from SvarWithType, this is a fast operation
-  SvarWithType<string>& typed_map = *(a->s);
-
-  string* ptr = typed_map.get_ptr(name);
-  if (ptr) return *ptr;
-
-  if (data->exist(name))  // Second: Use the var from Svar
-  {
-    string _def = data->get_var(name, def);
-    while (!ptr) {
-      ptr = (typed_map.get_ptr(name, _def));
-      if (ptr) break;
-    }
-    return *ptr;
-  } else  // Third:Both did not get the var need,insert defaut var to
-          // SvarWithType
-  {
-    string _def = def;
-    if (char* ptr = getenv(name.c_str())) _def = ptr;
-    while (!ptr) {
-      ptr = (typed_map.get_ptr(name, _def));
-      if (ptr) break;
-    }
-
-    if (mode & UPDATE) insert(name, def);
-
-    return *ptr;
-  }
+                                    const std::string& def) {
+    return Get<std::string>(name,def);
 }
 
-inline void*& Svar::GetPointer(const std::string& name, const void* ptr,
-                               SVARMODE mode) {
-  if (!a->p)
-    a->p = std::shared_ptr<SvarWithType<void*> >(new SvarWithType<void*>());
-  return *(a->p->get_ptr(name, (void*)ptr));
+inline void*& Svar::GetPointer(const std::string& name, const void* ptr) {
+  auto& p= holder<void*>();
+  return *(p->get_ptr(name, (void*)ptr));
 }
 
 inline void Svar::update() {
-  using namespace std;
-  // from i
-  if (a->i) {
-    SvarWithType<int>::DataMap data_i = a->i->get_data();
-    for (SvarWithType<int>::DataIter it = data_i.begin(); it != data_i.end();
-         it++) {
-      const string& name = it->first;
-      if (!exist(name)) continue;
-      insert(name, std::to_string(it->second), true);
-    }
-  }
 
-  // from d
-  if (a->d) {
-    SvarWithType<double>::DataMap data_d = a->d->get_data();
-    for (SvarWithType<double>::DataIter it = data_d.begin(); it != data_d.end();
-         it++) {
-      const string& name = it->first;
-      if (!exist(name)) continue;
-      insert(name, Svar::dtos(it->second, 12));
+    if (auto h=holder<int>()) {
+      auto data_i = h->get_data();
+      for (auto it = data_i.begin(); it != data_i.end();it++) {
+        const std::string& name = it->first;
+        if (!exist(name)) continue;
+        insert(name, toString(it->second), true);
+      }
     }
-  }
 
-  // from s
-  if (a->s) {
-    SvarWithType<string>::DataMap data_s = a->s->get_data();
-    for (SvarWithType<string>::DataIter it = data_s.begin(); it != data_s.end();
-         it++) {
-      const string& name = it->first;
-      if (!exist(name)) continue;
-      insert(name, it->second);
+    if (auto h=holder<double>()) {
+      auto data_i = h->get_data();
+      for (auto it = data_i.begin(); it != data_i.end();it++) {
+        const std::string& name = it->first;
+        if (!exist(name)) continue;
+        insert(name, toString(it->second), true);
+      }
     }
-  }
+
+    if (auto h=holder<std::string>()) {
+      auto data_i = h->get_data();
+      for (auto it = data_i.begin(); it != data_i.end();it++) {
+        const std::string& name = it->first;
+        if (!exist(name)) continue;
+        insert(name, toString(it->second), true);
+      }
+    }
 }
 
 inline bool Svar::save2file(std::string filename) {
@@ -1350,7 +1347,7 @@ inline bool Svar::save2file(std::string filename) {
   if (!ofs.is_open()) return false;
 
   SvarMap data_copy;
-  { data_copy = data->get_data(); }
+  { data_copy = a->data.get_data(); }
   for (SvarIter it = data_copy.begin(); it != data_copy.end(); it++) {
     ofs << it->first << " = " << it->second << endl;
   }
@@ -1359,13 +1356,8 @@ inline bool Svar::save2file(std::string filename) {
 
 inline std::string Svar::getStatsAsText() {
   using namespace std;
-  SvarMap data = this->data->get_data();
+  SvarMap data = a->data.get_data();
 
-  int count = data.size();
-  if (a->i) count += a->i->get_data().size();
-  if (a->d) count += a->d->get_data().size();
-  if (a->s) count += a->s->get_data().size();
-  if (count == 0) return "";
   ostringstream ost;
   string str;
 
@@ -1373,17 +1365,17 @@ inline std::string Svar::getStatsAsText() {
          "===============================\n";
   ost << "NAME                                     VALUE                       "
          "         \n";
-  str = a->i ? a->i->getStatsAsText() : "";
+  str = holder<int>()->getStatsAsText();
   if (str != "")
     ost << "-------------------------------------------------------------------"
            "-----------\n"
         << str;
-  str = a->d ? a->d->getStatsAsText() : "";
+  str = holder<double>()->getStatsAsText();
   if (str != "")
     ost << "-------------------------------------------------------------------"
            "-----------\n"
         << str;
-  str = a->s ? a->s->getStatsAsText() : "";
+  str = holder<std::string>()->getStatsAsText();
   if (str != "")
     ost << "-------------------------------------------------------------------"
            "-----------\n"
@@ -1421,7 +1413,7 @@ inline void buildInHandle(void* ptr, std::string command, std::string sParams) {
     svar_ptr->insert(sParams, std::to_string(svar_ptr->GetInt(sParams, 0)));
   } else if (command == "GetDouble") {
     Svar* svar_ptr = (Svar*)ptr;
-    svar_ptr->insert(sParams, Svar::dtos(svar_ptr->GetDouble(sParams, 0), 12));
+    svar_ptr->insert(sParams, Svar::toString(svar_ptr->GetDouble(sParams, 0)));
   }
 }
 

@@ -143,19 +143,19 @@ void addMessengerSupport(std::string name){
 
 
 std::string getV8Type(nbind::WireType py_class){
-    std::string class_name;
-    v8::Local<v8::Function> function=v8::Local<v8::Function>::Cast(py_class);
-    if(!function.IsEmpty()){
-        class_name=nbind::convertFromWire<std::string>(function->GetName());
+    if(py_class->IsFunction())
+    {
+        v8::Local<v8::Function> function=v8::Local<v8::Function>::Cast(py_class);
+        return nbind::convertFromWire<std::string>(function->GetName());
     }
     else if(py_class->IsString()){
         auto v8str=v8::Local<v8::String>::Cast(py_class);
-        class_name=nbind::convertFromWire<std::string>(v8str);
+        return nbind::convertFromWire<std::string>(v8str);
     }
-    else if(py_class->IsInt32()){
-        class_name="Int";
-    }
-    return class_name;
+    else if(py_class->IsInt32()) return "Int";
+    else if(py_class->IsObject()) return "Object";
+    else if(py_class->IsArray()) return "Array";
+    return "";
 }
 
 }

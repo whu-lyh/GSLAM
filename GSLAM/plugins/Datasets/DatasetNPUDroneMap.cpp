@@ -176,8 +176,8 @@ public:
         string path=Svar::getFolderPath(dataset);
         Svar var;
         var.ParseFile(path+"/config.cfg");
-        plane=var.get_var<SE3d>("Plane",plane);
-        origin=var.get_var("GPS.Origin",origin);
+        plane=var.Get<SE3d>("Plane",plane);
+        origin=var.Get("GPS.Origin",origin);
         // Local to ECEF
         local2ECEF.get_translation()=GSLAM::GPS<>::GPS2XYZ(Point3d(origin.y,origin.x,origin.z));
         double D2R=3.1415925/180.;
@@ -191,7 +191,7 @@ public:
                      east.z, north.z, up.z};
         local2ECEF.get_rotation().fromMatrix(R);
 
-        camParameters=var.get_var<VecParament<double> >("Camera.Paraments",VecParament<double>()).data;
+        camParameters=var.Get<VecParament<double> >("Camera.Paraments",VecParament<double>()).data;
         camera=GSLAM::Camera(camParameters);
         if(!camera.isValid()) return false;
 
@@ -275,7 +275,7 @@ public:
     inline GSLAM::Camera camFromName(string name,Svar& var)
     {
         VecParament<double> paras;
-        paras=var.get_var(name+".Paraments",paras);
+        paras=var.Get(name+".Paraments",paras);
         return GSLAM::Camera(paras.data);
     }
 
