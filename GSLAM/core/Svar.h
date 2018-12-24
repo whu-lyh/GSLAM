@@ -59,6 +59,41 @@
 
 namespace GSLAM {
 
+namespace streamable_check {
+typedef char yes;
+typedef char (&no)[2];
+
+struct anyx { template <class T> anyx(const T &); };
+
+no operator << (const anyx &, const anyx &);
+no operator >> (const anyx &, const anyx &);
+
+
+template <class T> yes check(T const&);
+no check(no);
+
+template <typename StreamType, typename T>
+struct has_loading_support {
+    static StreamType & stream;
+    static T & x;
+    static const bool value = sizeof(check(stream >> x)) == sizeof(yes);
+};
+
+template <typename StreamType, typename T>
+struct has_saving_support {
+    static StreamType & stream;
+    static T & x;
+    static const bool value = sizeof(check(stream << x)) == sizeof(yes);
+};
+
+template <typename StreamType, typename T>
+struct has_stream_operators {
+    static const bool can_load = has_loading_support<StreamType, T>::value;
+    static const bool can_save = has_saving_support<StreamType, T>::value;
+    static const bool value = can_load && can_save;
+};
+}
+
 class Svar;
 class Scommand;
 class SvarLanguage;
@@ -69,6 +104,14 @@ class SvarLanguage;
  files and stream.
  */
 
+class SvarWithTypeBase
+{
+public:
+    virtual ~SvarWithTypeBase(){}
+    virtual void clear(){}
+    virtual std::string getStatsAsText(const size_t column_width = 80)=0;
+};
+
 /**@ingroup gInterface
  @brief The class Svar will be shared in the same process, it help users to
  transform paraments use a name id,
@@ -77,7 +120,7 @@ class SvarLanguage;
  files and stream.
  */
 template <typename VarType = void*, typename KeyType = std::string>
-class SvarWithType{
+class SvarWithType: public SvarWithTypeBase{
   friend class Svar;
 
  public:
@@ -105,7 +148,7 @@ class SvarWithType{
     return true;
   }
 
-  inline void clear() {
+  virtual inline void clear() {
     std::unique_lock<std::mutex> lock(mMutex);
     data.clear();
   }
@@ -198,14 +241,27 @@ class SvarWithType{
     }
   }
 
-  std::string getStatsAsText(const size_t column_width = 80) {
-    std::unique_lock<std::mutex> lock(mMutex);
-    std::ostringstream ost;
-    for (DataIter it = data.begin(); it != data.end(); it++)
-      ost << std::setw(column_width/2-1) << std::setiosflags(std::ios::left) << it->first
-          << "  " << std::setw(column_width/2) << std::setiosflags(std::ios::left)
-          << it->second << std::endl;
-    return ost.str();
+  template<typename STREAM>
+  void dump(STREAM& stream,const size_t column_width = 80,
+            typename std::enable_if<streamable_check::has_saving_support<STREAM, VarType>::value >::type* = 0)
+  {
+      std::unique_lock<std::mutex> lock(mMutex);
+      for (DataIter it = data.begin(); it != data.end(); it++)
+        stream << std::setw(column_width/2-1) << std::setiosflags(std::ios::left) << it->first
+            << "  " << std::setw(column_width/2) << std::setiosflags(std::ios::left)
+            << it->second << std::endl;
+  }
+
+  template<typename STREAM>
+  void dump(STREAM& stream,const size_t column_width = 80,
+            typename std::enable_if<!streamable_check::has_saving_support<STREAM, VarType>::value >::type* = 0)
+  {
+  }
+
+  virtual std::string getStatsAsText(const size_t column_width = 80) {
+      std::ostringstream ost;
+      dump(ost,column_width);
+      return ost.str();
   }
  protected:
   DataMap    data;
@@ -294,7 +350,7 @@ class Svar {
   void Set(const std::string& name, const T& def);
 
   template <class T>
-  std::shared_ptr<SvarWithType<T> >& holder();
+  std::shared_ptr<SvarWithType<T> > holder();
 
   template <typename T>
   static std::string toString(const T& v);
@@ -329,7 +385,7 @@ class Svar {
 
   struct Data {
     SvarWithType<std::string>                 data;
-    SvarWithType<std::shared_ptr<void> >      holders;
+    SvarWithType<std::shared_ptr<SvarWithTypeBase> >      holders;
     std::shared_ptr<Scommand>                 parser;
     std::list<std::pair<std::string,Svar> >   children;
     std::mutex                                childMutex;
@@ -938,11 +994,11 @@ inline bool Svar::setvar(std::string s) {
 }
 
 template <class T>
-std::shared_ptr<SvarWithType<T> >& Svar::holder()
+std::shared_ptr<SvarWithType<T> > Svar::holder()
 {
     auto& hd=a->holders[typeid(T).name()];
     if(!hd) hd=std::shared_ptr<SvarWithType<T> >(new SvarWithType<T>());
-    return *(std::shared_ptr<SvarWithType<T> >*)&hd;
+    return std::dynamic_pointer_cast<SvarWithType<T>>(hd);
 }
 
 template <class T>
@@ -1306,7 +1362,7 @@ inline std::string& Svar::GetString(const std::string& name,
 }
 
 inline void*& Svar::GetPointer(const std::string& name, const void* ptr) {
-  auto& p= holder<void*>();
+  auto p= holder<void*>();
   return *(p->get_ptr(name, (void*)ptr));
 }
 
@@ -1365,24 +1421,13 @@ inline std::string Svar::getStatsAsText() {
          "===============================\n";
   ost << "NAME                                     VALUE                       "
          "         \n";
-  str = holder<int>()->getStatsAsText();
-  if (str != "")
-    ost << "-------------------------------------------------------------------"
-           "-----------\n"
-        << str;
-  str = holder<double>()->getStatsAsText();
-  if (str != "")
-    ost << "-------------------------------------------------------------------"
-           "-----------\n"
-        << str;
-  str = holder<std::string>()->getStatsAsText();
-  if (str != "")
-    ost << "-------------------------------------------------------------------"
-           "-----------\n"
-        << str;
-  // if(data.size()){
-  ost << "---------------------------------------------------------------------"
-         "---------\n";
+  for(std::pair<std::string,std::shared_ptr<SvarWithTypeBase> > h:a->holders.get_data())
+  {
+      str=h.second->getStatsAsText();
+      if(!str.empty())
+          ost <<str<< "-------------------------------------------------------------------"
+                 "-----------\n";
+  }
   for (SvarIter it = data.begin(); it != data.end(); it++)
     ost << setw(39) << setiosflags(ios::left) << it->first << "  " << setw(39)
         << setiosflags(ios::left) << it->second << endl;
@@ -1484,7 +1529,7 @@ inline bool Scommand::Call(const std::string& sCommand) {
 }
 
 inline Scommand& Scommand::instance() {
-  static thread_local std::shared_ptr<Scommand> g_Scommand(new Scommand());
+  static std::shared_ptr<Scommand> g_Scommand(new Scommand());
   return *g_Scommand;
 }
 }

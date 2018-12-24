@@ -40,7 +40,7 @@ void addMessengerSupport(){
 }
 
 template <typename T>
-void addMessengerSupport(std::shared_ptr<T> M){
+void addMessengerSupportPtr(){
     SvarWithType<std::function<void(const Publisher&,py::object)> >::instance()
             .insert(typeid(T).name(),[](const Publisher& pub,py::object obj){
         py::detail::type_caster<std::shared_ptr<T>> sharedObj;
@@ -68,13 +68,13 @@ const std::type_info* getTypeInfo(PyTypeObject* obj){
         {std::string("float"),&typeid(double)},
         {std::string("bool"),&typeid(bool)},
         {std::string("str"),&typeid(std::string)},
-        {std::string("complex"),&typeid(std::complex<double>)}
+        {std::string("complex"),&typeid(std::complex<double>),
+        {std::string("list"),&typeid(GSLAM::Json)},
+        {std::string("tuple"),&typeid(GSLAM::Json)},
+        {std::string("set"),&typeid(GSLAM::Json)},
+        {std::string("dict"),&typeid(GSLAM::Json)}}
     };
-//    ,
-//            {std::string("list"),&typeid(std::vector<void>)},
-//            {std::string("tuple"),&typeid(std::vector<void>)},
-//            {std::string("set"),&typeid(std::set<void>)},
-//            {std::string("dict"),&typeid(std::map<void>)}
+
     auto it=pythonTypes.find(obj->tp_name);
     if(it!=pythonTypes.end()){
         return it->second;
@@ -399,13 +399,6 @@ PYBIND11_MODULE(gslam,m) {
             .def("dumpAllStats",&Timer::dumpAllStats)
             ;
 
-    py::enum_<Svar::SVARMODE>(m, "SVARMODE")
-            .value("SILENT", Svar::SILENT)
-            .value("UPDATE", Svar::UPDATE)
-            .value("VERBOSE", Svar::VERBOSE)
-            .value("OVERWRITE", Svar::OVERWRITE)
-            .export_values();
-
     py::class_<Svar>(m,"Svar")
             .def(py::init<>())
             .def_static("instance",&Svar::instance, py::return_value_policy::reference)
@@ -421,13 +414,13 @@ PYBIND11_MODULE(gslam,m) {
 //            .def("parseMain",&Svar::ParseMain) // This have some problem
             .def("exist",&Svar::exist)
             .def("getInt",&Svar::GetInt, py::return_value_policy::reference,
-                 py::arg("name")="",py::arg("def") = 0,py::arg("mode")=Svar::SILENT)
+                 py::arg("name")="",py::arg("def") = 0)
             .def("getDouble",&Svar::GetDouble, py::return_value_policy::reference,
-                 py::arg("name")="",py::arg("def") = 0,py::arg("mode")=Svar::SILENT)
+                 py::arg("name")="",py::arg("def") = 0)
             .def("getString",&Svar::GetString, py::return_value_policy::reference,
-                 py::arg("name")="",py::arg("def") = "",py::arg("mode")=Svar::SILENT)
+                 py::arg("name")="",py::arg("def") = "")
             .def("getPointer",&Svar::GetPointer, py::return_value_policy::reference,
-                 py::arg("name")="",py::arg("def") = nullptr,py::arg("mode")=Svar::SILENT)
+                 py::arg("name")="",py::arg("def") = nullptr)
             .def("erase",&Svar::erase)
             .def("update",&Svar::update)
             .def("get_data",&Svar::get_data)
@@ -742,9 +735,10 @@ PYBIND11_MODULE(gslam,m) {
     addMessengerSupport<Point3d>();
     addMessengerSupport<GImage>();
     addMessengerSupport<Publisher>();
+    addMessengerSupport<Json>();
 
-    addMessengerSupport(FramePtr());
-    addMessengerSupport(MapPtr());
+    addMessengerSupportPtr<MapFrame>();
+    addMessengerSupportPtr<Map>();
 }
 
 

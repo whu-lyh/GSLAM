@@ -20,6 +20,8 @@
 
 // Interface
 #include "Svar.h"
+#include "XML.h"
+#include "JSON.h"
 #include "Messenger.h"
 #include "SharedLibrary.h"
 #include "Application.h"

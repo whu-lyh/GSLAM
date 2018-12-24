@@ -994,8 +994,73 @@ inline bool Json::has_shape(const shape & types, string & err) const {
 
 } // namespace json11
 
+#include "Svar.h"
+
 namespace GSLAM{
 
 using json11::Json;
+
+void loadJSON(GSLAM::Svar& var,Json node);
+inline void loadJSONObject(GSLAM::Svar& var,Json node){
+    for(std::pair<std::string, Json> it:node.object_items())
+    {
+        switch (it.second.type()) {
+        case Json::OBJECT:{
+            Svar child;
+            loadJSONObject(child,it.second);
+            var.AddChild(it.first,child);
+        }
+            break;
+        case Json::NUL:
+            break;
+        case Json::NUMBER:
+            var.insert(it.first,Svar::toString(node.number_value()));
+            break;
+        case Json::BOOL:
+            var.Set(it.first,node.bool_value());
+            break;
+        case Json::STRING:
+            var.Set(it.first,node.string_value());
+            break;
+        case Json::ARRAY:{
+            Svar child;
+            loadJSONObject(child,it.second);
+            var.AddChild(it.first,child);
+        }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+inline void loadJSON(GSLAM::Svar& var,Json node){
+    switch (node.type()) {
+    case Json::OBJECT:
+        loadJSONObject(var,node);
+        break;
+    case Json::NUL:
+        break;
+    case Json::NUMBER:
+        var.insert("",Svar::toString(node.number_value()));
+        break;
+    case Json::BOOL:
+        var.Set("",node.bool_value());
+        break;
+    case Json::STRING:
+        var.Set("",node.string_value());
+        break;
+    case Json::ARRAY:
+        for(const auto& it:node.array_items())
+        {
+            Svar child;
+            loadJSON(child,it);
+            var.AddChild("",child);
+        }
+        break;
+    default:
+        break;
+    }
+}
 
 }

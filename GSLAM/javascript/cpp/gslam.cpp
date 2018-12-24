@@ -1,9 +1,8 @@
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+#ifndef GSLAM_JAVASCRIPT_CPP_H
+#define GSLAM_JAVASCRIPT_CPP_H
 #endif
 
 #include <GSLAM/core/GSLAM.h>
-#include <GSLAM/core/JSON.h>
 #include "NodeBind.h"
 #include "MessengerHelper.h"
 
@@ -24,7 +23,6 @@ NBIND_MODULE{
     addMessengerSupportPtr<Publisher>("Publisher");
     addMessengerSupportPtr<MapFrame>("MapFrame");
     addMessengerSupport<Json>("Object");
-    addMessengerSupport<std::map<std::string,std::string> >("StrMap");
 
     NBIND_FUNCTION(processAll);
 
@@ -141,7 +139,6 @@ NBIND_MODULE{
 //            .def_property("rotation", &SE3::getRotation, &SE3::setRotation)
             ;
 
-
     class_<GImage>("GImage")
             .constructor()
 //            .constructor<int,int,int,uchar*,bool>()
@@ -200,7 +197,10 @@ NBIND_MODULE{
             .method("getStatsAsText",&Svar::getStatsAsText)
             .method("dumpAllVars",&Svar::dumpAllVars)
             .method("save2file",&Svar::save2file)
-            .method("help",&Svar::help);
+            .method("help",&Svar::help)
+            .method("loadJson",[](Svar& var,Json json){
+        loadJSON(var,json);
+    });
 
     class_<Messenger>("Messenger")
             .constructor<>()
@@ -260,7 +260,7 @@ NBIND_MODULE{
             .def("isLatched",&Publisher::isLatched)
             .def("publish",[](const Publisher& pub,nbind::WireType msg)->void{
         if(!pub) return;
-        DLOG(INFO)<<"Publishing "<<Messenger::translate(pub.getTypeName());
+//        DLOG(INFO)<<"Publishing "<<Messenger::translate(pub.getTypeName());
 
         auto pubFunc=SvarWithType<std::function<void(const Publisher&,nbind::WireType)> >::instance()
                 .get_var(pub.getTypeName(),nullptr);

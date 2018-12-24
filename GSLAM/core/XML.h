@@ -4856,7 +4856,7 @@ inline bool XMLPrinter::Visit( const XMLUnknown& unknown )
 namespace GSLAM {
 using namespace tinyxml2;
 
-void loadXML(GSLAM::Svar& var,XMLNode* node){
+inline void loadXML(GSLAM::Svar& var,XMLNode* node){
     if(auto text=node->ToText()){
         var.insert("",text->Value());
         return;
@@ -4896,7 +4896,7 @@ void loadXML(GSLAM::Svar& var,XMLNode* node){
     }
 }
 
-void exportXML(GSLAM::Svar& var,XMLNode* node){
+inline void exportXML(GSLAM::Svar& var,XMLNode* node){
     if(auto doc=node->ToDocument()){
         for(std::pair<std::string,GSLAM::Svar> child:var.Children())
         {

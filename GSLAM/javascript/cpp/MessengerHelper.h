@@ -40,7 +40,7 @@ static void JSThread(uv_work_t *req,int status)
     v8::HandleScope handleScope(isolate); // Required for Node 4.x
     // get the reference to the baton from the request
     TaskInfo *baton = static_cast<TaskInfo *>(req->data);
-    LOG(INFO)<<"JSThread:"<<std::this_thread::get_id();
+//    LOG(INFO)<<"JSThread:"<<std::this_thread::get_id();
     baton->task();
 //    std::string str;
 //    nbind::WireType msg=nbind::convertToWire(str);
@@ -80,11 +80,9 @@ void addMessengerSupportPtr(std::string name){
     SvarWithType<const std::type_info*>::instance().insert(name,&typeid(T));
     SvarWithType<std::function<void(const Publisher&,nbind::WireType)> >::instance()
             .insert(typeid(T).name(),[name](const Publisher& pub,nbind::WireType obj){
-//        LOG(INFO)<<"Publish"<<name;
         std::shared_ptr<T> shared=nbind::BindWrapper<T>::getShared(v8::Handle<v8::Object>::Cast(obj),nbind::TypeFlags::isSharedPtr);
 
         if(shared){
-//            LOG(INFO)<<"Publish with shared";
             return pub.publish<T>(shared);
         }
     });
@@ -111,33 +109,9 @@ void addMessengerSupport(std::string name){
     SvarWithType<std::function<void(std::shared_ptr<nbind::cbFunction>,const std::shared_ptr<void>&)> >::instance()
             .insert(typeid(T).name(),[](std::shared_ptr<nbind::cbFunction> cbk,const std::shared_ptr<void>& obj){
         std::shared_ptr<T> msg=*(const std::shared_ptr<T>*)&obj;
-        auto task=[cbk,msg](){
-            (*cbk).call<void>(msg);
-        };
+        auto task=[cbk,msg](){(*cbk).call<void>(*msg);};
         addJSTask(task);
         return;
-//        (*cbk).call<void>(*msg);
-//        auto func=cbk->getJsFunction();
-//        v8::Local<v8::Value> argv[] = {
-//            nbind::convertToWire(*msg),
-//            // Avoid error C2466: cannot allocate an array of constant size 0.
-//            Nan::Null()
-//        };
-//        LOG(INFO)<<"3";
-
-//        Nan::MaybeLocal<v8::Value> result = Nan::Call(func, Nan::GetCurrentContext()->Global(), 1, argv);
-
-//        addJSTask([func,msg](){
-//            LOG(INFO)<<"1";
-//            LOG(INFO)<<"2";
-
-//            LOG(INFO)<<"4";
-////            LOG(INFO)<<"TaskThread:"<<std::this_thread::get_id();
-////            LOG(INFO)<<"MSG"<<*msg;
-//////            auto context=v8::Isolate::GetCurrentContext();
-////            LOG(INFO)<<"Context obtained.";
-////            (*cbk).call<void>();
-//        });
     });
 }
 

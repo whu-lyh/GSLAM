@@ -19,7 +19,7 @@
         '-std=c++11',
         '-frtti',
         '-Wno-deprecated-declarations',
-        '-g'
+        '-O3'
       ],
       'msbuild_settings': {
         'ClCompile': {
