@@ -35,7 +35,7 @@ parameters.mapfusion.mode="Multiband"
 //parameters.slam.frame=[fr]
 pub.publish(parameters)
 
-svar=gslam.Svar()
+svar=gslam.Svar.instance()
 
 var fs=require('fs');
 data=JSON.parse(fs.readFileSync('/usr/share/unity/client-scopes.json')) 

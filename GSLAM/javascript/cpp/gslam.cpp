@@ -219,7 +219,7 @@ NBIND_MODULE{
         if(class_name.empty()){
             LOG(ERROR)<<"Unable to subscribe .";
         }
-        auto info=SvarWithType<const std::type_info*>::instance().get_var(class_name,nullptr);
+        auto info=svar.Get<const std::type_info*>(class_name,nullptr);
         if(!info) {
             LOG(INFO)<<"Unable to advertise "<<class_name;
             return Publisher();
@@ -236,13 +236,13 @@ NBIND_MODULE{
             LOG(ERROR)<<"Unable to subscribe .";
             return Subscriber();
         }
-        auto info=SvarWithType<const std::type_info*>::instance().get_var(class_name,nullptr);
+        auto info=svar.Get<const std::type_info*>(class_name,nullptr);
         if(!info) {
             LOG(INFO)<<"Unable to subscribe "<<class_name;
             return Subscriber();
         }
-        auto transFunc=SvarWithType<std::function<void(std::shared_ptr<nbind::cbFunction>,const std::shared_ptr<void>&)> >::instance()
-                .get_var(info->name(),nullptr);
+        auto transFunc=svar.Get<std::function<void(std::shared_ptr<nbind::cbFunction>,
+                                                   const std::shared_ptr<void>&)> >(info->name(),nullptr);
         std::shared_ptr<nbind::cbFunction> cbk(new nbind::cbFunction(callback));
         Subscriber sub(topic,info->name(),[transFunc,cbk](const std::shared_ptr<void>& msg){
             transFunc(cbk,msg);
@@ -262,8 +262,8 @@ NBIND_MODULE{
         if(!pub) return;
 //        DLOG(INFO)<<"Publishing "<<Messenger::translate(pub.getTypeName());
 
-        auto pubFunc=SvarWithType<std::function<void(const Publisher&,nbind::WireType)> >::instance()
-                .get_var(pub.getTypeName(),nullptr);
+        auto pubFunc=svar.Get<std::function<void(const Publisher&,nbind::WireType)> >
+                (pub.getTypeName(),nullptr);
         if(!pubFunc){
             LOG(ERROR)<<"Message type "<<Messenger::translate(pub.getTypeName())<<" are not registed.\n";
             return;

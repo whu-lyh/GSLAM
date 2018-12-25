@@ -77,18 +77,20 @@ auto addJSTask(F&& f, Args&& ... args)
 
 template <typename T>
 void addMessengerSupportPtr(std::string name){
-    SvarWithType<const std::type_info*>::instance().insert(name,&typeid(T));
-    SvarWithType<std::function<void(const Publisher&,nbind::WireType)> >::instance()
-            .insert(typeid(T).name(),[name](const Publisher& pub,nbind::WireType obj){
-        std::shared_ptr<T> shared=nbind::BindWrapper<T>::getShared(v8::Handle<v8::Object>::Cast(obj),nbind::TypeFlags::isSharedPtr);
+    svar.Set<const std::type_info*>(name,&typeid(T));
+    svar.Set<std::function<void(const Publisher&,nbind::WireType)> >(typeid(T).name(),
+        [name](const Publisher& pub,nbind::WireType obj){
+        std::shared_ptr<T> shared=nbind::BindWrapper<T>::getShared(v8::Handle<v8::Object>::Cast(obj),
+                                                                   nbind::TypeFlags::isSharedPtr);
 
         if(shared){
             return pub.publish<T>(shared);
         }
     });
 
-    SvarWithType<std::function<void(std::shared_ptr<nbind::cbFunction>,const std::shared_ptr<void>&)> >::instance()
-            .insert(typeid(T).name(),[](std::shared_ptr<nbind::cbFunction> cbk,const std::shared_ptr<void>& obj){
+    svar.Set<std::function<void(std::shared_ptr<nbind::cbFunction>,
+                                const std::shared_ptr<void>&)> >(typeid(T).name(),
+        [](std::shared_ptr<nbind::cbFunction> cbk,const std::shared_ptr<void>& obj){
         std::shared_ptr<T> msg=*(const std::shared_ptr<T>*)&obj;
         auto task=[cbk,msg](){(*cbk).call<void>(msg);};
         addJSTask(task);
@@ -98,16 +100,16 @@ void addMessengerSupportPtr(std::string name){
 
 template <typename T>
 void addMessengerSupport(std::string name){
-    SvarWithType<const std::type_info*>::instance().insert(name,&typeid(T));
-    SvarWithType<std::function<void(const Publisher&,nbind::WireType)> >::instance()
-            .insert(typeid(T).name(),[name](const Publisher& pub,nbind::WireType obj){
-
+    svar.Set<const std::type_info*>(name,&typeid(T));
+    svar.Set<std::function<void(const Publisher&,nbind::WireType)> >(typeid(T).name(),
+        [name](const Publisher& pub,nbind::WireType obj){
         T msg=nbind::convertFromWire<T>(obj);
         pub.publish<T>(msg);
     });
 
-    SvarWithType<std::function<void(std::shared_ptr<nbind::cbFunction>,const std::shared_ptr<void>&)> >::instance()
-            .insert(typeid(T).name(),[](std::shared_ptr<nbind::cbFunction> cbk,const std::shared_ptr<void>& obj){
+    svar.Set<std::function<void(std::shared_ptr<nbind::cbFunction>,
+                                const std::shared_ptr<void>&)> >(typeid(T).name(),
+        [](std::shared_ptr<nbind::cbFunction> cbk,const std::shared_ptr<void>& obj){
         std::shared_ptr<T> msg=*(const std::shared_ptr<T>*)&obj;
         auto task=[cbk,msg](){(*cbk).call<void>(*msg);};
         addJSTask(task);

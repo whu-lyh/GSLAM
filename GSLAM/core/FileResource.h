@@ -101,7 +101,7 @@ public:
             if(name.empty()) break;
             int start= i==0?0:resource_index[i-1];
             int end  =resource_index[i];
-            GSLAM::SvarWithType<FileBuffer>::instance().insert(name,{&resource_data[start],end-start});
+            svar.Set<FileBuffer>(name,{&resource_data[start],end-start});
         }
     }
     static char* ccchar(const char* cch)
@@ -111,14 +111,14 @@ public:
     }
 
     static std::pair<char*,int> getResource(const std::string& resource){
-        FileBuffer buf=GSLAM::SvarWithType<FileBuffer>::instance()[resource];
+        FileBuffer buf=svar.Get<FileBuffer>(resource);
         if(!buf.buf||buf.size<=0) std::pair<char*,int>(NULL,0);
         return std::pair<char*,int>(ccchar((const char*)buf.buf),buf.size);
     }
 
     static bool saveResource2File(const std::string& resource,
                                   const std::string& file){
-        FileBuffer buf=GSLAM::SvarWithType<FileBuffer>::instance()[resource];
+        FileBuffer buf=svar.Get<FileBuffer>(resource);
         if(!buf.buf||buf.size<=0) return false;
         std::ofstream ofs(file,std::ios::out|std::ios::binary);
         if(!ofs.is_open()) return false;

@@ -16,8 +16,7 @@
 }\
     class APP##NAME##_Register{ \
     public: APP##NAME##_Register(){\
-    GSLAM::SvarWithType<GSLAM::funcCreateApplication>::instance()\
-    .insert(#NAME,createApplication##NAME);\
+    Svar::instance().Set<GSLAM::funcCreateApplication>(#NAME,createApplication##NAME);\
 }} APP##NAME##_instance;
 
 namespace GSLAM{
@@ -39,8 +38,7 @@ public:
     virtual Messenger init(Svar configuration)=0;
 
     static ApplicationPtr create(const std::string& path){
-        auto createFunc=GSLAM::SvarWithType<GSLAM::funcCreateApplication>::instance()
-                .get_var(path,NULL);
+        auto createFunc=Svar::instance().Get<GSLAM::funcCreateApplication>(path,NULL);
         if(createFunc)
             return ApplicationPtr(createFunc());
         SharedLibraryPtr plugin=Registry::get(path);

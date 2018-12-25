@@ -1014,13 +1014,13 @@ inline void loadJSONObject(GSLAM::Svar& var,Json node){
         case Json::NUL:
             break;
         case Json::NUMBER:
-            var.insert(it.first,Svar::toString(node.number_value()));
+            var.insert(it.first,Svar::toString(it.second.number_value()));
             break;
         case Json::BOOL:
-            var.Set(it.first,node.bool_value());
+            var.Set(it.first,it.second.bool_value());
             break;
         case Json::STRING:
-            var.Set(it.first,node.string_value());
+            var.Set(it.first,it.second.string_value());
             break;
         case Json::ARRAY:{
             Svar child;
@@ -1054,8 +1054,8 @@ inline void loadJSON(GSLAM::Svar& var,Json node){
         for(const auto& it:node.array_items())
         {
             Svar child;
-            loadJSON(child,it);
             var.AddChild("",child);
+            loadJSON(child,it);
         }
         break;
     default:
