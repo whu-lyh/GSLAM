@@ -4858,13 +4858,13 @@ using namespace tinyxml2;
 
 inline void loadXML(GSLAM::Svar& var,XMLNode* node){
     if(auto text=node->ToText()){
-        var.insert("",text->Value());
+        var.Set("",text->Value());
         return;
     }
     if(auto comment=node->ToComment()){
         GSLAM::Svar child;
         var.AddChild("!--",child);
-        child.insert("",comment->Value());
+        child.Set("",comment->Value());
         return;
     }
     if(auto doc=node->ToDocument()){
@@ -4888,7 +4888,7 @@ inline void loadXML(GSLAM::Svar& var,XMLNode* node){
     var.AddChild(ele->Name(),child);
     for(auto it=ele->FirstAttribute();it!=nullptr;it=it->Next())
     {
-        child.insert(it->Name(),it->Value(),true);
+        child.Set(it->Name(),it->Value(),true);
     }
     for(auto it=ele->FirstChild();it;it=it->NextSibling())
     {
@@ -4908,7 +4908,7 @@ inline void exportXML(GSLAM::Svar& var,XMLNode* node){
     }
 
     auto ele=node->ToElement();
-    for(std::pair<std::string,std::string> it:var.get_data()){
+    for(std::pair<std::string,std::string> it:var.as<std::string>().get_data()){
         if(it.first.empty()){
             ele->SetText(it.second.c_str());
             continue;
@@ -4919,7 +4919,7 @@ inline void exportXML(GSLAM::Svar& var,XMLNode* node){
     for(std::pair<std::string,GSLAM::Svar> child:var.Children())
     {
         if(child.first=="!--"){
-            XMLComment* comment=ele->GetDocument()->NewComment(child.second.getvar("").c_str());
+            XMLComment* comment=ele->GetDocument()->NewComment(child.second.Get<std::string>("").c_str());
             ele->InsertEndChild(comment);
             continue;
         }

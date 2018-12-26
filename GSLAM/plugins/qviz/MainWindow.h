@@ -145,7 +145,7 @@ class ShowLayerWidget:public QTreeWidget
     Q_OBJECT
 public:
     ShowLayerWidget(QWidget* parent=NULL);
-    void addItem(QString itemName,int status);
+    void addItem(std::string itemName,int status);
 signals:
     void signalAddItem(QString,int status);
     void signalStatusChanged(QString,int);

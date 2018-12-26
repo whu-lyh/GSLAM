@@ -59,16 +59,9 @@ public:
     int& var;
 };
 
-void LayerHandle(void *ptr,string cmd,string para)
-{
-    ShowLayerWidget* w=static_cast<ShowLayerWidget*>(ptr);
-    if("AddLayer"==cmd){
-        w->addItem(para.c_str(),2);
-    }
-}
-
 ShowLayerWidget::ShowLayerWidget(QWidget* parent):QTreeWidget(parent){
-    scommand.RegisterCommand("AddLayer",LayerHandle,this);
+    using namespace std::placeholders;
+    svar.language().RegisterCommand("AddLayer",&ShowLayerWidget::addItem,this,_2,2);
     //    this->setTabKeyNavigation(false);
     setHeaderLabel(tr("Layers"));
     setHeaderHidden(true);
@@ -85,8 +78,8 @@ void ShowLayerWidget::changedSlot(QTreeWidgetItem *item, int column)
     if(itemSvar->var!=item->checkState(column))
     {
         itemSvar->var=item->checkState(column);
-        scommand.Call("LayerUpdate "+item->toolTip(0).toStdString());
-        scommand.Call("MainWindow.Update");
+        svar.language().Call("LayerUpdate "+item->toolTip(0).toStdString());
+        svar.language().Call("MainWindow.Update");
         emit signalStatusChanged(item->toolTip(0),item->checkState(column));
     }
 }
@@ -96,9 +89,9 @@ bool ShowLayerWidget::changeLanguage()
     return false;
 }
 
-void ShowLayerWidget::addItem(QString itemName,int status)
+void ShowLayerWidget::addItem(std::string itemName,int status)
 {
-    emit signalAddItem(itemName,status);
+    emit signalAddItem(itemName.c_str(),status);
 }
 
 void ShowLayerWidget::slotAddItem(QString itemName,int status)
@@ -124,31 +117,6 @@ void ShowLayerWidget::slotAddItem(QString itemName,int status)
     }
 }
 
-void GuiHandle(void *ptr,string cmd,string para)
-{
-    if(cmd=="MainWindow.Show")
-    {
-        MainWindow* mainwindow=(MainWindow*)ptr;
-        mainwindow->call("Show");
-        return;
-    }
-    else if(cmd=="MainWindow.Update")
-    {
-        MainWindow* mainwindow=(MainWindow*)ptr;
-        mainwindow->call("Update");
-        return;
-    }
-    else if(cmd=="MainWindow.SetRadius")
-    {
-        MainWindow* mainwindow=(MainWindow*)ptr;
-        stringstream sst(para);
-        float radius=-1;
-        sst>>radius;
-        return;
-    }
-
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),frameVis(NULL),status(READY),historyFile("history.txt"),
@@ -161,9 +129,9 @@ MainWindow::MainWindow(QWidget *parent)
     // window title
     setWindowTitle("GSLAM");
 
-    scommand.RegisterCommand("MainWindow.Show",GuiHandle,this);
-    scommand.RegisterCommand("MainWindow.Update",GuiHandle,this);
-    scommand.RegisterCommand("MainWindow.SetRadius",GuiHandle,this);
+    svar.language().RegisterCommand("MainWindow.Show",&MainWindow::call,this,"Show");
+    svar.language().RegisterCommand("MainWindow.Update",&MainWindow::call,this,"Update");
+    svar.language().RegisterCommand("MainWindow.SetRadius",[](){});
     // setup layout
     setupLayout();
     connect(this, SIGNAL(call_signal(QString) ),
@@ -308,7 +276,7 @@ void MainWindow::call_slot(QString cmd)
         win3d->update();
     }
     else
-        scommand.Call(cmd.toStdString());
+        svar.language().Call(cmd.toStdString());
 }
 
 void MainWindow::slotShowMessage(QString str,int msgType)
@@ -576,7 +544,7 @@ SCommandAction::SCommandAction(const QString &cmd, const QString &text, QMenu *p
 void SCommandAction::triggerdSlot()
 {
 //    std::cerr<<"SCommandAction::triggerdSlot";
-    scommand.Call(_cmd.toStdString());
+    svar.language().Call(_cmd.toStdString());
 }
 
 

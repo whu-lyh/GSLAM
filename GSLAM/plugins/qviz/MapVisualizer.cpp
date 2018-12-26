@@ -19,11 +19,11 @@ MapVisualizer::MapVisualizer(MapPtr slam_map,std::string slam_name,GObjectHandle
       _vetexTrajBuffer(0),_mapUpdated(false),_curFrameUpdated(false),_firstUpdate(true){
     if(!_name.empty())
     {
-        scommand.Call("AddLayer",_name+".Trajectory");
-        scommand.Call("AddLayer",_name+".Connects");
-        scommand.Call("AddLayer",_name+".PointCloud");
-        scommand.Call("AddLayer",_name+".Frames");
-        scommand.Call("AddLayer",_name+".CurrentFrame");
+        svar.language().Call("AddLayer",_name+".Trajectory");
+        svar.language().Call("AddLayer",_name+".Connects");
+        svar.language().Call("AddLayer",_name+".PointCloud");
+        svar.language().Call("AddLayer",_name+".Frames");
+        svar.language().Call("AddLayer",_name+".CurrentFrame");
     }
 }
 
@@ -32,11 +32,11 @@ MapVisualizer::MapVisualizer(std::string slam_name,GObjectHandle* handle)
       _vetexTrajBuffer(0),_mapUpdated(false),_curFrameUpdated(false),_firstUpdate(true){
     if(!_name.empty())
     {
-        scommand.Call("AddLayer",_name+".Trajectory");
-        scommand.Call("AddLayer",_name+".Connects");
-        scommand.Call("AddLayer",_name+".PointCloud");
-        scommand.Call("AddLayer",_name+".Frames");
-        scommand.Call("AddLayer",_name+".CurrentFrame");
+        svar.language().Call("AddLayer",_name+".Trajectory");
+        svar.language().Call("AddLayer",_name+".Connects");
+        svar.language().Call("AddLayer",_name+".PointCloud");
+        svar.language().Call("AddLayer",_name+".Frames");
+        svar.language().Call("AddLayer",_name+".CurrentFrame");
     }
     Subscriber sub=Messenger::instance().subscribe(slam_name+"/map",10,&MapVisualizer::setMap,this);
     Subscriber sub1=Messenger::instance().subscribe(slam_name+"/curframe",10,&MapVisualizer::updateCurframe,this);

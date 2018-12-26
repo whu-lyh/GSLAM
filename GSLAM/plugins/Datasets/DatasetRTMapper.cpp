@@ -292,7 +292,7 @@ public:
     {
         if( !ele ) return false;
         if( ele->Attribute("value") )
-            var.insert((parentName.empty()?string():parentName+".")+ele->Name(),ele->Attribute("value"));
+            var.Set<std::string>((parentName.empty()?string():parentName+".")+ele->Name(),ele->Attribute("value"));
 
         tinyxml2::XMLElement* child=ele->FirstChildElement();
         while(child)
