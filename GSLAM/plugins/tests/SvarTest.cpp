@@ -5,122 +5,176 @@
 namespace GSLAM {
 
 
-template <typename T>
-void testSvarType(GSLAM::Svar var,std::string name,T def,T set){
-    GSLAM::SvarWithType<T> instance;
+TEST(Svar,SvarCreate)
+{
+    Svar var(false);
+    EXPECT_EQ(var.typeName(),"bool");
+    EXPECT_TRUE(Svar()==Svar::Undefined());
+    EXPECT_TRUE(var.is<bool>());
+    EXPECT_FALSE(var.as<bool>());
+    EXPECT_TRUE(Svar(1).is<int>());
+    EXPECT_TRUE(Svar(1).as<int>()==1);
+    EXPECT_TRUE(Svar("").as<std::string>().empty());
+    EXPECT_TRUE(Svar(1.).as<double>()==1.);
+    EXPECT_TRUE(Svar(std::vector<int>({1,2})).isArray());
+    EXPECT_TRUE(Svar(std::map<int,Svar>({{1,2}})).isDict());
 
-    auto ret=instance.get_ptr(name);
-    EXPECT_TRUE(ret==NULL);
-    EXPECT_TRUE(instance.get_ptr(name,def)!=nullptr);
-    EXPECT_TRUE(instance.get_var(name,def)==def);
-    EXPECT_TRUE(instance[name]==def);
+    Svar obj(std::map<std::string,int>({{"1",1}}));
+    EXPECT_TRUE(obj.isObject());
+    EXPECT_TRUE(obj["1"]==1);
+}
 
-    T& ref=var.Get(name,def);
-    EXPECT_EQ(var.Get(name,def),def);
-    EXPECT_EQ(var.Get(name,set),def);
-    EXPECT_EQ(ref,def);
+TEST(Svar,GetSet){
+    Svar var;
+    int& testInt=var.GetInt("child.testInt",20);
+    EXPECT_EQ(testInt,20);
+    testInt=30;
+    EXPECT_EQ(var.GetInt("child.testInt"),30);
+    var.set("child.testInt",40);
+    EXPECT_EQ(testInt,40);
+    EXPECT_EQ(var["child"]["testInt"],40);
+}
 
-    var.Get(name,def)=set;
-    EXPECT_EQ(var.Get(name,def),set);
-    EXPECT_EQ(var.Get(name,set),set);
-    EXPECT_EQ(ref,set);
+std::string add(std::string left,const std::string& r){
+    return left+r;
+}
+
+TEST(Svar,SvarFunction)
+{
+    int intV=0,srcV=0;
+    Svar intSvar(0);
+    // Svar argument is recommended
+    SvarFunction isBool([](Svar config){return config.is<bool>();});
+    EXPECT_TRUE(isBool.call(false).as<bool>());
+    // pointer
+    Svar::lambda([](int* ref){*ref=10;})(&intV);
+    Svar::lambda([](int* ref){*ref=10;})(intSvar);
+    EXPECT_EQ(intV,10);
+    EXPECT_EQ(intSvar,10);
+    // WARNNING!! ref, should pay attention that when using ref it should always input the svar instead of the raw ref
+    Svar::lambda([](int& ref){ref=20;})(intSvar);
+    EXPECT_EQ(intSvar,20);
+    // const ref
+    Svar::lambda([](const int& ref,int* dst){*dst=ref;})(30,&intV);
+    EXPECT_EQ(intV,30);
+    // const pointer
+    Svar::lambda([](const int* ref,int* dst){*dst=*ref;})(&srcV,&intV);
+    EXPECT_EQ(intV,srcV);
+    // overload is only called when cast is not available!
+    Svar funcReturn=Svar::lambda([](int i){return i;});
+    funcReturn.as<SvarFunction>().next=Svar::lambda([](char c){return c;});
+    EXPECT_EQ(funcReturn(1).cpptype(),typeid(int));
+    EXPECT_EQ(funcReturn('c').cpptype(),typeid(char));
+    // string argument
+    Svar s("hello");
+    Svar::lambda([](std::string raw,
+                 const std::string c,
+                 const std::string& cref,
+                 std::string& ref,
+                 std::string* ptr,
+                 const std::string* cptr){
+        EXPECT_EQ(raw,"hello");
+        EXPECT_EQ(c,"hello");
+        EXPECT_EQ(ref,"hello");
+        EXPECT_EQ(cref,"hello");
+        EXPECT_EQ((*ptr),"hello");
+        EXPECT_EQ((*cptr),"hello");
+    })(s,s,s,s,s,s);
+    // cpp function binding
+    EXPECT_EQ(Svar(add)("a",std::string("b")).as<std::string>(),"ab");
+    // static method function binding
+    EXPECT_TRUE(Svar::Null().isNull());
+    EXPECT_TRUE(Svar(&Svar::Null)().isNull());
 
 }
 
-TEST(Svar,Int){
-    GSLAM::Svar var;
-    testSvarType(svar,"Int",100,200);
-    testSvarType(var,"Int",100,200);
-    EXPECT_EQ(var.Get("Int",0),200);
-
-    svar.ParseLine("testInt=20");
-    EXPECT_EQ(svar.GetInt("testInt"),20);
-    svar.ParseLine("testInt?=30");
-    EXPECT_EQ(svar.GetInt("testInt"),20);
-
-    svar.ParseLine("InvalidInt=invalid?");
-    EXPECT_EQ(var.Get<int>("InvalidInt"),0);
+TEST(Svar,Call){
+    EXPECT_EQ(Svar(1).call("__str__"),"1");// Call as member methods
+    EXPECT_EQ(SvarClass::instance<int>().call("__str__",1),"1");// Call as static function
 }
 
-TEST(Svar,Double){
-    GSLAM::Svar var;
-    testSvarType(svar,"Double",0.,20.);
-    testSvarType(var,"Double",0.,20.);
-    EXPECT_EQ(var.Get("Double",0.),20.);
+TEST(Svar,Cast){
+    EXPECT_EQ(Svar(2.).castAs<int>(),2);
+    EXPECT_TRUE(Svar(1).castAs<double>()==1.);
+}
 
-    svar.ParseLine("testDouble=20");
-    EXPECT_EQ(svar.GetDouble("testDouble"),20);
-    svar.ParseLine("testDouble?=30");
-    EXPECT_EQ(svar.GetDouble("testDouble"),20);
+TEST(Svar,NumOp){
+    EXPECT_EQ(-Svar(2.1),-2.1);
+    EXPECT_EQ(-Svar(2),-2);
+    EXPECT_EQ(Svar(2.1)+Svar(1),3.1);
+    EXPECT_EQ(Svar(4.1)-Svar(2),4.1-2);
+    EXPECT_EQ(Svar(3)*Svar(3.3),3*3.3);
+    EXPECT_EQ(Svar(5.4)/Svar(2),5.4/2);
+    EXPECT_EQ(Svar(5)%Svar(2),5%2);
+    EXPECT_EQ(Svar(5)^Svar(2),5^2);
+    EXPECT_EQ(Svar(5)|Svar(2),5|2);
+    EXPECT_EQ(Svar(5)&Svar(2),5&2);
+}
 
-    svar.ParseLine("InvalidDouble=invalid?");
-    EXPECT_EQ(var.Get<double>("InvalidDouble"),0.);
+TEST(Svar,Dump){
+    return;
+    Svar obj(std::map<std::string,int>({{"1",1}}));
+    std::cout<<obj<<std::endl;
+    std::cout<<Svar::array({1,2,3})<<std::endl;
+    std::cout<<Svar::create((std::type_index)typeid(1))<<std::endl;
+    std::cout<<Svar::lambda([](std::string sig){})<<std::endl;
+    std::cout<<SvarClass::Class<int>();
+    std::cout<<Svar::instance();
+}
+
+TEST(Svar,Iterator){
+    auto vec=Svar::array({1,2,3});
+    Svar arrayiter=vec.call("__iter__");
+    Svar next=arrayiter.classObject()["next"];
+    int i=0;
+    for(Svar it=next(arrayiter);!it.isUndefined();it=next(arrayiter)){
+        EXPECT_EQ(vec[i++],it);
+    }
+    i=0;
+    for(Svar it=arrayiter.call("next");!it.isUndefined();it=arrayiter.call("next"))
+    {
+        EXPECT_EQ(vec[i++],it);
+    }
+}
+
+TEST(Svar,Json){
+    Svar var;
+    var.set("i",1);
+    var.set("d",2.);
+    var.set("s",Svar("str"));
+    var.set("b",false);
+    var.set("l",Svar::array({1,2,3}));
+    var.set("m",Svar::object({{"a",1},{"b",false}}));
+    std::string str=Json::dump(var);
+    Svar varCopy=Json::load(str);
+    EXPECT_EQ(str,Json::dump(varCopy));
+}
+
+TEST(Svar,Thread){
+    auto readThread=[](){
+        while(!svar.get<bool>("shouldstop",false)){
+            double& d=svar.get<double>("thread.Double",100);
+            usleep(1);
+        }
+    };
+    auto writeThread=[](){
+        svar.set<double>("thread.Double",svar.GetDouble("thread.Double")++);
+        while(!svar.get<bool>("shouldstop",false)){
+            svar.set<int>("thread.Double",10);// use int instead of double to violately testing robustness
+            usleep(1);
+        }
+    };
+    std::vector<std::thread> threads;
+    for(int i=0;i<svar.GetInt("readThreads",4);i++) threads.push_back(std::thread(readThread));
+    for(int i=0;i<svar.GetInt("writeThreads",4);i++) threads.push_back(std::thread(writeThread));
+    sleep(1);
+    svar.set("shouldstop",true);
+    for(auto& it:threads) it.join();
+}
+
+TEST(Svar,Inherit){
 
 }
 
-TEST(Svar,String){
-    GSLAM::Svar var;
-    testSvarType<std::string>(svar,"String","world","hello");
-    testSvarType<std::string>(var,"String","world","hello");
-    EXPECT_EQ(var.GetString("String","world"),"hello");
-
-    svar.ParseLine("testString=20");
-    EXPECT_EQ(svar.GetString("testString"),"20");
-    svar.ParseLine("testString?=30");
-    EXPECT_EQ(svar.GetString("testString"),"20");
-}
-
-TEST(Svar,Pointer){
-    GSLAM::Svar var;
-    testSvarType<void*>(svar,"Pointer",NULL,&var);
-    testSvarType<void*>(var,"Pointer",NULL,&var);
-}
-
-template <typename T>
-bool operator==(GSLAM::VecParament<T> l,GSLAM::VecParament<T> r){
-    if(l.size()!=r.size()) return false;
-    for(int i=0;i<r.size();i++) if(l[i]!=r[i]) return false;
-    return true;
-}
-
-TEST(Svar,VecParament){
-    VecParament<double> vec={1,2},vec2;
-    testSvarType(svar,"VecParament",vec,vec2);
-}
-
-TEST(Scommand,Regist){
-    GSLAM::Svar     var;
-    GSLAM::Scommand command(var);
-    var.GetString("Result")="Success";
-    EXPECT_FALSE(var.exist("Result"));
-    command.Call("GetString Result");
-    EXPECT_TRUE(var.exist("Result"));
-}
-
-TEST(Svar,Parse){
-    std::string str=
-            "Name=GSLAM\n"
-            "Auther=ZhaoYong\n"
-            "function ShowName\n"
-            "echo Name is $(Name)\n"
-            "FunctionCalled=1\n"
-            "echo FunctionCalled=1\n"
-            "endfunction\n"
-            "if $(Auther)=ZhaoYong\n"
-            "echo Auther of $(Name) is $(Auther)\n"
-            "Name=ChangedName\n"
-            "ShowName\n"
-            "else\n"
-            "echo Auther of $(Name) is not ZhaoYong\n"
-            "ElseCalled=1\n"
-            "endif";
-    std::stringstream sst(str);
-    GSLAM::Svar var;
-
-    var.ParseStream(sst);
-    EXPECT_TRUE(var.GetInt("FunctionCalled"));
-    EXPECT_FALSE(var.GetInt("ElseCalled"));
-    EXPECT_EQ(var.GetString("Name",""),"ChangedName");
-}
 }
 

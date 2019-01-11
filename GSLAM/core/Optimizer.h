@@ -44,9 +44,7 @@
   class OPT_CLASS##_Register {                                         \
    public:                                                             \
     OPT_CLASS##_Register() {                                           \
-      GSLAM::SvarWithType<                                             \
-          GSLAM::funcCreateOptimizerInstance>::instance()["Default"] = \
-          createOptimizerInstance;                                     \
+       GSLAM::Optimizer::buildin()=createOptimizerInstance;            \
     }                                                                  \
   } OPT_CLASS##_Register_instance;
 
@@ -233,9 +231,7 @@ class Optimizer {
 
   static std::shared_ptr<Optimizer> create(std::string pluginName = "") {
     if (pluginName.empty()) {
-      funcCreateOptimizerInstance createFunc =
-          SvarWithType<funcCreateOptimizerInstance>::instance()["Default"];
-      if (createFunc) return createFunc();
+      if (buildin()) return buildin()();
       pluginName = svar.GetString("OptimizerPlugin", "libgslam_optimizer");
     }
     std::shared_ptr<SharedLibrary> plugin = Registry::get(pluginName);
@@ -248,6 +244,8 @@ class Optimizer {
     else
       return createFunc();
   }
+
+  static funcCreateOptimizerInstance& buildin(){static funcCreateOptimizerInstance v=nullptr;return v;}
 
   OptimzeConfig _config;
 };

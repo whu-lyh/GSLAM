@@ -250,8 +250,8 @@ public:
         Registry& inst=instance();
         pluginName=inst.getPluginName(pluginName);
 
-        if(inst._registedLibs.exist(pluginName))
-            return inst._registedLibs[pluginName];
+        if(inst._registedLibs[pluginName].is<SharedLibraryPtr>())
+            return inst._registedLibs.Get<SharedLibraryPtr>(pluginName);
 
         // find out and load the SharedLibrary
         for(std::string dir:inst._libraryFilePath)
@@ -261,12 +261,12 @@ public:
             SharedLibraryPtr lib(new SharedLibrary(pluginPath));
             if(lib->isLoaded())
             {
-                inst._registedLibs.insert(pluginName,lib);
+                inst._registedLibs.set(pluginName,lib);
                 return lib;
             }
         }
         // failed to find the library
-        return inst._registedLibs[pluginName];
+        return SharedLibraryPtr();
     }
 
     static bool erase(std::string pluginName)
@@ -274,7 +274,8 @@ public:
         if(pluginName.empty()) return false;
         Registry& inst=instance();
         pluginName=inst.getPluginName(pluginName);
-        return inst._registedLibs.erase(pluginName);
+        inst._registedLibs.set(pluginName,Svar());
+        return true;
     }
 protected:
     static bool fileExists(const std::string& filename)
@@ -319,8 +320,8 @@ protected:
             pluginName+=SharedLibrary::suffix();
         }
 
-        std::string folder=Svar::getFolderPath(pluginName);
-        pluginName=Svar::getFileName(pluginName);
+        std::string folder=getFolderPath(pluginName);
+        pluginName=getFileName(pluginName);
         if(folder.size()){
             _libraryFilePath.insert(folder);
         }
@@ -334,7 +335,7 @@ protected:
         char** argv=(char**)svar.GetPointer("argv");
         if(argv)
         {
-            _libraryFilePath.insert(Svar::getFolderPath(argv[0]));//application folder
+            _libraryFilePath.insert(getFolderPath(argv[0]));//application folder
         }
         _libraryFilePath.insert(".");
 
@@ -364,10 +365,39 @@ protected:
             convertStringPathIntoFilePathList(ptr,_libraryFilePath);
     }
 
+    inline std::string getFolderPath(const std::string& path) {
+      auto idx = std::string::npos;
+      if ((idx = path.find_last_of('/')) == std::string::npos)
+        idx = path.find_last_of('\\');
+      if (idx != std::string::npos)
+        return path.substr(0, idx);
+      else
+        return "";
+    }
+
+    inline std::string getBaseName(const std::string& path) {
+      std::string filename = getFileName(path);
+      auto idx = filename.find_last_of('.');
+      if (idx == std::string::npos)
+        return filename;
+      else
+        return filename.substr(0, idx);
+    }
+
+    inline std::string getFileName(const std::string& path) {
+      auto idx = std::string::npos;
+      if ((idx = path.find_last_of('/')) == std::string::npos)
+        idx = path.find_last_of('\\');
+      if (idx != std::string::npos)
+        return path.substr(idx + 1);
+      else
+        return path;
+    }
+
 
 
     std::set<std::string>               _libraryFilePath;// where to search?
-    SvarWithType<SharedLibraryPtr >  _registedLibs;   // already loaded
+    Svar                                _registedLibs;   // already loaded
 };
 
 } // namespace pi

@@ -28,7 +28,7 @@ public:
     SvarQTreeItem(const string& cmd,QTreeWidgetItem* parent,const QString &strings,int type,int def)
         : QTreeWidgetItem(parent,QStringList() <<strings,type),var(svar.GetInt(cmd,def))
     {
-        SvarWithType<SvarQTreeItem*>::instance()[cmd]=this;
+        items().set<SvarQTreeItem*>(cmd,this);
 
         if(parent)
             parent->addChild(this);
@@ -53,7 +53,12 @@ public:
         setToolTip(0,cmd.c_str());
     }
 
-    static SvarQTreeItem* get(const string& cmd){return SvarWithType<SvarQTreeItem*>::instance()[cmd];}
+    static SvarQTreeItem* get(const string& cmd){return items().Get<SvarQTreeItem*>(cmd,nullptr);}
+
+    static Svar& items(){
+        static Svar var;
+        return var;
+    }
 
 
     int& var;
@@ -61,7 +66,7 @@ public:
 
 ShowLayerWidget::ShowLayerWidget(QWidget* parent):QTreeWidget(parent){
     using namespace std::placeholders;
-    svar.language().RegisterCommand("AddLayer",&ShowLayerWidget::addItem,this,_2,2);
+    svar.def("AddLayer",[this](std::string itemName){addItem(itemName,2);});
     //    this->setTabKeyNavigation(false);
     setHeaderLabel(tr("Layers"));
     setHeaderHidden(true);
@@ -78,8 +83,8 @@ void ShowLayerWidget::changedSlot(QTreeWidgetItem *item, int column)
     if(itemSvar->var!=item->checkState(column))
     {
         itemSvar->var=item->checkState(column);
-        svar.language().Call("LayerUpdate "+item->toolTip(0).toStdString());
-        svar.language().Call("MainWindow.Update");
+        svar.call("LayerUpdate",item->toolTip(0).toStdString());
+        svar.call("MainWindow.Update");
         emit signalStatusChanged(item->toolTip(0),item->checkState(column));
     }
 }
@@ -129,9 +134,9 @@ MainWindow::MainWindow(QWidget *parent)
     // window title
     setWindowTitle("GSLAM");
 
-    svar.language().RegisterCommand("MainWindow.Show",&MainWindow::call,this,"Show");
-    svar.language().RegisterCommand("MainWindow.Update",&MainWindow::call,this,"Update");
-    svar.language().RegisterCommand("MainWindow.SetRadius",[](){});
+    svar.def("MainWindow.Show",[this](){call("Show");});
+    svar.def("MainWindow.Update",[this](){call("Update");});
+    svar.def("MainWindow.SetRadius",[](){});
     // setup layout
     setupLayout();
     connect(this, SIGNAL(call_signal(QString) ),
@@ -276,7 +281,7 @@ void MainWindow::call_slot(QString cmd)
         win3d->update();
     }
     else
-        svar.language().Call(cmd.toStdString());
+        svar.call(cmd.toStdString());
 }
 
 void MainWindow::slotShowMessage(QString str,int msgType)
@@ -427,9 +432,9 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
         if(idx==std::string::npos) return;
         std::string slamName =topicName.substr(0,idx);
         if(slamName.empty()) return;
-        if(!win3d->_objects.exist(slamName)){
+        if(!win3d->_objects.count(slamName)){
             std::shared_ptr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
-            win3d->_objects.insert(slamName,vis);
+            win3d->_objects.insert(std::make_pair(slamName,vis));
         }
         LOG(INFO)<<"Auto visualize Map "<<topicName;
     }
@@ -439,9 +444,9 @@ void MainWindow::slotTryVisualize(QString topic,QString type)
         if(idx==std::string::npos) return;
         std::string slamName =topicName.substr(0,idx);
         if(slamName.empty()) return;
-        if(!win3d->_objects.exist(slamName)){
+        if(!win3d->_objects.count(slamName)){
             std::shared_ptr<MapVisualizer> vis(new MapVisualizer(slamName,dynamic_cast<GObjectHandle*>(this)));
-            win3d->_objects.insert(slamName,vis);
+            win3d->_objects.insert(std::make_pair(slamName,vis));
         }
         LOG(INFO)<<"Auto visualize MapFrame "<<topicName;
     }
@@ -544,7 +549,7 @@ SCommandAction::SCommandAction(const QString &cmd, const QString &text, QMenu *p
 void SCommandAction::triggerdSlot()
 {
 //    std::cerr<<"SCommandAction::triggerdSlot";
-    svar.language().Call(_cmd.toStdString());
+    svar.call(_cmd.toStdString());
 }
 
 

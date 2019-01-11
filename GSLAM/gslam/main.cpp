@@ -54,7 +54,7 @@ int main(int argc,char** argv)
             <<msg.introduction()<<"\n\n"
             <<"Supported by GSLAM "<<app->gslam_version()<<". ";
 
-            svar.setUsage(sst.str());
+            svar.set("Usage",sst.str());
             std::cerr<<svar.help();
             return 0;
         }

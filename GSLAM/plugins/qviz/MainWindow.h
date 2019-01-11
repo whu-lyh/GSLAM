@@ -31,7 +31,7 @@ public:
     virtual void draw()
     {
         _fastDraw=0;
-        const auto& objects=_objects.get_data();
+        const auto& objects=_objects;
         for(auto it : objects)
             it.second->draw();
     }
@@ -39,13 +39,13 @@ public:
     virtual void fastDraw()
     {
         _fastDraw=1;
-        const auto& objects=_objects.get_data();
+        const auto& objects=_objects;
         for(auto it : objects)
             it.second->draw();
     }
 
     int&                            _fastDraw;
-    SvarWithType<GObjectPtr>        _objects;
+    std::map<std::string,GObjectPtr>        _objects;
 };
 
 class MainWindow: public QMainWindow,GObjectHandle
@@ -111,7 +111,7 @@ protected:
 
     Dataset                 dataset; // current dataset, load implementations
     FrameVisualizer         *frameVis;
-    SvarWithType<SLAMVisualizerPtr> slamVis;
+//    SvarWithType<SLAMVisualizerPtr> slamVis;
 
     QDockWidget             *operateDock;
     QSplitter               *splitterLeft;

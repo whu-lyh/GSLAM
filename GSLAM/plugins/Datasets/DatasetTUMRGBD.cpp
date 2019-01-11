@@ -20,9 +20,9 @@ public:
 
     virtual bool        open(const std::string& dataset)
     {
-        var.ParseFile(dataset);
+        var.parseFile(dataset);
 
-        video_top=var.GetString("DatasetFolder",var.getFolderPath(dataset));
+        video_top=var.GetString("DatasetFolder",getFolderPath(dataset));
 
         if(var.exist("Camera"))
         {
@@ -36,7 +36,7 @@ public:
             camera=GSLAM::Camera(vecPara.data);
         }
 
-        if(!camera.isValid()&&!detectCamera(var.getBaseName(video_top)))
+        if(!camera.isValid()&&!detectCamera(getBaseName(video_top)))
         {
             LOG(ERROR)<<"Camera not valid:"<<camera.info();
             return false;
@@ -51,7 +51,34 @@ public:
         return true;
     }
 
+    inline std::string getFolderPath(const std::string& path) {
+      auto idx = std::string::npos;
+      if ((idx = path.find_last_of('/')) == std::string::npos)
+        idx = path.find_last_of('\\');
+      if (idx != std::string::npos)
+        return path.substr(0, idx);
+      else
+        return "";
+    }
 
+    inline std::string getBaseName(const std::string& path) {
+      std::string filename = getFileName(path);
+      auto idx = filename.find_last_of('.');
+      if (idx == std::string::npos)
+        return filename;
+      else
+        return filename.substr(0, idx);
+    }
+
+    inline std::string getFileName(const std::string& path) {
+      auto idx = std::string::npos;
+      if ((idx = path.find_last_of('/')) == std::string::npos)
+        idx = path.find_last_of('\\');
+      if (idx != std::string::npos)
+        return path.substr(idx + 1);
+      else
+        return path;
+    }
     virtual GSLAM::FramePtr grabFrame(){
         double t1,t2,t3;
         double x,y,z,qx,qy,qz,qw;

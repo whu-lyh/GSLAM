@@ -9,7 +9,7 @@ SLAMVisualizer::SLAMVisualizer(SLAMPtr slam_ptr,GObjectHandle* handle)
     : _slam(slam_ptr),_handle(handle)
 {
     _name=_slam->type();
-    svar.language().Call("AddLayer",_name);
+    svar.call("AddLayer",_name);
 
     _slam->setSvar(svar);
     _slam->setCallback(this);
@@ -74,7 +74,7 @@ void SLAMVisualizer::handle(const std::shared_ptr<GObject>& obj){
     }
     else if(auto e=std::dynamic_pointer_cast<DrawableEvent>(obj)){
         _objects[_name+"."+e->_name]=e;
-        svar.language().Call("AddLayer",_name+"."+e->_name);
+        svar.call("AddLayer",_name+"."+e->_name);
 //        LOG(INFO)<<"DrawableEvent";
         updateGL();
     }

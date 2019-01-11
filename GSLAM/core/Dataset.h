@@ -12,7 +12,7 @@ namespace GSLAM{
     extern "C" GSLAM::Dataset* createDataset##E(){ return new D();}\
     class D##E##_Register{ \
     public: D##E##_Register(){\
-    GSLAM::DatasetFactory::instance()._ext2creator.insert(#E,createDataset##E);\
+    GSLAM::DatasetFactory::instance()._ext2creator.set<std::function<GSLAM::Dataset*()>>(#E,createDataset##E);\
 }}D##E##_instance;
 
 /// create
@@ -60,9 +60,9 @@ public:
         _pub_dataset_status=messenger.advertise<int>("dataset/status",100);
         _pub_images=messenger.advertise<MapFrame>("images",0);
         _pub_imu=messenger.advertise<MapFrame>("imu",0);
-        config.Arg<int>("autostart",0,"Should the dataset start play after opened.");
-        config.Arg<double>("playspeed",1.,"How fast the offline dataset be played.");
-        config.Arg<double>("playspeed_warning",5,"Seconds to check if the playspeed is slower then setted.");
+        config.arg<int>("autostart",0,"Should the dataset start play after opened.");
+        config.arg<double>("playspeed",1.,"How fast the offline dataset be played.");
+        config.arg<double>("playspeed_warning",5,"Seconds to check if the playspeed is slower then setted.");
     }
 
     ~DatasetPlayer(){
@@ -227,7 +227,7 @@ public:
 
     static DatasetPtr create(std::string dataset);
 
-    SvarWithType<funcCreateDataset>        _ext2creator;
+    Svar        _ext2creator;
 };
 
 inline bool Dataset::open(const std::string& dataset){
@@ -247,7 +247,7 @@ inline DatasetPtr DatasetFactory::create(std::string dataset)
     }
     if(extension.empty()) return DatasetPtr();
 
-    if(!instance()._ext2creator.exist(extension))
+    if(!instance()._ext2creator[extension].is<funcCreateDataset>())
     {
         SharedLibraryPtr plugin=Registry::get("libgslamDB_"+extension);
         if(!plugin.get()) return DatasetPtr();
@@ -255,8 +255,8 @@ inline DatasetPtr DatasetFactory::create(std::string dataset)
         if(createFunc) return DatasetPtr(createFunc());
     }
 
-    if(!instance()._ext2creator.exist(extension)) return DatasetPtr();
-    funcCreateDataset createFunc=instance()._ext2creator.get_var(extension,NULL);
+    if(!instance()._ext2creator[extension].is<funcCreateDataset>()) return DatasetPtr();
+    funcCreateDataset createFunc=instance()._ext2creator.get<funcCreateDataset>(extension,NULL);
     if(!createFunc) return DatasetPtr();
 
     return DatasetPtr(createFunc());

@@ -32,7 +32,7 @@ public:
     virtual bool  open(const std::string& dataset)
     {
         GSLAM::Svar var;
-        var.ParseFile(dataset);
+        var.parseFile(dataset);
         datasetFolder=var.GetString("SequenceFolder",Svar::getFolderPath(dataset));
         string typeStr  =var.GetString("VideoType",Svar::getBaseName(dataset));
         cameraIdx    =var.GetInt("CameraIdx",0);

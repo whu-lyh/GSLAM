@@ -28,6 +28,24 @@ public:
         }
         return str;
     }
+    static std::string getBaseName(const std::string& path) {
+      std::string filename = getFileName(path);
+      auto idx = filename.find_last_of('.');
+      if (idx == std::string::npos)
+        return filename;
+      else
+        return filename.substr(0, idx);
+    }
+
+    static std::string getFileName(const std::string& path) {
+      auto idx = std::string::npos;
+      if ((idx = path.find_last_of('/')) == std::string::npos)
+        idx = path.find_last_of('\\');
+      if (idx != std::string::npos)
+        return path.substr(idx + 1);
+      else
+        return path;
+    }
 
     static bool exportResourceFile(const FileLUT& lut,const std::string& to){
         std::vector<std::string> names;
@@ -80,7 +98,7 @@ public:
             else fileOut<<toHex(&data[i],data.size()-i)<<"\n";
         }
         fileOut<<"};\n\n";
-        fileOut<<"GSLAM_REGISTER_RESOURCE("<<GSLAM::Svar::getBaseName(to)<<")";
+        fileOut<<"GSLAM_REGISTER_RESOURCE("<<getBaseName(to)<<")";
         fileOut.close();
         return true;
     }
@@ -101,7 +119,7 @@ public:
             if(name.empty()) break;
             int start= i==0?0:resource_index[i-1];
             int end  =resource_index[i];
-            svar.Set<FileBuffer>(name,{&resource_data[start],end-start});
+            resources().set<FileBuffer>(name,{&resource_data[start],end-start});
         }
     }
     static char* ccchar(const char* cch)
@@ -111,19 +129,24 @@ public:
     }
 
     static std::pair<char*,int> getResource(const std::string& resource){
-        FileBuffer buf=svar.Get<FileBuffer>(resource);
+        FileBuffer buf=resources().get<FileBuffer>(resource,FileBuffer());
         if(!buf.buf||buf.size<=0) std::pair<char*,int>(NULL,0);
         return std::pair<char*,int>(ccchar((const char*)buf.buf),buf.size);
     }
 
     static bool saveResource2File(const std::string& resource,
                                   const std::string& file){
-        FileBuffer buf=svar.Get<FileBuffer>(resource);
+        FileBuffer buf=resources().get<FileBuffer>(resource,FileBuffer());
         if(!buf.buf||buf.size<=0) return false;
         std::ofstream ofs(file,std::ios::out|std::ios::binary);
         if(!ofs.is_open()) return false;
         ofs.write((const char*)buf.buf,buf.size);
         return ofs.good();
+    }
+
+    static Svar& resources(){
+        static Svar r=Svar::object();
+        return r;
     }
 };
 

@@ -44,8 +44,9 @@
   class EST_CLASS##_Register {                                           \
    public:                                                               \
     EST_CLASS##_Register() {                                             \
-      SvarWithType<funcCreateEstimatorInstance>::instance()["Default"] = \
-          createEstimatorInstance;                                       \
+      GSLAM::Estimator::buildinEstimators()\
+.Set<funcCreateEstimatorInstance>\
+("Default",createEstimatorInstance);                                       \
     }                                                                    \
   } EST_CLASS##_Register_instance;
 
@@ -165,9 +166,13 @@ class Estimator : public GObject {
       const Point3d& curDirection,  // camera.UnProject(cur2d)
       Point3d& refPt) const  = 0;
 
+  static Svar& buildinEstimators(){
+      static Svar var=Svar::object();return var;
+  }
+
   static EstimatorPtr create(std::string pluginName = "") {
-    funcCreateEstimatorInstance createFunc =
-        SvarWithType<funcCreateEstimatorInstance>::instance()["Default"];
+    funcCreateEstimatorInstance createFunc =buildinEstimators()
+        .Get<funcCreateEstimatorInstance>("Default",NULL);
     if (createFunc) return EstimatorPtr(createFunc());
 
     if (pluginName.empty()) {

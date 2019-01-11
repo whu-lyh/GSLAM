@@ -245,16 +245,15 @@ public:
 
     bool imshow(const std::string& name,const GSLAM::GImage& img)
     {
-        SvarWithType<GSLAM::GImage>& inst=SvarWithType<GSLAM::GImage>::instance();
-        if(!inst.exist(name))
+        if(!_var.exist(name))
         {
             _comb->addItem(QString::fromLocal8Bit(name.c_str()));
             _comb->setEditText(QString::fromLocal8Bit(name.c_str()));
 
-            inst[name]=img;
+            _var.set<GImage>(name,img);
             return _showMat->setImage(img);
         }
-        inst[name]=img;
+        _var.set<GImage>(name,img);
 
         QByteArray baCurrentText = _comb->currentText().toLocal8Bit();
         if(name == baCurrentText.data() && img.data)
@@ -267,12 +266,13 @@ protected slots:
     void combActivated(const QString& name)
     {
         _comb->setEditText(name);
-        _showMat->setImage(SvarWithType<GSLAM::GImage>::instance()[name.toStdString()]);
+        _showMat->setImage(_var.Get<GSLAM::GImage>(name.toStdString()));
     }
 
 private:
     QComboBox*      _comb;
     GImageWidget*   _showMat;
+    Svar            _var;
 };
 
 class InfomationViewer : public QTableWidget

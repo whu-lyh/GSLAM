@@ -4852,98 +4852,98 @@ inline bool XMLPrinter::Visit( const XMLUnknown& unknown )
 
 }   // namespace tinyxml2
 
-#include <GSLAM/core/Svar.h>
+//#include <GSLAM/core/Svar.h>
 namespace GSLAM {
 using namespace tinyxml2;
 
-inline void loadXML(GSLAM::Svar& var,XMLNode* node){
-    if(auto text=node->ToText()){
-        var.Set("",text->Value());
-        return;
-    }
-    if(auto comment=node->ToComment()){
-        GSLAM::Svar child;
-        var.AddChild("!--",child);
-        child.Set("",comment->Value());
-        return;
-    }
-    if(auto doc=node->ToDocument()){
-        for(auto it=doc->FirstChild();it;it=it->NextSibling())
-        {
-            loadXML(var,it);
-        }
-        return;
-    }
-    if(node->ToDeclaration()){
-        return;
-    }
+//inline void loadXML(GSLAM::Svar& var,XMLNode* node){
+//    if(auto text=node->ToText()){
+//        var.Set("",text->Value());
+//        return;
+//    }
+//    if(auto comment=node->ToComment()){
+//        GSLAM::Svar child;
+//        var.AddChild("!--",child);
+//        child.Set("",comment->Value());
+//        return;
+//    }
+//    if(auto doc=node->ToDocument()){
+//        for(auto it=doc->FirstChild();it;it=it->NextSibling())
+//        {
+//            loadXML(var,it);
+//        }
+//        return;
+//    }
+//    if(node->ToDeclaration()){
+//        return;
+//    }
 
-    XMLElement* ele=node->ToElement();
-    if(!ele) {
-        std::cerr<<"Unkown XMLElement type.";
-        return;
-    }
+//    XMLElement* ele=node->ToElement();
+//    if(!ele) {
+//        std::cerr<<"Unkown XMLElement type.";
+//        return;
+//    }
 
-    GSLAM::Svar child;
-    var.AddChild(ele->Name(),child);
-    for(auto it=ele->FirstAttribute();it!=nullptr;it=it->Next())
-    {
-        child.Set(it->Name(),it->Value(),true);
-    }
-    for(auto it=ele->FirstChild();it;it=it->NextSibling())
-    {
-        loadXML(child,it);
-    }
-}
+//    GSLAM::Svar child;
+//    var.AddChild(ele->Name(),child);
+//    for(auto it=ele->FirstAttribute();it!=nullptr;it=it->Next())
+//    {
+//        child.Set(it->Name(),it->Value(),true);
+//    }
+//    for(auto it=ele->FirstChild();it;it=it->NextSibling())
+//    {
+//        loadXML(child,it);
+//    }
+//}
 
-inline void exportXML(GSLAM::Svar& var,XMLNode* node){
-    if(auto doc=node->ToDocument()){
-        for(std::pair<std::string,GSLAM::Svar> child:var.Children())
-        {
-            XMLElement* ele = doc->NewElement(child.first.c_str());
-            doc->InsertEndChild(ele);
-            exportXML(child.second,ele);
-        }
-        return;
-    }
+//inline void exportXML(GSLAM::Svar& var,XMLNode* node){
+//    if(auto doc=node->ToDocument()){
+//        for(std::pair<std::string,GSLAM::Svar> child:var.Children())
+//        {
+//            XMLElement* ele = doc->NewElement(child.first.c_str());
+//            doc->InsertEndChild(ele);
+//            exportXML(child.second,ele);
+//        }
+//        return;
+//    }
 
-    auto ele=node->ToElement();
-    for(std::pair<std::string,std::string> it:var.as<std::string>().get_data()){
-        if(it.first.empty()){
-            ele->SetText(it.second.c_str());
-            continue;
-        }
-        ele->SetAttribute(it.first.c_str(),it.second.c_str());
-    }
+//    auto ele=node->ToElement();
+//    for(std::pair<std::string,std::string> it:var.as<std::string>().get_data()){
+//        if(it.first.empty()){
+//            ele->SetText(it.second.c_str());
+//            continue;
+//        }
+//        ele->SetAttribute(it.first.c_str(),it.second.c_str());
+//    }
 
-    for(std::pair<std::string,GSLAM::Svar> child:var.Children())
-    {
-        if(child.first=="!--"){
-            XMLComment* comment=ele->GetDocument()->NewComment(child.second.Get<std::string>("").c_str());
-            ele->InsertEndChild(comment);
-            continue;
-        }
-        XMLElement* newEle = ele->GetDocument()->NewElement(child.first.c_str());
-        exportXML(child.second,newEle);
-        ele->InsertEndChild(newEle);
-    }
-}
+//    for(std::pair<std::string,GSLAM::Svar> child:var.Children())
+//    {
+//        if(child.first=="!--"){
+//            XMLComment* comment=ele->GetDocument()->NewComment(child.second.Get<std::string>("").c_str());
+//            ele->InsertEndChild(comment);
+//            continue;
+//        }
+//        XMLElement* newEle = ele->GetDocument()->NewElement(child.first.c_str());
+//        exportXML(child.second,newEle);
+//        ele->InsertEndChild(newEle);
+//    }
+//}
 
-inline bool loadSvarXML(GSLAM::Svar& var,const std::string& filepath)
-{
-    XMLDocument doc;
-    if(XML_SUCCESS!=doc.LoadFile(filepath.c_str())) return false;
-    loadXML(var,&doc);
-    return true;
-}
+//inline bool loadSvarXML(GSLAM::Svar& var,const std::string& filepath)
+//{
+//    XMLDocument doc;
+//    if(XML_SUCCESS!=doc.LoadFile(filepath.c_str())) return false;
+//    loadXML(var,&doc);
+//    return true;
+//}
 
-inline bool saveSvarXML(GSLAM::Svar& var,const std::string& filepath){
-    tinyxml2::XMLDocument doc;
-    doc.InsertEndChild(doc.NewDeclaration());
-    exportXML(var,&doc);
-    if(XML_SUCCESS!=doc.SaveFile(filepath.c_str())) return false;
-    return true;
-}
+//inline bool saveSvarXML(GSLAM::Svar& var,const std::string& filepath){
+//    tinyxml2::XMLDocument doc;
+//    doc.InsertEndChild(doc.NewDeclaration());
+//    exportXML(var,&doc);
+//    if(XML_SUCCESS!=doc.SaveFile(filepath.c_str())) return false;
+//    return true;
+//}
 
 }
 #endif // TINYXML2_INCLUDED
