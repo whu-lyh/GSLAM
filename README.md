@@ -7,7 +7,29 @@
 ## 1. Introduction
 
 Wiki: https://github.com/zdzhaoyong/GSLAM/wiki
+
 API Documentation: https://zdzhaoyong.github.io/GSLAM/html
+
+If you use this code for your research, please cite our paper <a href="https://arxiv.org/abs/1902.07995">GSLAM: A General SLAM Framework and Benchmark</a>:
+
+```
+@inproceedings{gslamICCV2019,
+	title={GSLAM: A General SLAM Framework and Benchmark},
+	author={Yong Zhao, Shibiao Xu, Shuhui Bu, Hongkai Jiang, Pengcheng Han},
+	booktitle={Proceedings of the IEEE International Conference on Computer Vision},
+	year={2019},
+	organization={IEEE}
+}
+```
+
+```
+@article{gslam2019,
+	title={GSLAM: A General SLAM Framework and Benchmark},
+	author={Yong Zhao, Shibiao Xu, Shuhui Bu, Hongkai Jiang, Pengcheng Han},
+	journal={arXiv:1902.07995 },
+	year={2019}
+}
+```
 
 ### 1.1. What is GSLAM?
 GSLAM is aimed to provide a general open-source SLAM framework and benchmark with following features :
@@ -132,6 +154,8 @@ See more details of Svar at [PILBASE](https://github.com/zdzhaoyong/PIL2/blob/ma
 YongZhao: zd5945@126.com
 
 ShuhuiBu: bushuhui@nwpu.edu.cn
+
+ShibiaoXu: shibiao.xu@nlpr.ia.ac.cn
 
 ## 5. License
 
